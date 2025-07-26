@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyntropyFront - Reactive Tracking with Proxy</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .demo-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            background: #ecf0f1;
+        }
+        .demo-section h3 {
+            color: #2980b9;
+            margin-top: 0;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        button.success {
+            background: #27ae60;
+        }
+        button.success:hover {
+            background: #229954;
+        }
+        button.danger {
+            background: #e74c3c;
+        }
+        button.danger:hover {
+            background: #c0392b;
+        }
+        .output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .warning {
+            color: #f39c12;
+            font-weight: bold;
+        }
+        .info {
+            color: #3498db;
+            font-weight: bold;
+        }
+        .object-display {
+            background: #34495e;
+            color: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .stat-card {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 SyntropyFront - Reactive Tracking with Proxy</h1>
+        
+        <div class="demo-section">
+            <h3>🎯 Demo: Reactive Tracking</h3>
+            <p>This example demonstrates how Proxy captures changes in real-time, without polling.</p>
+            
+            <button onclick="createUserProfile()">Create User Profile</button>
+            <button onclick="createShoppingCart()">Create Shopping Cart</button>
+            <button onclick="modifyObjects()" class="success">Modify Objects</button>
+            <button onclick="showHistory()" class="info">Show History</button>
+            <button onclick="simulateError()" class="danger">Simulate Error</button>
+            <button onclick="clearOutput()">Clear Output</button>
+        </div>
+
+        <div class="demo-section">
+            <h3>📊 Statistics</h3>
+            <div id="stats" class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="trackedObjects">0</div>
+                    <div class="stat-label">Tracked Objects</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalStates">0</div>
+                    <div class="stat-label">Total States</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="changes">0</div>
+                    <div class="stat-label">Changes Detected</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>📝 Output</h3>
+            <div id="output" class="output">Waiting for actions...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SyntropyFront } from '../src/index.js';
+
+        // Initialize SyntropyFront with reactive tracking
+        async function initializeSyntropyFront() {
+            try {
+                await SyntropyFront.init({
+                    preset: 'debug',
+                    agent: {
+                        endpoint: 'https://httpbin.org/post', // Test endpoint
+                        batchTimeout: 1000, // Complete mode
+                        usePersistentBuffer: true,
+                        maxRetries: 3
+                    },
+                    proxyTracking: {
+                        enabled: true,
+                        maxStates: 15,
+                        trackNested: true,
+                        trackArrays: true
+                    }
+                });
+
+                log('🚀 SyntropyFront initialized with reactive tracking', 'success');
+            } catch (error) {
+                log(`❌ Error initializing SyntropyFront: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize when page loads
+        initializeSyntropyFront();
+
+        let userProfile = null;
+        let shoppingCart = null;
+        let changeCount = 0;
+
+        // Function to show output
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warning' ? '⚠️' : 'ℹ️';
+            output.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+            changeCount++;
+        }
+
+        // Function to clear output
+        window.clearOutput = function() {
+            document.getElementById('output').textContent = 'Output cleared...\n';
+            changeCount = 0;
+            updateStats();
+        };
+
+        // Function to update statistics
+        function updateStats() {
+            const stats = SyntropyFront.getProxyTrackerStats();
+            document.getElementById('trackedObjects').textContent = stats.trackedObjects;
+            document.getElementById('totalStates').textContent = stats.totalStates;
+            document.getElementById('changes').textContent = changeCount;
+        }
+
+        // Create user profile with reactive tracking
+        window.createUserProfile = function() {
+            try {
+                log('Creating user profile with reactive tracking...', 'info');
+                
+                // Create original object
+                const originalProfile = {
+                    id: 1,
+                    name: 'John Doe',
+                    email: 'john@test.com',
+                    preferences: {
+                        theme: 'light',
+                        language: 'en',
+                        notifications: true
+                    },
+                    lastLogin: new Date(),
+                    isActive: true
+                };
+
+                // Add for reactive tracking
+                userProfile = SyntropyFront.addProxyObject('userProfile', originalProfile, {
+                    trackNested: true,
+                    trackArrays: true,
+                    maxStates: 10
+                });
+
+                log('✅ User profile created and tracked reactively', 'success');
+                log(`Original object: ${JSON.stringify(originalProfile, null, 2)}`, 'info');
+                
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ Error creating user profile: ${error.message}`, 'error');
+            }
+        };
+
+        // Create shopping cart with reactive tracking
+        window.createShoppingCart = function() {
+            try {
+                log('Creating shopping cart with reactive tracking...', 'info');
+                
+                // Create original object
+                const originalCart = {
+                    id: 'cart_123',
+                    items: [
+                        { id: 1, name: 'Product 1', price: 100, quantity: 2 },
+                        { id: 2, name: 'Product 2', price: 50, quantity: 1 }
+                    ],
+                    total: 250,
+                    currency: 'USD',
+                    createdAt: new Date()
+                };
+
+                // Add for reactive tracking
+                shoppingCart = SyntropyFront.addProxyObject('shoppingCart', originalCart, {
+                    trackNested: true,
+                    trackArrays: true,
+                    maxStates: 10
+                });
+
+                log('✅ Shopping cart created and tracked reactively', 'success');
+                log(`Original object: ${JSON.stringify(originalCart, null, 2)}`, 'info');
+                
+                updateStats();
+                
+            } catch (error) {
+                log(`❌ Error creating shopping cart: ${error.message}`, 'error');
+            }
+        };
+
+        // Modify objects to see reactive tracking
+        window.modifyObjects = function() {
+            try {
+                log('Modifying objects to demonstrate reactive tracking...', 'info');
+                
+                if (userProfile) {
+                    log('\n--- Modifying User Profile ---', 'info');
+                    
+                    // Simple changes
+                    userProfile.name = 'John Carlos Doe';
+                    userProfile.email = 'john.carlos@test.com';
+                    
+                    // Nested changes
+                    userProfile.preferences.theme = 'dark';
+                    userProfile.preferences.language = 'es';
+                    
+                    // Add new property
+                    userProfile.phone = '+1234567890';
+                    
+                    // Change date
+                    userProfile.lastLogin = new Date();
+                    
+                    log('✅ User profile modified', 'success');
+                }
+
+                if (shoppingCart) {
+                    log('\n--- Modifying Shopping Cart ---', 'info');
+                    
+                    // Modify array (push)
+                    shoppingCart.items.push({
+                        id: 3,
+                        name: 'Product 3',
+                        price: 75,
+                        quantity: 1
+                    });
+                    
+                    // Modify array element
+                    shoppingCart.items[0].quantity = 3;
+                    
+                    // Recalculate total
+                    shoppingCart.total = shoppingCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    
+                    // Change currency
+                    shoppingCart.currency = 'EUR';
+                    
+                    log('✅ Shopping cart modified', 'success');
+                }
+
+                if (!userProfile && !shoppingCart) {
+                    log('⚠️ First create objects with createUserProfile() or createShoppingCart()', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ Error modifying objects: ${error.message}`, 'error');
+            }
+        };
+
+        // Show change history
+        window.showHistory = function() {
+            try {
+                log('Showing change history...', 'info');
+                
+                const trackedObjects = SyntropyFront.getProxyTrackedObjects();
+                
+                trackedObjects.forEach(objectPath => {
+                    log(`\n--- History of ${objectPath} ---`, 'info');
+                    
+                    const history = SyntropyFront.getProxyObjectHistory(objectPath);
+                    const currentState = SyntropyFront.getProxyObjectState(objectPath);
+                    
+                    log(`Saved states: ${history.length}`, 'info');
+                    log(`Current state: ${JSON.stringify(currentState.value, null, 2)}`, 'info');
+                    
+                    // Show last 3 changes
+                    const recentChanges = history.slice(-3);
+                    recentChanges.forEach((state, index) => {
+                        log(`\nChange ${index + 1}:`, 'info');
+                        log(`  Type: ${state.changeType}`, 'info');
+                        log(`  Timestamp: ${state.timestamp}`, 'info');
+                        if (state.changeData) {
+                            log(`  Data: ${JSON.stringify(state.changeData, null, 2)}`, 'info');
+                        }
+                    });
+                });
+                
+                if (trackedObjects.length === 0) {
+                    log('⚠️ No tracked objects', 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ Error showing history: ${error.message}`, 'error');
+            }
+        };
+
+        // Simulate error with tracked objects context
+        window.simulateError = function() {
+            try {
+                log('Simulating error with tracked objects context...', 'info');
+                
+                // Get current states of tracked objects
+                const trackedObjects = SyntropyFront.getProxyTrackedObjects();
+                const trackedContext = {};
+                
+                trackedObjects.forEach(objectPath => {
+                    const currentState = SyntropyFront.getProxyObjectState(objectPath);
+                    if (currentState) {
+                        trackedContext[objectPath] = {
+                            currentValue: currentState.value,
+                            statesCount: currentState.statesCount,
+                            lastUpdated: currentState.timestamp
+                        };
+                    }
+                });
+
+                // Create error with context
+                const testError = new Error('Test error with tracked objects');
+                testError.trackedObjects = trackedContext;
+                
+                // Send error to SyntropyFront
+                SyntropyFront.sendError(testError, {
+                    trackedObjects: trackedContext,
+                    errorContext: 'Reactive tracking demo',
+                    timestamp: new Date().toISOString()
+                });
+                
+                log('✅ Error sent with tracked objects context', 'success');
+                log(`Objects included: ${trackedObjects.join(', ')}`, 'info');
+                
+            } catch (error) {
+                log(`❌ Error simulating error: ${error.message}`, 'error');
+            }
+        };
+
+        // Initial log
+        log('SyntropyFront initialized with reactive tracking', 'success');
+        log('Use the buttons to test Proxy tracking', 'info');
+        updateStats();
+    </script>
+</body>
+</html> 

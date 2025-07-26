@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyntropyFront - Presets Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .demo-section {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .demo-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .info {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .preset-card {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .preset-card:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .preset-card.selected {
+            border-color: #28a745;
+            background-color: #d4edda;
+        }
+        .preset-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        .preset-description {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+        .preset-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .feature {
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 SyntropyFront - Presets Demo</h1>
+    
+    <div class="container">
+        <h2>Configuration Presets</h2>
+        <p>Choose a preset and customize the configuration according to your needs:</p>
+        
+        <div class="demo-section">
+            <h3>📋 Available Presets</h3>
+            <div id="presets-container">
+                <!-- Presets will be loaded dynamically -->
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="demo-section">
+                <h3>⚙️ Current Configuration</h3>
+                <button onclick="showCurrentConfig()">Show Configuration</button>
+                <button onclick="showPresetInfo()">Preset Info</button>
+                <pre id="current-config">Click "Show Configuration" to see the current configuration</pre>
+            </div>
+            
+            <div class="demo-section">
+                <h3>🎯 Customization</h3>
+                <button onclick="customizePreset()">Customize Preset</button>
+                <button onclick="testPreset()">Test Preset</button>
+                <pre id="customization-result">Click "Customize Preset" to see options</pre>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>🚀 Initialization with Preset</h3>
+            <button onclick="initWithPreset()">Initialize with Selected Preset</button>
+            <button onclick="initWithCustomConfig()">Initialize with Custom Configuration</button>
+            <div id="initialization-status"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3>📊 Event Log</h3>
+            <button onclick="clearLog()">🧹 Clear Log</button>
+            <div id="event-log" class="log"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SyntropyFront } from '../src/index.js';
+
+        let syntropyFront;
+        let selectedPreset = 'balanced';
+        let logElement;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function loadPresets() {
+            const container = document.getElementById('presets-container');
+            const presets = [
+                {
+                    name: 'safe',
+                    title: '🛡️ Safe',
+                    description: 'Emergency-only mode - Minimum impact, maximum privacy',
+                    features: ['Errors only', 'Minimal context', 'No tracking', 'No worker']
+                },
+                {
+                    name: 'balanced',
+                    title: '⚖️ Balanced',
+                    description: 'Balanced mode - Balance between information and performance',
+                    features: ['Send every 10s', 'Curated context', 'Moderate tracking', 'Worker enabled']
+                },
+                {
+                    name: 'debug',
+                    title: '🐛 Debug',
+                    description: 'Complete debug mode - Maximum information for development',
+                    features: ['Send every 5s', 'Full context', 'Complete tracking', 'Detailed logs']
+                },
+                {
+                    name: 'performance',
+                    title: '⚡ Performance',
+                    description: 'Performance mode - Maximum speed, minimum information',
+                    features: ['Critical errors only', 'Minimal context', 'No tracking', 'No worker']
+                }
+            ];
+
+            container.innerHTML = presets.map(preset => `
+                <div class="preset-card ${preset.name === selectedPreset ? 'selected' : ''}" 
+                     onclick="selectPreset('${preset.name}')">
+                    <div class="preset-name">${preset.title}</div>
+                    <div class="preset-description">${preset.description}</div>
+                    <div class="preset-features">
+                        ${preset.features.map(feature => `<div class="feature">${feature}</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectPreset(presetName) {
+            selectedPreset = presetName;
+            loadPresets();
+            log(`🎯 Preset selected: ${presetName}`, 'info');
+        }
+
+        window.selectPreset = selectPreset;
+
+        window.showCurrentConfig = () => {
+            if (syntropyFront) {
+                const config = syntropyFront.getConfiguration();
+                document.getElementById('current-config').textContent = JSON.stringify(config, null, 2);
+                log('📋 Current configuration shown', 'info');
+            } else {
+                document.getElementById('current-config').textContent = 'SyntropyFront not initialized';
+                log('❌ SyntropyFront not initialized', 'error');
+            }
+        };
+
+        window.showPresetInfo = () => {
+            if (syntropyFront) {
+                const presetInfo = syntropyFront.getPresetInfo();
+                document.getElementById('customization-result').textContent = JSON.stringify(presetInfo, null, 2);
+                log('📊 Preset information shown', 'info');
+            } else {
+                document.getElementById('customization-result').textContent = 'SyntropyFront not initialized';
+                log('❌ SyntropyFront not initialized', 'error');
+            }
+        };
+
+        window.customizePreset = () => {
+            const customization = {
+                'safe': {
+                    description: 'Customization for Safe Preset',
+                    options: {
+                        agent: { endpoint: 'https://api.example.com/errors' },
+                        maxBreadcrumbs: 5
+                    }
+                },
+                'balanced': {
+                    description: 'Customization for Balanced Preset',
+                    options: {
+                        agent: { endpoint: 'https://api.example.com/errors' },
+                        maxBreadcrumbs: 100,
+                        proxyTracking: { maxStates: 20 }
+                    }
+                },
+                'debug': {
+                    description: 'Customization for Debug Preset',
+                    options: {
+                        agent: { endpoint: 'https://api.example.com/errors' },
+                        maxBreadcrumbs: 200,
+                        proxyTracking: { maxStates: 50, trackFunctions: true }
+                    }
+                },
+                'performance': {
+                    description: 'Customization for Performance Preset',
+                    options: {
+                        agent: { endpoint: 'https://api.example.com/errors' },
+                        maxBreadcrumbs: 3
+                    }
+                }
+            };
+
+            const current = customization[selectedPreset];
+            document.getElementById('customization-result').textContent = JSON.stringify(current, null, 2);
+            log(`🎨 Customization options for preset '${selectedPreset}'`, 'info');
+        };
+
+        window.testPreset = () => {
+            const tests = {
+                'safe': 'Test: Critical errors only, minimal context',
+                'balanced': 'Test: Periodic sending, curated context',
+                'debug': 'Test: Frequent sending, complete context',
+                'performance': 'Test: Critical errors only, no overhead'
+            };
+
+            const test = tests[selectedPreset];
+            log(`🧪 ${test}`, 'info');
+        };
+
+        window.initWithPreset = async () => {
+            try {
+                log(`🚀 Initializing SyntropyFront with preset '${selectedPreset}'...`, 'info');
+                
+                await SyntropyFront.init({
+                    preset: selectedPreset,
+                    agent: {
+                        endpoint: 'https://api.example.com/errors'
+                    }
+                });
+                
+                syntropyFront = SyntropyFront;
+                log(`✅ SyntropyFront initialized with preset '${selectedPreset}'`, 'success');
+                
+                const statusElement = document.getElementById('initialization-status');
+                statusElement.innerHTML = `
+                    <div style="color: #28a745; font-weight: bold;">
+                        ✅ Initialized with preset: ${selectedPreset}
+                    </div>
+                `;
+                
+            } catch (error) {
+                log(`❌ Error initializing with preset '${selectedPreset}': ${error.message}`, 'error');
+                
+                const statusElement = document.getElementById('initialization-status');
+                statusElement.innerHTML = `
+                    <div style="color: #dc3545; font-weight: bold;">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            }
+        };
+
+        window.initWithCustomConfig = async () => {
+            try {
+                log('🚀 Initializing SyntropyFront with custom configuration...', 'info');
+                
+                await SyntropyFront.init({
+                    preset: selectedPreset,
+                    agent: {
+                        endpoint: 'https://api.example.com/errors',
+                        batchTimeout: 5000,
+                        batchSize: 15
+                    },
+                    maxBreadcrumbs: 75,
+                    proxyTracking: {
+                        enabled: true,
+                        maxStates: 15,
+                        trackNested: true,
+                        trackArrays: true
+                    },
+                    context: {
+                        device: true,
+                        window: true,
+                        session: true,
+                        ui: true,
+                        network: true
+                    },
+                    useWorker: true,
+                    captureClicks: true,
+                    captureFetch: true,
+                    captureErrors: true,
+                    captureUnhandledRejections: true
+                });
+                
+                syntropyFront = SyntropyFront;
+                log('✅ SyntropyFront initialized with custom configuration', 'success');
+                
+                const statusElement = document.getElementById('initialization-status');
+                statusElement.innerHTML = `
+                    <div style="color: #28a745; font-weight: bold;">
+                        ✅ Initialized with custom configuration
+                    </div>
+                `;
+                
+            } catch (error) {
+                log(`❌ Error initializing with custom configuration: ${error.message}`, 'error');
+                
+                const statusElement = document.getElementById('initialization-status');
+                statusElement.innerHTML = `
+                    <div style="color: #dc3545; font-weight: bold;">
+                        ❌ Error: ${error.message}
+                    </div>
+                `;
+            }
+        };
+
+        window.clearLog = () => {
+            document.getElementById('event-log').innerHTML = '';
+        };
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            logElement = document.getElementById('event-log');
+            loadPresets();
+            log('🎯 Presets Demo loaded', 'info');
+        });
+    </script>
+</body>
+</html> 

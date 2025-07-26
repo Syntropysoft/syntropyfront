@@ -1,0 +1,80 @@
+{
+  "name": "syntropyfront",
+  "version": "0.1.0",
+  "description": "Advanced frontend tracing and error monitoring with reactive object tracking, worker architecture, and circular reference handling",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "build:watch": "rollup -c -w",
+    "dev": "npm run build:watch",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "prepublishOnly": "npm run build",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .js",
+    "lint:fix": "eslint src --ext .js --fix"
+  },
+  "keywords": [
+    "frontend",
+    "tracing",
+    "monitoring",
+    "error-tracking",
+    "breadcrumbs",
+    "observability",
+    "proxy-tracking",
+    "worker",
+    "circular-references",
+    "lazy-loading",
+    "presets",
+    "apm",
+    "debugging",
+    "performance"
+  ],
+  "author": "SyntropyLog Team",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/syntropylog/syntropy.git",
+    "directory": "syntropylogfront"
+  },
+  "bugs": {
+    "url": "https://github.com/syntropylog/syntropy/issues"
+  },
+  "homepage": "https://github.com/syntropylog/syntropy#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "flatted": "^3.3.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "eslint": "^8.0.0",
+    "rollup": "^3.0.0",
+    "vitest": "^0.34.0"
+  },
+  "peerDependencies": {},
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

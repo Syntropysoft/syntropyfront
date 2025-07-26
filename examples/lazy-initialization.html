@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyntropyFront - Lazy Initialization</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .demo-section {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .demo-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 SyntropyFront - Lazy Initialization</h1>
+    
+    <div class="container">
+        <h2>Automatic Retry Demonstration</h2>
+        <p>This example demonstrates how interceptors automatically wait for stores to be created:</p>
+        
+        <div class="demo-section">
+            <h3>📋 Event Sequence</h3>
+            <ol>
+                <li><strong>0ms:</strong> SyntropyFront.init() executes</li>
+                <li><strong>0ms:</strong> Interceptors look for stores (don't find them)</li>
+                <li><strong>500ms:</strong> Retry #1 - Look again</li>
+                <li><strong>1000ms:</strong> Retry #2 - Look again</li>
+                <li><strong>1500ms:</strong> Store is created</li>
+                <li><strong>1500ms:</strong> Interceptor finds and configures the store</li>
+            </ol>
+        </div>
+
+        <div class="demo-section">
+            <h3>🎯 Controls</h3>
+            <button onclick="startDemo()">🚀 Start Demo</button>
+            <button onclick="createStoreEarly()">⚡ Create Store Early</button>
+            <button onclick="createStoreLate()">🐌 Create Store Late</button>
+            <button onclick="clearLog()">🧹 Clear Log</button>
+        </div>
+
+        <div class="demo-section">
+            <h3>📊 Event Log</h3>
+            <div id="event-log" class="log"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3>🔍 Interceptor Status</h3>
+            <button onclick="showInterceptorStatus()">Show Status</button>
+            <pre id="interceptor-status">Click "Show Status" to see the current state</pre>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SyntropyFront } from '../src/index.js';
+        import { ReduxInterceptor, VuexInterceptor } from '@syntropyfront/interceptors';
+
+        let logElement;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        async function startDemo() {
+            logElement = document.getElementById('event-log');
+            logElement.innerHTML = '';
+            
+            log('🚀 Starting lazy initialization demo...', 'success');
+            
+            // Intercept console.log to capture SyntropyFront messages
+            const originalLog = console.log;
+            const originalWarn = console.warn;
+            
+            console.log = function(...args) {
+                originalLog.apply(console, args);
+                if (args[0] && typeof args[0] === 'string' && args[0].includes('SyntropyFront')) {
+                    log(args.join(' '), 'info');
+                }
+            };
+            
+            console.warn = function(...args) {
+                originalWarn.apply(console, args);
+                if (args[0] && typeof args[0] === 'string' && args[0].includes('SyntropyFront')) {
+                    log(args.join(' '), 'warning');
+                }
+            };
+
+            // Configure SyntropyFront with interceptors
+            log('📦 Configuring SyntropyFront with interceptors...', 'info');
+            
+            try {
+                await SyntropyFront.init({
+                    preset: 'balanced',
+                    agent: {
+                        endpoint: '/api/errors',
+                        batchTimeout: 5000
+                    },
+                    maxBreadcrumbs: 50
+                });
+
+                // Inject interceptors after initialization
+                SyntropyFront.inject('redux', ReduxInterceptor());
+                SyntropyFront.inject('vuex', VuexInterceptor());
+
+                log('✅ SyntropyFront initialized. Interceptors will automatically look for stores...', 'success');
+            } catch (error) {
+                log(`❌ Error initializing SyntropyFront: ${error.message}`, 'error');
+            }
+        }
+
+        function createStoreEarly() {
+            log('⚡ Creating store early (500ms after init)...', 'info');
+            
+            setTimeout(() => {
+                // Create Redux store
+                window.reduxStore = {
+                    state: { user: { name: 'Early User' }, counter: 0 },
+                    dispatch: function(action) {
+                        log(`🔄 Redux Action: ${action.type}`, 'info');
+                        if (action.type === 'INCREMENT') {
+                            this.state.counter++;
+                        }
+                    },
+                    getState: function() {
+                        return this.state;
+                    },
+                    subscribe: function(callback) {
+                        return () => {};
+                    }
+                };
+
+                // Create Vuex store
+                window.vuexStore = {
+                    state: { user: { name: 'Early User' }, theme: 'light' },
+                    commit: function(type, payload) {
+                        log(`🔄 Vuex Mutation: ${type}`, 'info');
+                    },
+                    dispatch: function(type, payload) {
+                        log(`🔄 Vuex Action: ${type}`, 'info');
+                    },
+                    subscribe: function(callback) {
+                        return () => {};
+                    }
+                };
+
+                log('✅ Stores created early', 'success');
+            }, 500);
+        }
+
+        function createStoreLate() {
+            log('🐌 Creating store late (2000ms after init)...', 'info');
+            
+            setTimeout(() => {
+                // Create Redux store
+                window.reduxStore = {
+                    state: { user: { name: 'Late User' }, counter: 0 },
+                    dispatch: function(action) {
+                        log(`🔄 Redux Action: ${action.type}`, 'info');
+                        if (action.type === 'INCREMENT') {
+                            this.state.counter++;
+                        }
+                    },
+                    getState: function() {
+                        return this.state;
+                    },
+                    subscribe: function(callback) {
+                        return () => {};
+                    }
+                };
+
+                // Create Vuex store
+                window.vuexStore = {
+                    state: { user: { name: 'Late User' }, theme: 'light' },
+                    commit: function(type, payload) {
+                        log(`🔄 Vuex Mutation: ${type}`, 'info');
+                    },
+                    dispatch: function(type, payload) {
+                        log(`🔄 Vuex Action: ${type}`, 'info');
+                    },
+                    subscribe: function(callback) {
+                        return () => {};
+                    }
+                };
+
+                log('✅ Stores created late', 'success');
+            }, 2000);
+        }
+
+        function showInterceptorStatus() {
+            const status = {
+                redux: SyntropyFront.getInterceptorInfo('redux'),
+                vuex: SyntropyFront.getInterceptorInfo('vuex'),
+                registeredInterceptors: SyntropyFront.getRegisteredInterceptors()
+            };
+            
+            document.getElementById('interceptor-status').textContent = JSON.stringify(status, null, 2);
+        }
+
+        function clearLog() {
+            document.getElementById('event-log').innerHTML = '';
+        }
+
+        // Expose functions globally
+        window.startDemo = startDemo;
+        window.createStoreEarly = createStoreEarly;
+        window.createStoreLate = createStoreLate;
+        window.showInterceptorStatus = showInterceptorStatus;
+        window.clearLog = clearLog;
+    </script>
+</body>
+</html> 

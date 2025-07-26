@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyntropyFront - Basic Example</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">SyntropyFront - Basic Example</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Controls Panel -->
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">Controls</h2>
+                
+                <button id="btn-click" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-3 block w-full">
+                    Make Click
+                </button>
+                
+                <button id="btn-fetch" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mb-3 block w-full">
+                    API Call
+                </button>
+                
+                <button id="btn-error" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded mb-3 block w-full">
+                    Trigger Error
+                </button>
+                
+                <button id="btn-breadcrumb" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mb-3 block w-full">
+                    Add Breadcrumb
+                </button>
+                
+                <button id="btn-clear" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded block w-full">
+                    Clear Breadcrumbs
+                </button>
+            </div>
+            
+            <!-- Breadcrumbs Panel -->
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h2 class="text-xl font-semibold mb-4">Breadcrumbs</h2>
+                <div id="breadcrumbs-list" class="space-y-2 text-sm">
+                    <p class="text-gray-400">No breadcrumbs yet...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logs Panel -->
+        <div class="mt-8 bg-gray-800 p-6 rounded-lg">
+            <h2 class="text-xl font-semibold mb-4">Logs</h2>
+            <div id="logs" class="bg-gray-900 p-4 rounded h-64 overflow-y-auto text-sm font-mono">
+                <p class="text-gray-400">Waiting for events...</p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import SyntropyFront (in a real project would be from npm)
+        import SyntropyFront from '../src/index.js';
+        
+        // Initialize with custom configuration
+        async function initializeSyntropyFront() {
+            try {
+                await SyntropyFront.init({
+                    preset: 'balanced', // Use balanced preset by default
+                    maxBreadcrumbs: 10,
+                    onError: (errorPayload) => {
+                        logToScreen(`🚨 ERROR: ${errorPayload.error.message}`, 'error');
+                        logToScreen(`Context: ${errorPayload.breadcrumbs.length} breadcrumbs`, 'error');
+                    },
+                    onBreadcrumbAdded: (breadcrumb) => {
+                        logToScreen(`📝 Breadcrumb: [${breadcrumb.category}] ${breadcrumb.message}`);
+                        updateBreadcrumbsList();
+                    }
+                });
+                
+                logToScreen('🚀 SyntropyFront initialized successfully');
+            } catch (error) {
+                logToScreen(`❌ Error initializing SyntropyFront: ${error.message}`, 'error');
+            }
+        }
+        
+        // Inicializar cuando se carga la página
+        initializeSyntropyFront();
+        
+        // UI Functions
+        function logToScreen(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const p = document.createElement('p');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            p.innerHTML = `<span class="text-gray-500">${timestamp}:</span> `;
+            
+            if (type === 'error') {
+                p.className = 'text-red-400';
+            } else {
+                p.className = 'text-green-300';
+            }
+            
+            p.innerHTML += message;
+            logs.appendChild(p);
+            logs.scrollTop = logs.scrollHeight;
+        }
+        
+        function updateBreadcrumbsList() {
+            const container = document.getElementById('breadcrumbs-list');
+            const breadcrumbs = SyntropyFront.getBreadcrumbs();
+            
+            if (breadcrumbs.length === 0) {
+                container.innerHTML = '<p class="text-gray-400">No breadcrumbs...</p>';
+                return;
+            }
+            
+            container.innerHTML = breadcrumbs.map(b => `
+                <div class="bg-gray-700 p-3 rounded">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs bg-blue-600 px-2 py-1 rounded">${b.category}</span>
+                        <span class="text-xs text-gray-400">${new Date(b.timestamp).toLocaleTimeString()}</span>
+                    </div>
+                    <p class="text-sm mt-1">${b.message}</p>
+                </div>
+            `).join('');
+        }
+        
+        // Event listeners
+        document.getElementById('btn-click').addEventListener('click', () => {
+            logToScreen('👆 Click on test button');
+        });
+        
+        document.getElementById('btn-fetch').addEventListener('click', () => {
+            logToScreen('🌐 Starting API call...');
+            fetch('https://jsonplaceholder.typicode.com/todos/1')
+                .then(response => response.json())
+                .then(data => logToScreen(`✅ API responded: ${JSON.stringify(data)}`))
+                .catch(error => logToScreen(`❌ API error: ${error.message}`, 'error'));
+        });
+        
+        document.getElementById('btn-error').addEventListener('click', () => {
+            logToScreen('💥 Triggering error...', 'error');
+            // This function doesn't exist, will cause a ReferenceError
+            functionThatDoesNotExist();
+        });
+        
+        document.getElementById('btn-breadcrumb').addEventListener('click', () => {
+            SyntropyFront.addBreadcrumb('custom', 'User added manual breadcrumb', {
+                source: 'button',
+                timestamp: Date.now()
+            });
+        });
+        
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            SyntropyFront.clearBreadcrumbs();
+            updateBreadcrumbsList();
+            logToScreen('🧹 Breadcrumbs cleared');
+        });
+        
+
+    </script>
+</body>
+</html> 

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo del Sistema de Trazabilidad</title>
+    <!-- Tailwind CSS para un diseño limpio y rápido -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilo para el log en pantalla */
+        #log-container {
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 flex flex-col items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-white">Sistema de Trazabilidad Frontend</h1>
+            <p class="text-gray-400 mt-2">Interactuá con la página y luego provocá un error para ver el reporte en la consola.</p>
+        </div>
+
+        <!-- Controles para generar eventos -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <button id="btn-click" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                Botón de Prueba (Click)
+            </button>
+            <button id="btn-fetch" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                Llamada a API (Fetch)
+            </button>
+            <button id="btn-error" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
+                Provocar Error Grave
+            </button>
+        </div>
+
+        <!-- Área para mostrar logs y reportes -->
+        <div class="bg-gray-900 rounded-lg p-4 h-80 overflow-y-auto" id="log-container">
+            <div id="log-output" class="text-sm text-gray-300"></div>
+        </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- ======================= CÓDIGO DEL TRACER ========================== -->
+    <!-- ====================================================================== -->
+    <script type="module">
+        // --- Módulo 1: La "Caja Negra" (Almacén de Breadcrumbs) ---
+        const breadcrumbStore = (() => {
+            const MAX_BREADCRUMBS = 25;
+            const breadcrumbs = [];
+
+            // Añade un "breadcrumb" a la lista.
+            function add(crumb) {
+                const breadcrumb = {
+                    ...crumb,
+                    timestamp: new Date().toISOString(),
+                };
+                if (breadcrumbs.length >= MAX_BREADCRUMBS) {
+                    breadcrumbs.shift(); // Elimina el más antiguo si se alcanza el límite.
+                }
+                breadcrumbs.push(breadcrumb);
+                logToScreen(`Breadcrumb añadido: [${breadcrumb.category}] ${breadcrumb.message}`);
+            }
+
+            // Devuelve la lista completa de breadcrumbs.
+            function getAll() {
+                return [...breadcrumbs]; // Devuelve una copia para evitar mutaciones.
+            }
+
+            return { add, getAll };
+        })();
+
+
+        // --- Módulo 2: Los "Observadores" (Interceptores) ---
+        const interceptors = (() => {
+            // Intercepta errores globales no capturados.
+            function setupErrorInterceptor() {
+                const sendReportToServer = (errorPayload) => {
+                    logToScreen("--- ¡BOOM! ERROR DETECTADO ---", 'error');
+                    logToScreen("Enviando el siguiente reporte al servidor:", 'error');
+                    logToScreen(JSON.stringify(errorPayload, null, 2), 'error');
+                    
+                    // Aquí iría la lógica real de envío al backend.
+                    // fetch('/api/log-error', {
+                    //   method: 'POST',
+                    //   headers: { 'Content-Type': 'application/json' },
+                    //   body: JSON.stringify(errorPayload),
+                    // }).catch(console.error);
+                };
+
+                // Captura excepciones no manejadas.
+                window.onerror = (message, source, lineno, colno, error) => {
+                    const errorPayload = {
+                        type: 'uncaught_exception',
+                        error: { message, source, lineno, colno, stack: error?.stack },
+                        breadcrumbs: breadcrumbStore.getAll(),
+                        // Aquí podrías añadir un correlationId si lo tuvieras.
+                    };
+                    sendReportToServer(errorPayload);
+                    return true; // Previene que el error se muestre en la consola del navegador.
+                };
+
+                // Captura promesas rechazadas no manejadas.
+                window.onunhandledrejection = (event) => {
+                    const errorPayload = {
+                        type: 'unhandled_rejection',
+                        error: {
+                            message: event.reason?.message || 'Rechazo de promesa sin mensaje',
+                            stack: event.reason?.stack,
+                        },
+                        breadcrumbs: breadcrumbStore.getAll(),
+                    };
+                    sendReportToServer(errorPayload);
+                };
+            }
+
+            // Intercepta llamadas de red (fetch).
+            function setupFetchInterceptor() {
+                const originalFetch = window.fetch;
+                window.fetch = function(...args) {
+                    const url = args[0] instanceof Request ? args[0].url : args[0];
+                    const method = args[0] instanceof Request ? args[0].method : (args[1]?.method || 'GET');
+                    
+                    breadcrumbStore.add({
+                        category: 'network',
+                        message: `Request: ${method} ${url}`,
+                    });
+
+                    return originalFetch.apply(this, args);
+                };
+            }
+
+            // Intercepta clics de usuario.
+            function setupClickInterceptor() {
+                document.addEventListener('click', (event) => {
+                    const el = event.target;
+                    if (!el) return;
+                    
+                    // Genera un selector CSS simple para identificar el elemento.
+                    let selector = el.tagName.toLowerCase();
+                    if (el.id) {
+                        selector += `#${el.id}`;
+                    } else if (el.className && typeof el.className === 'string') {
+                        selector += `.${el.className.split(' ').filter(Boolean).join('.')}`;
+                    }
+
+                    breadcrumbStore.add({
+                        category: 'ui',
+                        message: `Usuario hizo click en '${selector}'`,
+                    });
+                }, true); // Usa la fase de captura para mayor fiabilidad.
+            }
+
+            return { setupErrorInterceptor, setupFetchInterceptor, setupClickInterceptor };
+        })();
+
+
+        // --- Módulo 3: El Inicializador ---
+        function initTracer() {
+            logToScreen("Tracer inicializado. Modo observador activado.");
+            interceptors.setupClickInterceptor();
+            interceptors.setupFetchInterceptor();
+            // El interceptor de errores siempre debe ir al final.
+            interceptors.setupErrorInterceptor();
+        }
+
+        // --- Lógica de la Demo ---
+        const logOutput = document.getElementById('log-output');
+        
+        function logToScreen(message, type = 'info') {
+            const p = document.createElement('p');
+            const timestamp = new Date().toLocaleTimeString();
+            p.innerHTML = `<span class="text-gray-500">${timestamp}:</span> `;
+
+            if (type === 'error') {
+                p.className = 'text-red-400';
+            } else {
+                p.className = 'text-green-300';
+            }
+            p.innerHTML += message;
+            logOutput.appendChild(p);
+            logOutput.scrollTop = logOutput.scrollHeight; // Auto-scroll hacia abajo
+        }
+
+        document.getElementById('btn-click').addEventListener('click', () => {
+             logToScreen("Botón de prueba clickeado.");
+        });
+
+        document.getElementById('btn-fetch').addEventListener('click', () => {
+            logToScreen("Iniciando llamada a API de prueba...");
+            fetch('https://jsonplaceholder.typicode.com/todos/1')
+                .then(response => response.json())
+                .then(json => logToScreen(`Respuesta de API recibida: ${JSON.stringify(json)}`))
+                .catch(error => logToScreen(`Error en fetch: ${error.message}`, 'error'));
+        });
+
+        document.getElementById('btn-error').addEventListener('click', () => {
+            logToScreen("Provocando un error intencional...", 'error');
+            // Esta función no existe, por lo que causará un ReferenceError.
+            funcionQueNoExiste(); 
+        });
+
+        // Inicia el sistema de trazabilidad.
+        initTracer();
+    </script>
+
+</body>
+</html>

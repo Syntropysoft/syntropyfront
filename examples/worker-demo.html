@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SyntropyFront - Worker Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .demo-section {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .demo-section h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .warning {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .info {
+            color: #17a2b8;
+            font-weight: bold;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online {
+            background-color: #28a745;
+        }
+        .status-offline {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔄 SyntropyFront - Worker Demo</h1>
+    
+    <div class="container">
+        <h2>Worker Architecture Demo</h2>
+        <p>This example demonstrates how SyntropyFront uses a Worker to collect data without blocking the main thread:</p>
+        
+        <div class="demo-section">
+            <h3>📊 Worker Status</h3>
+            <div id="worker-status">
+                <span class="status-indicator status-offline"></span>
+                <span>Worker: Disconnected</span>
+            </div>
+            <button onclick="checkWorkerStatus()">🔄 Check Status</button>
+            <button onclick="pingWorker()">🏓 Ping Worker</button>
+        </div>
+
+        <div class="grid">
+            <div class="demo-section">
+                <h3>🍞 Breadcrumbs (Main Thread)</h3>
+                <button onclick="addBreadcrumbMain()">Add Breadcrumb</button>
+                <button onclick="getBreadcrumbsMain()">Get Breadcrumbs</button>
+                <button onclick="clearBreadcrumbsMain()">Clear Breadcrumbs</button>
+                <pre id="breadcrumbs-main">Click "Get Breadcrumbs" to see the data</pre>
+            </div>
+            
+            <div class="demo-section">
+                <h3>🔄 Breadcrumbs (Worker)</h3>
+                <button onclick="addBreadcrumbWorker()">Add Breadcrumb</button>
+                <button onclick="getBreadcrumbsWorker()">Get Breadcrumbs</button>
+                <button onclick="clearBreadcrumbsWorker()">Clear Breadcrumbs</button>
+                <pre id="breadcrumbs-worker">Click "Get Breadcrumbs" to see the data</pre>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h3>🚨 Error Simulation</h3>
+            <button onclick="simulateErrorMain()">Error (Main Thread)</button>
+            <button onclick="simulateErrorWorker()">Error (Worker)</button>
+            <button onclick="simulateHeavyTask()">Heavy Task (Blocks UI)</button>
+        </div>
+
+        <div class="demo-section">
+            <h3>📊 Event Log</h3>
+            <button onclick="clearLog()">🧹 Clear Log</button>
+            <div id="event-log" class="log"></div>
+        </div>
+
+        <div class="demo-section">
+            <h3>⚡ Performance Test</h3>
+            <p>Add 1000 breadcrumbs to see the performance difference:</p>
+            <button onclick="performanceTestMain()">1000 Breadcrumbs (Main)</button>
+            <button onclick="performanceTestWorker()">1000 Breadcrumbs (Worker)</button>
+            <div id="performance-results"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { SyntropyFront } from '../src/index.js';
+
+        let syntropyFront;
+        let logElement;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        async function initializeSyntropyFront() {
+            logElement = document.getElementById('event-log');
+            
+            log('🚀 Initializing SyntropyFront with Worker...', 'info');
+            
+            try {
+                await SyntropyFront.init({
+                    preset: 'balanced',
+                    useWorker: true,
+                    maxBreadcrumbs: 100,
+                    agent: {
+                        endpoint: '/api/errors',
+                        batchTimeout: 5000
+                    },
+                    captureClicks: true,
+                    captureFetch: true,
+                    captureErrors: true
+                });
+                
+                syntropyFront = SyntropyFront;
+                log('✅ SyntropyFront initialized successfully', 'success');
+                updateWorkerStatus();
+                
+            } catch (error) {
+                log(`❌ Error initializing SyntropyFront: ${error.message}`, 'error');
+            }
+        }
+
+        function updateWorkerStatus() {
+            const statusElement = document.getElementById('worker-status');
+            const isAvailable = syntropyFront.isWorkerAvailable();
+            
+            if (isAvailable) {
+                statusElement.innerHTML = '<span class="status-indicator status-online"></span><span>Worker: Connected</span>';
+            } else {
+                statusElement.innerHTML = '<span class="status-indicator status-offline"></span><span>Worker: Disconnected</span>';
+            }
+        }
+
+        // Worker Status Methods
+        window.checkWorkerStatus = () => {
+            const status = syntropyFront.getWorkerStatus();
+            log(`📊 Worker Status: ${JSON.stringify(status, null, 2)}`, 'info');
+            updateWorkerStatus();
+        };
+
+        window.pingWorker = async () => {
+            try {
+                const response = await syntropyFront.pingWorker();
+                log(`🏓 Ping Worker: ${JSON.stringify(response)}`, 'info');
+            } catch (error) {
+                log(`❌ Error in ping: ${error.message}`, 'error');
+            }
+        };
+
+        // Main Thread Methods
+        window.addBreadcrumbMain = () => {
+            const start = performance.now();
+            syntropyFront.addBreadcrumb('user', 'Click from Main Thread', { timestamp: Date.now() });
+            const end = performance.now();
+            log(`🍞 Breadcrumb added (Main): ${(end - start).toFixed(2)}ms`, 'info');
+        };
+
+        window.getBreadcrumbsMain = () => {
+            const start = performance.now();
+            const breadcrumbs = syntropyFront.getBreadcrumbs();
+            const end = performance.now();
+            document.getElementById('breadcrumbs-main').textContent = JSON.stringify(breadcrumbs, null, 2);
+            log(`📋 Breadcrumbs retrieved (Main): ${(end - start).toFixed(2)}ms`, 'info');
+        };
+
+        window.clearBreadcrumbsMain = () => {
+            syntropyFront.clearBreadcrumbs();
+            document.getElementById('breadcrumbs-main').textContent = 'Breadcrumbs cleared';
+            log('🧹 Breadcrumbs cleared (Main)', 'info');
+        };
+
+        // Worker Methods
+        window.addBreadcrumbWorker = async () => {
+            try {
+                const start = performance.now();
+                await syntropyFront.addBreadcrumbToWorker('user', 'Click from Worker', { timestamp: Date.now() });
+                const end = performance.now();
+                log(`🍞 Breadcrumb added (Worker): ${(end - start).toFixed(2)}ms`, 'success');
+            } catch (error) {
+                log(`❌ Error adding breadcrumb (Worker): ${error.message}`, 'error');
+            }
+        };
+
+        window.getBreadcrumbsWorker = async () => {
+            try {
+                const start = performance.now();
+                const breadcrumbs = await syntropyFront.getBreadcrumbsFromWorker();
+                const end = performance.now();
+                document.getElementById('breadcrumbs-worker').textContent = JSON.stringify(breadcrumbs, null, 2);
+                log(`📋 Breadcrumbs retrieved (Worker): ${(end - start).toFixed(2)}ms`, 'success');
+            } catch (error) {
+                log(`❌ Error getting breadcrumbs (Worker): ${error.message}`, 'error');
+            }
+        };
+
+        window.clearBreadcrumbsWorker = async () => {
+            try {
+                await syntropyFront.clearBreadcrumbsFromWorker();
+                document.getElementById('breadcrumbs-worker').textContent = 'Breadcrumbs cleared';
+                log('🧹 Breadcrumbs cleared (Worker)', 'success');
+            } catch (error) {
+                log(`❌ Error clearing breadcrumbs (Worker): ${error.message}`, 'error');
+            }
+        };
+
+        // Error Simulation
+        window.simulateErrorMain = () => {
+            const start = performance.now();
+            try {
+                throw new Error('Simulated error from Main Thread');
+            } catch (error) {
+                syntropyFront.sendError(error);
+                const end = performance.now();
+                log(`🚨 Error sent (Main): ${(end - start).toFixed(2)}ms`, 'error');
+            }
+        };
+
+        window.simulateErrorWorker = async () => {
+            try {
+                const start = performance.now();
+                const error = new Error('Simulated error from Worker');
+                await syntropyFront.sendErrorToWorker(error);
+                const end = performance.now();
+                log(`🚨 Error sent (Worker): ${(end - start).toFixed(2)}ms`, 'error');
+            } catch (error) {
+                log(`❌ Error sending error (Worker): ${error.message}`, 'error');
+            }
+        };
+
+        window.simulateHeavyTask = () => {
+            log('⚡ Starting heavy task that blocks the UI...', 'warning');
+            
+            const start = performance.now();
+            
+            // Simulate heavy task that blocks the main thread
+            let result = 0;
+            for (let i = 0; i < 10000000; i++) {
+                result += Math.sqrt(i);
+            }
+            
+            const end = performance.now();
+            log(`⚡ Heavy task completed: ${(end - start).toFixed(2)}ms (UI blocked)`, 'warning');
+        };
+
+        // Performance Tests
+        window.performanceTestMain = () => {
+            const resultsElement = document.getElementById('performance-results');
+            resultsElement.innerHTML = '<p>🔄 Running performance test (Main Thread)...</p>';
+            
+            const start = performance.now();
+            
+            for (let i = 0; i < 1000; i++) {
+                syntropyFront.addBreadcrumb('test', `Breadcrumb ${i}`, { index: i });
+            }
+            
+            const end = performance.now();
+            const duration = end - start;
+            
+            resultsElement.innerHTML = `
+                <p><strong>Main Thread:</strong> ${duration.toFixed(2)}ms</p>
+                <p><strong>Average per breadcrumb:</strong> ${(duration / 1000).toFixed(3)}ms</p>
+            `;
+            
+            log(`⚡ Performance test (Main): ${duration.toFixed(2)}ms for 1000 breadcrumbs`, 'info');
+        };
+
+        window.performanceTestWorker = async () => {
+            const resultsElement = document.getElementById('performance-results');
+            resultsElement.innerHTML = '<p>🔄 Running performance test (Worker)...</p>';
+            
+            const start = performance.now();
+            
+            const promises = [];
+            for (let i = 0; i < 1000; i++) {
+                promises.push(syntropyFront.addBreadcrumbToWorker('test', `Breadcrumb ${i}`, { index: i }));
+            }
+            
+            await Promise.all(promises);
+            
+            const end = performance.now();
+            const duration = end - start;
+            
+            resultsElement.innerHTML = `
+                <p><strong>Worker:</strong> ${duration.toFixed(2)}ms</p>
+                <p><strong>Average per breadcrumb:</strong> ${(duration / 1000).toFixed(3)}ms</p>
+            `;
+            
+            log(`⚡ Performance test (Worker): ${duration.toFixed(2)}ms for 1000 breadcrumbs`, 'success');
+        };
+
+        window.clearLog = () => {
+            document.getElementById('event-log').innerHTML = '';
+        };
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeSyntropyFront);
+    </script>
+</body>
+</html> 
