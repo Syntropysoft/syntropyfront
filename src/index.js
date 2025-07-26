@@ -667,9 +667,8 @@ export class SyntropyFront {
 // Instancia singleton principal
 const syntropyFront = new SyntropyFront();
 
-// Exportar la instancia y la clase
+// Exportar la instancia como default
 export default syntropyFront;
-export { SyntropyFront };
 
 // Exportar componentes individuales para uso avanzado
 export { breadcrumbStore, interceptors, agent }; 

@@ -1,6 +1,18 @@
-# SyntropyFront
+<p align="center">
+  <img src="./assets/syntropysoft-logo.png" alt="SyntropyLog Logo" width="170"/>
+</p>
 
-Advanced frontend tracing and error monitoring with reactive object tracking, worker architecture, and circular reference handling.
+<h1 align="center">SyntropyFront</h1>
+
+<p align="center">
+  <strong>From Chaos to Clarity</strong>
+  <br />
+  The Observability Framework for High-Performance Teams
+</p>
+<p align="center">
+  Advanced frontend tracing and error monitoring with reactive object tracking, worker architecture, and circular reference handling
+  <br />
+</p>
 
 ## 🚀 Features
 
@@ -301,20 +313,9 @@ Apache 2.0 - see [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
-- 📖 [Documentation](https://github.com/syntropylog/syntropy)
-- 🐛 [Issues](https://github.com/syntropylog/syntropy/issues)
-- 💬 [Discussions](https://github.com/syntropylog/syntropy/discussions)
-
-## 🚀 Roadmap
-
-- [ ] TypeScript definitions
-- [ ] React hooks
-- [ ] Vue plugin
-- [ ] Angular service
-- [ ] Performance monitoring
-- [ ] Real-time dashboard
-- [ ] Custom transports
-- [ ] Plugin system
+- 📖 [Documentation](https://github.com/Syntropysoft/syntropyfront)
+- 🐛 [Issues](https://github.com/Syntropysoft/syntropyfront/issues)
+- 💬 [Discussions](https://github.com/Syntropysoft/syntropyfront/discussions)
 
 ---
 

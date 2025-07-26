@@ -1,6 +1,7 @@
 {
-  "name": "syntropyfront",
-  "version": "0.1.0",
+  "name": "@syntropysoft/syntropyfront",
+  "version": "0.1.0-alpha.1",
+  "type": "module",
   "description": "Advanced frontend tracing and error monitoring with reactive object tracking, worker architecture, and circular reference handling",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -50,13 +51,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/syntropylog/syntropy.git",
-    "directory": "syntropylogfront"
+    "url": "https://github.com/Syntropysoft/syntropyfront.git"
   },
   "bugs": {
-    "url": "https://github.com/syntropylog/syntropy/issues"
+    "url": "https://github.com/Syntropysoft/syntropyfront/issues"
   },
-  "homepage": "https://github.com/syntropylog/syntropy#readme",
+  "homepage": "https://github.com/Syntropysoft/syntropyfront#readme",
   "engines": {
     "node": ">=14.0.0"
   },

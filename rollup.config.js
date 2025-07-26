@@ -10,19 +10,22 @@ export default defineConfig({
       file: 'dist/index.js',
       format: 'esm',
       sourcemap: true,
-      exports: 'named'
+      exports: 'named',
+      inlineDynamicImports: true
     },
     {
       file: 'dist/index.cjs',
       format: 'cjs',
       sourcemap: true,
-      exports: 'named'
+      exports: 'named',
+      inlineDynamicImports: true
     },
     {
       file: 'dist/index.min.js',
       format: 'iife',
       name: 'SyntropyFront',
       sourcemap: true,
+      inlineDynamicImports: true,
       plugins: [terser()]
     }
   ],
