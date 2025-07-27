@@ -66,6 +66,12 @@ export class Interceptors {
      * Intercepta clics de usuario
      */
     setupClickInterceptor() {
+        // Solo configurar en el browser
+        if (typeof document === 'undefined') {
+            console.log('SyntropyFront: Click interceptor no disponible (no browser)');
+            return;
+        }
+
         const clickHandler = (event) => {
             const el = event.target;
             if (!el) return;
@@ -99,6 +105,12 @@ export class Interceptors {
      * Intercepta llamadas de red (fetch) con Chaining
      */
     setupFetchInterceptor() {
+        // Solo configurar en el browser
+        if (typeof window === 'undefined' || !window.fetch) {
+            console.log('SyntropyFront: Fetch interceptor no disponible (no browser/fetch)');
+            return;
+        }
+
         // Guardar referencia original
         this.originalHandlers.fetch = window.fetch;
         
@@ -129,6 +141,12 @@ export class Interceptors {
      * Intercepta errores globales con Chaining
      */
     setupErrorInterceptors() {
+        // Solo configurar en el browser
+        if (typeof window === 'undefined') {
+            console.log('SyntropyFront: Error interceptors no disponibles (no browser)');
+            return;
+        }
+
         if (this.config.captureErrors) {
             // Guardar referencia original
             this.originalHandlers.onerror = window.onerror;
@@ -245,10 +263,12 @@ export class Interceptors {
         }
 
         // ✅ LIMPIAR: Event listeners
-        this.eventListeners.forEach((handler, eventType) => {
-            document.removeEventListener(eventType, handler, true);
-            console.log(`SyntropyFront: Event listener ${eventType} removido`);
-        });
+        if (typeof document !== 'undefined') {
+            this.eventListeners.forEach((handler, eventType) => {
+                document.removeEventListener(eventType, handler, true);
+                console.log(`SyntropyFront: Event listener ${eventType} removido`);
+            });
+        }
 
         // Limpiar referencias
         this.originalHandlers = {

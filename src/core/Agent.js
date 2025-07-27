@@ -40,7 +40,8 @@ export class Agent {
      */
     async initPersistentBuffer() {
         try {
-            if (!window.indexedDB) {
+            // Verificar si estamos en el browser y IndexedDB está disponible
+            if (typeof window === 'undefined' || !window.indexedDB) {
                 console.warn('SyntropyFront: IndexedDB no disponible, usando solo memoria');
                 return;
             }

@@ -23,6 +23,13 @@ class WorkerManager {
      */
     setupWorker() {
         try {
+            // Solo crear worker en el browser
+            if (typeof window === 'undefined' || typeof Worker === 'undefined') {
+                console.log('WorkerManager: Worker no disponible (no browser/Worker)');
+                this.handleWorkerUnavailable();
+                return;
+            }
+
             // Crear worker
             this.worker = new Worker('./src/workers/SyntropyWorker.js');
             

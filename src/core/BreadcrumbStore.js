@@ -62,9 +62,13 @@ export class BreadcrumbStore {
             this.onBreadcrumbAdded(breadcrumb);
         }
         
-        // Enviar al agent si está configurado
-        if (this.agent) {
-            this.agent.sendBreadcrumbs([breadcrumb]);
+        // Enviar al agent si está configurado y habilitado
+        if (this.agent && this.agent.isEnabled) {
+            try {
+                this.agent.sendBreadcrumbs([breadcrumb]);
+            } catch (error) {
+                console.warn('SyntropyFront: Error enviando breadcrumb al agent:', error);
+            }
         }
     }
 
