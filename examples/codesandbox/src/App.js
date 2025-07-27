@@ -3,6 +3,7 @@ import './App.css';
 
 // Import hooks
 import { useSyntropyFront, useBreadcrumbs, useErrorSimulation, useDebugLogging, useClickCounter } from './hooks';
+import { useErrorInterceptor } from './useErrorInterceptor';
 
 // Import components
 import { Header, Actions, Breadcrumbs, Errors } from './components';
@@ -14,6 +15,9 @@ import { Header, Actions, Breadcrumbs, Errors } from './components';
 function App() {
   // Hook to integrate with SyntropyFront
   const { isReady, syntropyFront } = useSyntropyFront();
+
+  // Hook to integrate ErrorInterceptor
+  const { errorInterceptor, isErrorInterceptorInitialized } = useErrorInterceptor(syntropyFront);
 
   // Hook to handle breadcrumbs
   const { breadcrumbs, addBreadcrumb, clearBreadcrumbs } = useBreadcrumbs(syntropyFront, isReady);
@@ -64,7 +68,12 @@ function App() {
 
   return (
     <div className="App">
-      <Header isReady={isReady} syntropyFront={syntropyFront} />
+      <Header 
+        isReady={isReady} 
+        syntropyFront={syntropyFront} 
+        errorInterceptor={errorInterceptor}
+        isErrorInterceptorInitialized={isErrorInterceptorInitialized}
+      />
       
       <main className="App-main">
         <Actions 
