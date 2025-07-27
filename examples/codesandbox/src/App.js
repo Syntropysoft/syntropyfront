@@ -1,73 +1,63 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 
-// Hook simple para detectar cuando la app está lista
-import { useAppReady } from './hooks';
+// Importar hooks
+import { useSyntropyFront, useBreadcrumbs, useErrorSimulation, useDebugLogging } from './hooks';
 
 // Importar componentes
 import { Header, Actions, Breadcrumbs, Errors } from './components';
 
 /**
  * App - Orquesta los componentes
- * Responsabilidad única: Coordinar el estado y los componentes
+ * Responsabilidad única: Coordinar los componentes
  */
 function App() {
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [errors, setErrors] = useState([]);
 
-  // Hook simple para detectar cuando la app está lista
-  const isReady = useAppReady();
+  // Hook para integrar con SyntropyFront
+  const { isReady, syntropyFront } = useSyntropyFront();
 
-  // Simular breadcrumbs cuando la app esté lista
-  useEffect(() => {
-    if (isReady) {
-      const initialBreadcrumb = {
-        category: 'app',
-        message: 'React app loaded - SIN LIBRERÍA!',
-        timestamp: new Date().toISOString()
-      };
-      
-      setBreadcrumbs([initialBreadcrumb]);
-      console.log('📝 Breadcrumb:', initialBreadcrumb);
-    }
-  }, [isReady]);
+  // Hook para manejar breadcrumbs
+  const { breadcrumbs, addBreadcrumb, clearBreadcrumbs } = useBreadcrumbs(syntropyFront, isReady);
 
-  // Event handlers
+  // Hook para manejar error simulation
+  const { simulateError } = useErrorSimulation(addBreadcrumb);
+
+  // Hook para logging/debugging
+  const { 
+    logUserAction, 
+    logBreadcrumbAdded, 
+    logLibraryUnavailable,
+    logClearing,
+    logDataCleared,
+    logSimulatingError,
+    logExploding
+  } = useDebugLogging();
+
+  // Event handlers simples
   const handleUserAction = () => {
-    const breadcrumb = {
-      category: 'user',
-      message: 'Button clicked',
-      timestamp: new Date().toISOString()
-    };
-    
-    setBreadcrumbs(prev => [...prev, breadcrumb]);
-    console.log('📝 Breadcrumb:', breadcrumb);
+    logUserAction('Button clicked');
+    addBreadcrumb('user', 'Button clicked');
+    if (syntropyFront && syntropyFront.addBreadcrumb) {
+      logBreadcrumbAdded();
+    } else {
+      logLibraryUnavailable();
+    }
   };
 
   const handleSimulateError = () => {
-    // ¡REVENTAR DE VERDAD EN RUNTIME!
-    console.log('💥 Simulando error que va a reventar...');
-    
-    // Agregar breadcrumb antes del error
-    const errorBreadcrumb = {
-      category: 'error',
-      message: 'About to simulate error',
-      timestamp: new Date().toISOString()
-    };
-    setBreadcrumbs(prev => [...prev, errorBreadcrumb]);
-    
-    // ¡REVENTAR REALMENTE EN RUNTIME!
-    setTimeout(() => {
-      // Esto va a reventar de verdad en runtime
-      const obj = null;
-      console.log(obj.nonExistentProperty); // TypeError: Cannot read property 'nonExistentProperty' of null
-    }, 100);
+    logSimulatingError();
+    simulateError();
+    logExploding();
   };
 
   const handleClearData = () => {
-    setBreadcrumbs([]);
+    logClearing();
+    clearBreadcrumbs();
+    if (syntropyFront && syntropyFront.clearBreadcrumbs) {
+      logDataCleared();
+    }
     setErrors([]);
-    console.log('🧹 Data cleared');
   };
 
   return (

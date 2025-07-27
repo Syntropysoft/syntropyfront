@@ -19,7 +19,7 @@ class SyntropyFront {
 
     init() {
         this.isActive = true;
-        this.logger.log('✅ SyntropyFront: Listo para usar');
+        // No loggear nada en inicialización
     }
 
     // Delegar a BreadcrumbManager
@@ -27,7 +27,7 @@ class SyntropyFront {
         if (!this.isActive) return;
         
         const breadcrumb = this.breadcrumbManager.add(category, message, data);
-        this.logger.log('📝 Breadcrumb:', breadcrumb);
+        // No loggear breadcrumbs - solo almacenar
         return breadcrumb;
     }
 
@@ -44,7 +44,7 @@ class SyntropyFront {
         if (!this.isActive) return;
         
         const errorData = this.errorManager.send(error, context);
-        this.logger.error('❌ Error:', errorData);
+        this.logger.error('❌ Error:', errorData); // SOLO errores se loggean
         return errorData;
     }
 

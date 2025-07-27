@@ -4,6 +4,7 @@
   "description": "SyntropyFront React Demo",
   "main": "index.js",
   "dependencies": {
+    "@syntropyfront/interceptors": "^0.1.0-alpha.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1"
@@ -26,4 +27,4 @@
       "last 1 safari version"
     ]
   }
-} 
+}

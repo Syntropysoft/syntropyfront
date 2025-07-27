@@ -1,183 +1,242 @@
-# SyntropyFront React Demo - CodeSandbox
+# React + SyntropyFront Boilerplate
 
-This is a complete React application demonstrating SyntropyFront's capabilities in a CodeSandbox environment.
+Un boilerplate limpio y moderno para React con integración de SyntropyFront, siguiendo principios SOLID y Clean Code.
 
-## 🚀 Features Demonstrated
+## 🚀 Características
 
-- ✅ **SyntropyFront Initialization** with debug preset
-- ✅ **Reactive Object Tracking** with Proxy objects
-- ✅ **Breadcrumb System** for user action tracking
-- ✅ **Error Handling** and reporting
-- ✅ **Real-time UI Updates** showing breadcrumbs and errors
-- ✅ **Network Error Simulation** for testing
-- ✅ **Statistics Dashboard** with proxy tracking stats
-- ✅ **Live Log Collection** with real-time monitoring
-- ✅ **Data Dump Visualization** showing actual payloads sent to endpoints
+- **⚛️ React 18** - Con hooks modernos
+- **🎯 SOLID Principles** - Single Responsibility Principle aplicado
+- **🧹 Clean Code** - Componentización y separación de responsabilidades
+- **📊 SyntropyFront** - Integración simple y automática
+- **🎨 CSS Moderno** - Styling hermoso y responsive
+- **🔧 Configuración completa** - ESLint, Prettier, etc.
 
-## 🎯 Interactive Elements
+## 📦 Instalación
 
-### User Profile Form
-- **Proxy-tracked object** that automatically logs changes
-- **Real-time updates** when form fields change
-- **Theme selection** with preference tracking
+```bash
+# Clonar el boilerplate
+git clone <repository-url>
+cd react-syntropyfront-boilerplate
 
-### Action Buttons
-- **Add Breadcrumb** - Manually add breadcrumbs
-- **Simulate Error** - Generate test errors
-- **Simulate Network Error** - Test network error handling
-- **Get Stats** - View SyntropyFront statistics
-- **View Console Dumps** - See actual data being sent to endpoints
-- **Clear Data** - Reset breadcrumbs and errors
+# Instalar dependencias
+npm install
 
-### Real-time Displays
-- **Breadcrumbs List** - Shows last 5 breadcrumbs with live updates
-- **Logs Sent to Endpoint** - Displays logs being sent to the server
-- **Data Dumps** - Shows actual payloads with metadata and batch information
-- **Errors List** - Displays captured errors with context
-- **Status Indicator** - Shows initialization status and last activity
-
-## 🔧 Configuration
-
-The demo uses the **debug preset** for maximum visibility:
-
-```javascript
-await SyntropyFront.init({
-  preset: 'debug',
-  agent: {
-    endpoint: 'https://httpbin.org/post', // Test endpoint
-    batchTimeout: 5000
-  }
-});
+# Iniciar desarrollo
+npm start
 ```
 
-## 📦 Import Strategy
+## 🏗️ Arquitectura
 
-This demo uses a **local copy** of SyntropyFront for CodeSandbox compatibility:
-
-```javascript
-// Local import for CodeSandbox demo
-import SyntropyFront from './syntropyfront.cjs';
+### **Estructura de Carpetas**
+```
+src/
+├── components/          # Componentes React
+│   ├── Header.js       # Header de la app
+│   ├── Actions.js      # Botones de acción
+│   ├── Breadcrumbs.js  # Lista de breadcrumbs
+│   ├── Errors.js       # Lista de errores
+│   └── index.js        # Exportaciones
+├── hooks/              # Custom hooks
+│   ├── useAppReady.js  # Detección de app ready
+│   ├── useSyntropyFront.js # Integración con librería
+│   └── index.js        # Exportaciones
+├── config/             # Configuraciones
+├── utils/              # Utilidades
+└── App.js              # Componente principal
 ```
 
-**Why local import?**
-- CodeSandbox has specific module resolution requirements
-- Ensures consistent behavior across different environments
-- Avoids npm package compatibility issues
-- Provides immediate access to the latest version
+### **Principios SOLID Aplicados**
 
-## 📊 How Log Collection Works
+#### **Single Responsibility Principle (SRP)**
+- Cada componente tiene una sola responsabilidad
+- Cada hook maneja una sola funcionalidad
+- Separación clara entre UI y lógica
 
-### 1. **Real-time Breadcrumb Monitoring**
-- Breadcrumbs are updated every 500ms via `setInterval`
-- UI automatically reflects new breadcrumbs as they're added
-- Last activity timestamp shows when the most recent action occurred
+#### **Componentes**
+- `Header` - Solo muestra el header
+- `Actions` - Solo maneja botones
+- `Breadcrumbs` - Solo muestra breadcrumbs
+- `Errors` - Solo muestra errores
 
-### 2. **Log Transmission Simulation**
-- Logs are "sent" to the endpoint every 3 seconds
-- The demo simulates the batching process that SyntropyFront uses
-- You can see which logs have been transmitted and when
+#### **Hooks**
+- `useAppReady` - Solo detecta cuando la app está lista
+- `useSyntropyFront` - Solo integra con la librería
 
-### 3. **Data Dump Console Output** 🆕
-- **Actual payloads are logged to browser console** every 3 seconds
-- Each dump includes complete data structure that would be sent to a real endpoint
-- **Open browser console (F12)** to see the raw data being transmitted
-- Payload includes: breadcrumbs, user profile, session info, and metadata
+## 🎯 Uso
 
-### 4. **Error Capture & Reporting**
-- Errors are captured immediately when thrown
-- Each error includes context, timestamp, and message
-- Errors are sent to the endpoint along with breadcrumbs
-
-### 5. **Proxy Object Tracking**
-- User profile changes are automatically tracked
-- Object modifications trigger breadcrumbs automatically
-- No manual intervention required for object monitoring
-
-## 📊 What You'll See
-
-1. **Initialization** - Status changes from "Initializing..." to "Initialized"
-2. **Breadcrumbs** - Appear instantly when you interact with the form
-3. **Log Transmission** - Watch logs being "sent" to the endpoint every 3 seconds
-4. **Data Dumps** - See actual payloads with batch IDs and metadata
-5. **Console Output** - **Open F12 to see raw data being sent to endpoints**
-6. **Error Tracking** - Errors are captured and displayed in real-time
-7. **Proxy Tracking** - Object changes are automatically logged
-8. **Statistics** - Click "Get Stats" to see detailed metrics
-9. **Last Activity** - Real-time timestamp of the most recent action
-
-## 🔍 Console Data Dumps
-
-**The most important feature:** Open your browser's developer console (F12) to see the actual data being sent to endpoints:
-
+### **Integración Simple**
 ```javascript
-// Example console output:
-📤 DATA DUMP SENT TO ENDPOINT: {
-  timestamp: "2024-01-15T10:30:45.123Z",
-  endpoint: "https://httpbin.org/post",
-  batchId: "batch_1705315845123",
-  payload: {
-    breadcrumbs: [...],
-    userProfile: {...},
-    sessionInfo: {
-      userAgent: "...",
-      url: "...",
-      timestamp: "..."
-    }
+import { useSyntropyFront } from './hooks';
+
+function App() {
+  const { isReady, syntropyFront } = useSyntropyFront();
+  
+  // Usar la librería
+  const handleClick = () => {
+    syntropyFront.addBreadcrumb('user', 'Button clicked');
+  };
+}
+```
+
+### **Agregar Nuevos Componentes**
+```javascript
+// 1. Crear componente con responsabilidad única
+export const NewComponent = ({ data }) => {
+  return <div>Componente con responsabilidad única</div>;
+};
+
+// 2. Agregar al index
+export { NewComponent } from './NewComponent';
+
+// 3. Usar en App.js
+import { NewComponent } from './components';
+```
+
+## 🔧 Configuración
+
+### **ESLint**
+```json
+{
+  "extends": [
+    "react-app",
+    "react-app/jest"
+  ],
+  "rules": {
+    "react-hooks/exhaustive-deps": "warn"
   }
 }
-📊 PAYLOAD SIZE: 2048 bytes
 ```
 
-This shows exactly what a real endpoint would receive from SyntropyFront.
+### **Prettier**
+```json
+{
+  "semi": true,
+  "trailingComma": "es5",
+  "singleQuote": true,
+  "printWidth": 80
+}
+```
+
+## 📊 SyntropyFront Integration
+
+### **Auto-inicialización**
+La librería se inicializa automáticamente cuando se importa:
+
+```javascript
+import syntropyFront from './syntropyfront.js';
+// ¡Listo! Ya está inicializada
+```
+
+### **Métodos Disponibles**
+```javascript
+// Agregar breadcrumb
+syntropyFront.addBreadcrumb('category', 'message', data);
+
+// Obtener breadcrumbs
+const breadcrumbs = syntropyFront.getBreadcrumbs();
+
+// Limpiar breadcrumbs
+syntropyFront.clearBreadcrumbs();
+
+// Enviar error
+syntropyFront.sendError(error, context);
+```
 
 ## 🎨 Styling
 
-The demo features:
-- **Modern gradient design** with purple/blue theme
-- **Responsive layout** that works on mobile
-- **Smooth animations** and hover effects
-- **Clean typography** with system fonts
-- **Color-coded sections** for different types of data
+### **CSS Moderno**
+- **Grid Layout** - Para layouts complejos
+- **Flexbox** - Para alineaciones
+- **CSS Variables** - Para temas
+- **Responsive Design** - Mobile-first
 
-## 🐛 Troubleshooting
-
-If the demo doesn't work:
-1. Check the browser console for errors
-2. Ensure JavaScript is enabled
-3. Try refreshing the page
-4. Check that all dependencies are loaded
-
-## 🔗 Next Steps
-
-After exploring this demo:
-1. **Try different presets** (safe, balanced, performance)
-2. **Add your own tracking** to the user profile
-3. **Experiment with error simulation**
-4. **Check console dumps** to see actual data transmission
-5. **Integrate into your own React app**
-
-## 📈 Understanding the Data Flow
-
-```
-User Action → SyntropyFront.addBreadcrumb() → UI Update (500ms) → Log Transmission (3s)
-     ↓
-Proxy Object Change → Automatic Tracking → Breadcrumb Generation → Real-time Display
-     ↓
-Error Occurs → SyntropyFront.sendError() → Error Display → Context Preservation
-     ↓
-Data Dump → Console Log → Endpoint Simulation → Payload Visualization
+### **Clases Principales**
+```css
+.App-header          /* Header con gradiente */
+.demo-section        /* Secciones con cards */
+.action-buttons      /* Botones estilizados */
+.breadcrumbs-list    /* Lista de breadcrumbs */
+.errors-list         /* Lista de errores */
 ```
 
-This demonstrates the complete observability pipeline from user interaction to data transmission.
+## 🧪 Testing
 
-## 🎯 Key Learning Points
+### **Estructura de Tests**
+```
+__tests__/
+├── components/       # Tests de componentes
+├── hooks/           # Tests de hooks
+└── utils/           # Tests de utilidades
+```
 
-- **Real-time monitoring** - See data flow as it happens
-- **Console integration** - Understand what endpoints actually receive
-- **Batching behavior** - Learn how SyntropyFront optimizes network requests
-- **Context preservation** - See how user state is maintained across requests
-- **Error handling** - Observe how errors are captured and transmitted
+### **Ejemplo de Test**
+```javascript
+import { render, screen } from '@testing-library/react';
+import { Header } from '../components/Header';
+
+test('Header muestra el título correcto', () => {
+  render(<Header isReady={true} />);
+  expect(screen.getByText(/React App/)).toBeInTheDocument();
+});
+```
+
+## 🚀 Scripts Disponibles
+
+```bash
+npm start          # Desarrollo
+npm test           # Tests
+npm run build      # Build de producción
+npm run eject      # Eject (irreversible)
+```
+
+## 📝 Convenciones
+
+### **Naming**
+- **Componentes**: PascalCase (`Header.js`)
+- **Hooks**: camelCase (`useAppReady.js`)
+- **Archivos**: kebab-case para utilidades (`date-utils.js`)
+
+### **Imports**
+```javascript
+// Componentes
+import { Header, Actions } from './components';
+
+// Hooks
+import { useSyntropyFront } from './hooks';
+
+// Utilidades
+import { formatDate } from './utils/date-utils';
+```
+
+### **Comentarios**
+```javascript
+/**
+ * Componente con responsabilidad única
+ * @param {Object} props - Props del componente
+ * @returns {JSX.Element} Componente renderizado
+ */
+```
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit los cambios (`git commit -am 'Agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia Apache 2.0 - ver el archivo [LICENSE](LICENSE) para detalles.
+
+## 🆘 Soporte
+
+Si tienes problemas o preguntas:
+
+1. Revisa la [documentación](docs/)
+2. Busca en [issues](../../issues)
+3. Crea un nuevo issue con detalles del problema
 
 ---
 
-**Happy coding! 🎉** 
+**¡Disfruta del boilerplate! 🎉** 
