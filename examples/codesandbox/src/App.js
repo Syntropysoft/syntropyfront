@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import './css/App.css';
 
-// Import SyntropyFront - ¡Se auto-inicializa!
+// Import SyntropyFront - Auto-initializes!
 import syntropyFront from 'syntropyfront';
 
 /**
- * App - Demo minimalista de SyntropyFront
- * Single responsibility: Demostrar que funciona con 2 líneas de código
+ * App - Minimalist SyntropyFront Demo
+ * Single responsibility: Demonstrate it works with 1 line of code
  */
 function App() {
   const [clickCount, setClickCount] = useState(0);
   const [stats, setStats] = useState(null);
   const [configMode, setConfigMode] = useState('console'); // 'console', 'jsonplaceholder', 'custom'
 
-  // Configurar SyntropyFront cuando la app se monta
+  // Configure SyntropyFront when app mounts
   useEffect(() => {
     let fetchConfig = null;
 
     if (configMode === 'jsonplaceholder') {
-      // Usar JSONPlaceholder que permite CORS
+      // Use JSONPlaceholder which allows CORS
       fetchConfig = {
         url: 'https://jsonplaceholder.typicode.com/posts',
         options: {
@@ -29,9 +29,9 @@ function App() {
         },
       };
     } else if (configMode === 'custom') {
-      // Configuración personalizada (ejemplo)
+      // Custom configuration (example)
       fetchConfig = {
-        url: 'https://httpbin.org/post', // Permite CORS
+        url: 'https://httpbin.org/post', // Allows CORS
         options: {
           headers: {
             'Content-Type': 'application/json',
@@ -41,15 +41,15 @@ function App() {
         },
       };
     }
-    // Si es 'console', fetchConfig queda null
+    // If 'console', fetchConfig remains null
 
-    // Configurar SyntropyFront
+    // Configure SyntropyFront
     syntropyFront.configure({
-      maxEvents: 20, // Mantener solo los últimos 20 eventos
+      maxEvents: 20, // Keep only the last 20 events
       fetch: fetchConfig,
     });
 
-    // Actualizar stats cada segundo
+    // Update stats every second
     const interval = setInterval(() => {
       setStats(syntropyFront.getStats());
     }, 1000);
@@ -59,43 +59,43 @@ function App() {
 
   const handleClick = () => {
     setClickCount((prev) => prev + 1);
-    console.log('Click registrado!');
+    console.log('Click registered!');
   };
 
   const handleError = () => {
-    throw new Error('Error simulado para probar SyntropyFront');
+    throw new Error('Simulated error to test SyntropyFront');
   };
 
   const handleFetch = async () => {
     try {
       await fetch('https://jsonplaceholder.typicode.com/posts/1');
-      console.log('Fetch exitoso!');
+      console.log('Fetch successful!');
     } catch (error) {
-      console.error('Fetch falló:', error);
+      console.error('Fetch failed:', error);
     }
   };
 
   const handleManualBreadcrumb = () => {
-    syntropyFront.addBreadcrumb('user', 'Breadcrumb manual agregado');
-    console.log('Breadcrumb manual agregado!');
+    syntropyFront.addBreadcrumb('user', 'Manual breadcrumb added');
+    console.log('Manual breadcrumb added!');
   };
 
   const handleManualError = () => {
-    syntropyFront.sendError(new Error('Error manual enviado'));
-    console.log('Error manual enviado!');
+    syntropyFront.sendError(new Error('Manual error sent'));
+    console.log('Manual error sent!');
   };
 
   return (
     <div className='App'>
       <header className='App-header'>
         <h1>🚀 SyntropyFront Demo</h1>
-        <p>Librería de observabilidad con captura automática</p>
+        <p>Observability library with automatic capture</p>
         <div className='status'>
-          <span>✅ SyntropyFront cargado y funcionando</span>
+          <span>✅ SyntropyFront loaded and working</span>
           {stats && (
             <div className='stats'>
               <span>📊 Breadcrumbs: {stats.breadcrumbs}</span>
-              <span>🚨 Errores: {stats.errors}</span>
+              <span>🚨 Errors: {stats.errors}</span>
               <span>📤 Endpoint: {stats.endpoint}</span>
             </div>
           )}
@@ -104,13 +104,13 @@ function App() {
 
       <main className='App-main'>
         <div className='config-selector'>
-          <h3>🔧 Configuración de Endpoint:</h3>
+          <h3>🔧 Endpoint Configuration:</h3>
           <div className='config-buttons'>
             <button
               onClick={() => setConfigMode('console')}
               className={configMode === 'console' ? 'active' : ''}
             >
-              Solo Console
+              Console Only
             </button>
             <button
               onClick={() => setConfigMode('jsonplaceholder')}
@@ -132,36 +132,36 @@ function App() {
 
           <button onClick={handleFetch}>Test HTTP Request</button>
 
-          <button onClick={handleManualBreadcrumb}>Agregar Breadcrumb Manual</button>
+          <button onClick={handleManualBreadcrumb}>Add Manual Breadcrumb</button>
 
-          <button onClick={handleManualError}>Enviar Error Manual</button>
+          <button onClick={handleManualError}>Send Manual Error</button>
 
           <button onClick={handleError} style={{ backgroundColor: '#ff4444' }}>
-            Simular Error
+            Simulate Error
           </button>
         </div>
 
         <div className='info'>
-          <h3>¿Qué hace SyntropyFront automáticamente?</h3>
+          <h3>What does SyntropyFront do automatically?</h3>
           <ul>
-            <li>🎯 Captura todos los clicks</li>
-            <li>🚨 Detecta errores automáticamente</li>
-            <li>🌐 Intercepta llamadas HTTP</li>
-            <li>📝 Registra console logs</li>
-            <li>💾 Mantiene los últimos N eventos (configurable)</li>
-            <li>📤 Postea errores con configuración completa de fetch</li>
+            <li>🎯 Captures all clicks</li>
+            <li>🚨 Detects errors automatically</li>
+            <li>🌐 Intercepts HTTP calls</li>
+            <li>📝 Records console logs</li>
+            <li>💾 Keeps the last N events (configurable)</li>
+            <li>📤 Posts errors with complete fetch configuration</li>
           </ul>
 
-          <h3>¿Cómo configurar fetch?</h3>
+          <h3>How to configure fetch?</h3>
           <pre>
             {`import syntropyFront from 'syntropyfront';
 
-// Opción 1: Solo console (sin configuración)
+// Option 1: Console only (no configuration)
 syntropyFront.configure({
   maxEvents: 50
 });
 
-// Opción 2: Con endpoint que permite CORS
+// Option 2: With endpoint that allows CORS
 syntropyFront.configure({
   maxEvents: 50,
   fetch: {
@@ -175,15 +175,15 @@ syntropyFront.configure({
   }
 });
 
-// Opción 3: Con tu API (necesita CORS configurado)
+// Option 3: With your API (needs CORS configured)
 syntropyFront.configure({
   maxEvents: 50,
   fetch: {
-    url: 'https://tu-api.com/errors',
+    url: 'https://your-api.com/errors',
     options: {
       headers: {
-        'Authorization': 'Bearer tu-token',
-        'X-API-Key': 'tu-api-key',
+        'Authorization': 'Bearer your-token',
+        'X-API-Key': 'your-api-key',
         'Content-Type': 'application/json',
       },
       mode: 'cors',
@@ -192,16 +192,16 @@ syntropyFront.configure({
   }
 });
 
-// ¡Ya está! Se auto-inicializa`}
+// Ready! Auto-initializes`}
           </pre>
 
-          <h3>⚠️ Nota sobre CORS:</h3>
+          <h3>⚠️ Note about CORS:</h3>
           <p>
-            Para que funcione con tu API, necesitas configurar CORS en tu servidor para permitir requests desde tu dominio.
-            Los endpoints de ejemplo (JSONPlaceholder, HttpBin) ya tienen CORS configurado.
+            To work with your API, you need to configure CORS on your server to allow requests from your domain.
+            The example endpoints (JSONPlaceholder, HttpBin) already have CORS configured.
           </p>
 
-          <h3>¿Qué se postea?</h3>
+          <h3>What gets posted?</h3>
           <pre>
             {`{
   "type": "uncaught_exception",
@@ -219,21 +219,21 @@ syntropyFront.configure({
       "data": { "element": "BUTTON", "x": 100, "y": 200 },
       "timestamp": "2024-01-01T12:00:00.000Z"
     }
-    // ... últimos N eventos
+    // ... last N events
   ],
   "timestamp": "2024-01-01T12:00:00.000Z"
 }`}
           </pre>
 
           <p>
-            <strong>¡Solo necesitas 1 línea de código básico!</strong>
+            <strong>You only need 1 line of basic code!</strong>
           </p>
           <p>
-            <strong>Si le das un endpoint, se postea ahí, si no, se postea en la consola</strong>
+            <strong>If you give it an endpoint, it posts there, if not, it posts to console</strong>
           </p>
           <pre>
             {`import syntropyFront from 'syntropyfront';
-// ¡Ya está! Se auto-inicializa`}
+// Ready! Auto-initializes`}
           </pre>
         </div>
       </main>

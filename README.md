@@ -1,322 +1,256 @@
-<p align="center">
-  <img src="./assets/syntropysoft-logo.png" alt="SyntropyLog Logo" width="170"/>
-</p>
+# SyntropyFront
 
-<h1 align="center">SyntropyFront</h1>
+🚀 **Observability library with automatic capture - Just 1 line of code!**
 
-<p align="center">
-  <strong>From Chaos to Clarity</strong>
-  <br />
-  The Observability Framework for High-Performance Teams
-</p>
-<p align="center">
-  Advanced frontend tracing and error monitoring with reactive object tracking, worker architecture, and circular reference handling
-  <br />
-</p>
+SyntropyFront automatically captures user interactions, errors, HTTP calls, and console logs, providing comprehensive observability for your web applications with minimal setup.
 
-## 🚀 Features
+## ✨ Features
 
-- **🔄 Reactive Object Tracking** - Real-time object state tracking using JavaScript Proxies
-- **⚡ Worker Architecture** - Non-blocking data collection and processing
-- **🛡️ Circular Reference Handling** - Robust serialization for complex objects
-- **🎯 Configuration Presets** - Pre-configured setups for different use cases
-- **📦 Lazy Loading** - Dynamic module loading for optimal bundle size
-- **🔗 Framework Agnostic** - Works with any JavaScript framework
-- **📊 Breadcrumb System** - Comprehensive user action tracking
-- **🔄 Automatic Retry** - Exponential backoff with persistent buffer
-- **🔒 Privacy First** - Granular context collection with opt-in sensitive data
+- 🎯 **Automatic click capture** - Tracks all user interactions
+- 🚨 **Error detection** - Catches uncaught exceptions and promise rejections
+- 🌐 **HTTP monitoring** - Intercepts fetch calls automatically
+- 📝 **Console logging** - Records console.log, console.error, console.warn
+- 💾 **Smart storage** - Keeps the last N events (configurable)
+- 📤 **Flexible posting** - Posts errors to your endpoint or logs to console
+- ⚡ **Zero configuration** - Works out of the box with just an import
+
+## 🚀 Quick Start
+
+### Basic Usage (1 line of code!)
+
+```javascript
+import syntropyFront from 'syntropyfront';
+// That's it! Auto-initializes and captures everything automatically
+```
+
+### With Custom Configuration
+
+```javascript
+import syntropyFront from 'syntropyfront';
+
+// Optional: Configure endpoint and event limit
+syntropyFront.configure({
+  maxEvents: 50, // Keep last 50 events
+  fetch: {
+    url: 'https://your-api.com/errors',
+    options: {
+      headers: {
+        'Authorization': 'Bearer your-token',
+        'Content-Type': 'application/json'
+      },
+      mode: 'cors'
+    }
+  }
+});
+```
 
 ## 📦 Installation
 
 ```bash
 npm install syntropyfront
-```
+## 🎯 How It Works
 
-## 🎯 Quick Start
+SyntropyFront automatically:
 
-```javascript
-import { SyntropyFront } from 'syntropyfront';
+1. **Captures clicks** - Records element info, coordinates, and timestamps
+2. **Detects errors** - Intercepts `window.onerror` and `window.onunhandledrejection`
+3. **Monitors HTTP** - Wraps `window.fetch` to track requests and responses
+4. **Logs console** - Intercepts console methods to capture debug info
+5. **Maintains context** - Keeps the last N events as breadcrumbs
+6. **Posts errors** - Sends error data with full context to your endpoint
 
-// Initialize with balanced preset
-await SyntropyFront.init({
-  preset: 'balanced',
-  agent: {
-    endpoint: 'https://your-api.com/errors'
-  }
-});
+## 📊 What Gets Captured
 
-// Add reactive object tracking
-const userProfile = SyntropyFront.addProxyObject('userProfile', {
-  name: 'John Doe',
-  preferences: { theme: 'dark' }
-});
+### Error Payload Structure
 
-// Track user actions automatically
-// Error handling is automatic
-```
-
-## ⚙️ Configuration Presets
-
-### Safe Preset
-```javascript
-await SyntropyFront.init({
-  preset: 'safe',
-  agent: { endpoint: 'https://api.com/errors' }
-});
-```
-- **Use case**: Production environments with privacy concerns
-- **Features**: Errors only, minimal context, no tracking
-- **Bundle size**: ~25KB
-
-### Balanced Preset (Default)
-```javascript
-await SyntropyFront.init({
-  preset: 'balanced',
-  agent: { endpoint: 'https://api.com/errors' }
-});
-```
-- **Use case**: General production use
-- **Features**: Periodic sending, curated context, moderate tracking
-- **Bundle size**: ~60KB
-
-### Debug Preset
-```javascript
-await SyntropyFront.init({
-  preset: 'debug',
-  agent: { endpoint: 'https://api.com/errors' }
-});
-```
-- **Use case**: Development and debugging
-- **Features**: Frequent sending, full context, complete tracking
-- **Bundle size**: ~60KB
-
-### Performance Preset
-```javascript
-await SyntropyFront.init({
-  preset: 'performance',
-  agent: { endpoint: 'https://api.com/errors' }
-});
-```
-- **Use case**: High-performance applications
-- **Features**: Critical errors only, minimal overhead
-- **Bundle size**: ~25KB
-
-## 🔄 Reactive Object Tracking
-
-Track object changes in real-time using JavaScript Proxies:
-
-```javascript
-// Add object for tracking
-const userProfile = SyntropyFront.addProxyObject('userProfile', {
-  name: 'John Doe',
-  preferences: { theme: 'dark' }
-});
-
-// Changes are automatically tracked
-userProfile.name = 'Jane Doe';
-userProfile.preferences.theme = 'light';
-
-// Get tracking history
-const history = SyntropyFront.getProxyObjectHistory('userProfile');
-const currentState = SyntropyFront.getProxyObjectState('userProfile');
-```
-
-## ⚡ Worker Architecture
-
-Offload data processing to Web Workers for non-blocking operation:
-
-```javascript
-// Worker is automatically used when enabled
-await SyntropyFront.init({
-  useWorker: true,
-  // ... other config
-});
-
-// Check worker status
-const isAvailable = SyntropyFront.isWorkerAvailable();
-const status = SyntropyFront.getWorkerStatus();
-```
-
-## 🛡️ Circular Reference Handling
-
-Safely serialize complex objects with circular references:
-
-```javascript
-// Create circular reference
-const obj = { name: 'test' };
-obj.self = obj;
-
-// SyntropyFront handles this automatically
-SyntropyFront.sendError(new Error('Test'), { context: obj });
-```
-
-## 📊 Breadcrumb System
-
-Track user actions and application events:
-
-```javascript
-// Add custom breadcrumbs
-SyntropyFront.addBreadcrumb('user', 'User clicked button', {
-  buttonId: 'submit',
-  timestamp: Date.now()
-});
-
-// Get breadcrumbs
-const breadcrumbs = SyntropyFront.getBreadcrumbs();
-```
-
-## 🔗 Framework Integration
-
-### React
-```javascript
-// In your main App component
-useEffect(() => {
-  SyntropyFront.init({
-    preset: 'balanced',
-    agent: { endpoint: 'https://api.com/errors' }
-  });
-}, []);
-```
-
-### Vue
-```javascript
-// In your main.js
-import { createApp } from 'vue';
-import App from './App.vue';
-
-const app = createApp(App);
-
-// Initialize SyntropyFront
-SyntropyFront.init({
-  preset: 'balanced',
-  agent: { endpoint: 'https://api.com/errors' }
-});
-
-app.mount('#app');
-```
-
-### Angular
-```typescript
-// In your main.ts
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
-import { AppModule } from './app/app.module';
-
-// Initialize SyntropyFront
-SyntropyFront.init({
-  preset: 'balanced',
-  agent: { endpoint: 'https://api.com/errors' }
-});
-
-platformBrowserDynamic().bootstrapModule(AppModule);
-```
-
-## 📚 API Reference
-
-### Core Methods
-
-#### `SyntropyFront.init(config)`
-Initialize SyntropyFront with configuration.
-
-#### `SyntropyFront.addProxyObject(name, object, options)`
-Add an object for reactive tracking.
-
-#### `SyntropyFront.getProxyObjectHistory(name)`
-Get the change history of a tracked object.
-
-#### `SyntropyFront.addBreadcrumb(type, message, data)`
-Add a breadcrumb entry.
-
-#### `SyntropyFront.sendError(error, context)`
-Send an error with context to the backend.
-
-### Configuration Options
-
-```javascript
+```json
 {
-  preset: 'balanced', // 'safe' | 'balanced' | 'debug' | 'performance'
-  agent: {
-    endpoint: 'https://api.com/errors',
-    batchTimeout: 10000,
-    batchSize: 20,
-    maxRetries: 3,
-    usePersistentBuffer: true
+  "type": "uncaught_exception",
+  "error": {
+    "message": "Error message",
+    "source": "file.js",
+    "lineno": 42,
+    "colno": 15,
+    "stack": "Error stack trace..."
   },
-  proxyTracking: {
-    enabled: true,
-    maxStates: 10,
-    trackNested: true,
-    trackArrays: true
-  },
-  useWorker: true,
-  maxBreadcrumbs: 50,
-  context: {
-    device: true,
-    window: true,
-    session: true,
-    ui: true,
-    network: true
-  }
+  "breadcrumbs": [
+    {
+      "category": "user",
+      "message": "click",
+      "data": {
+        "element": "BUTTON",
+        "id": "submit-btn",
+        "className": "btn-primary",
+        "x": 100,
+        "y": 200
+      },
+      "timestamp": "2024-01-01T12:00:00.000Z"
+    }
+  ],
+  "timestamp": "2024-01-01T12:00:00.000Z"
 }
 ```
 
-## 🧪 Testing
+### Breadcrumb Categories
 
-```bash
-# Run tests
-npm test
+- **`user`** - Click events, form submissions, etc.
+- **`http`** - Fetch requests, responses, and errors
+- **`console`** - Console.log, console.error, console.warn
+- **`error`** - Manual error reports
 
-# Run tests in watch mode
-npm run test:watch
+## ⚙️ Configuration Options
 
-# Run tests with coverage
-npm run test:coverage
+### Basic Configuration
+
+```javascript
+syntropyFront.configure({
+  maxEvents: 50 // Number of events to keep in memory
+});
 ```
 
-## 🏗️ Development
+### With Endpoint
 
-```bash
-# Install dependencies
-npm install
-
-# Build the package
-npm run build
-
-# Build in watch mode
-npm run dev
-
-# Lint code
-npm run lint
-
-# Fix linting issues
-npm run lint:fix
+```javascript
+syntropyFront.configure({
+  maxEvents: 50,
+  fetch: {
+    url: 'https://your-api.com/errors',
+    options: {
+      headers: {
+        'Authorization': 'Bearer your-token',
+        'X-API-Key': 'your-api-key',
+        'Content-Type': 'application/json'
+      },
+      mode: 'cors',
+      credentials: 'include'
+    }
+  }
+});
 ```
 
-## 📦 Build Outputs
+## 🔧 API Reference
 
-The build process generates multiple formats:
+### Core Methods
 
-- **ESM** (`dist/index.js`) - Modern ES modules
-- **CommonJS** (`dist/index.cjs`) - Node.js compatibility
-- **IIFE** (`dist/index.min.js`) - Browser-ready minified bundle
+```javascript
+// Add custom breadcrumb
+syntropyFront.addBreadcrumb('user', 'Custom action', { data: 'value' });
 
-## 🤝 Contributing
+// Send manual error
+syntropyFront.sendError(new Error('Custom error'));
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+// Get current breadcrumbs
+const breadcrumbs = syntropyFront.getBreadcrumbs();
+
+// Clear breadcrumbs
+syntropyFront.clearBreadcrumbs();
+
+// Get statistics
+const stats = syntropyFront.getStats();
+// Returns: { breadcrumbs: 5, errors: 2, isActive: true, maxEvents: 50, endpoint: 'console' }
+```
+
+## 🌐 CORS Configuration
+
+To use with your API, ensure your server allows CORS:
+
+```javascript
+// Express.js example
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
+
+// Or in headers
+res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+res.setHeader('Access-Control-Allow-Methods', 'POST');
+res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+```
+
+## 📱 Framework Support
+
+SyntropyFront works with any JavaScript framework:
+
+- ✅ **React** - Works out of the box
+- ✅ **Vue** - Works out of the box  
+- ✅ **Angular** - Works out of the box
+- ✅ **Svelte** - Works out of the box
+- ✅ **Vanilla JS** - Works out of the box
+
+## 🎯 Examples
+
+### React Example
+
+```jsx
+import React from 'react';
+import syntropyFront from 'syntropyfront';
+
+function App() {
+  // SyntropyFront auto-initializes on import
+  return (
+    <div>
+      <button onClick={() => console.log('Button clicked')}>
+        Click me!
+      </button>
+    </div>
+  );
+}
+```
+
+### Vue Example
+
+```vue
+<template>
+  <button @click="handleClick">Click me!</button>
+</template>
+
+<script>
+import syntropyFront from 'syntropyfront';
+
+export default {
+  methods: {
+    handleClick() {
+      console.log('Button clicked');
+    }
+  }
+}
+</script>
+```
+
+### Manual Error Reporting
+
+```javascript
+import syntropyFront from 'syntropyfront';
+
+try {
+  // Your code here
+} catch (error) {
+  // SyntropyFront will automatically capture this
+  throw error;
+}
+
+// Or manually report
+syntropyFront.sendError(new Error('Something went wrong'));
+```
+
+## 🔍 Debugging
+
+SyntropyFront logs helpful information to the console:
+
+```
+🚀 SyntropyFront: Initialized with automatic capture
+✅ SyntropyFront: Configured - maxEvents: 50, endpoint: https://your-api.com/errors
+❌ Error: { type: "uncaught_exception", error: {...}, breadcrumbs: [...] }
+```
 
 ## 📄 License
 
-Apache 2.0 - see [LICENSE](LICENSE) file for details.
+Apache 2.0
 
-## 🆘 Support
+## 🤝 Contributing
 
-- 📖 [Documentation](https://github.com/Syntropysoft/syntropyfront)
-- 🐛 [Issues](https://github.com/Syntropysoft/syntropyfront/issues)
-- 💬 [Discussions](https://github.com/Syntropysoft/syntropyfront/discussions)
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-Made with ❤️ by the SyntropyLog Team 
+**Made with ❤️ for better web observability** 

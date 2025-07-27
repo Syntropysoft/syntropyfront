@@ -1,6 +1,6 @@
 /**
- * SyntropyFront - Librería de observabilidad con captura automática
- * Responsabilidad única: Capturar eventos automáticamente y enviar errores con contexto
+ * SyntropyFront - Observability library with automatic capture
+ * Single responsibility: Automatically capture events and send errors with context
  */
 import { BreadcrumbManager } from './core/BreadcrumbManager.js';
 import { ErrorManager } from './core/ErrorManager.js';
@@ -8,72 +8,72 @@ import { Logger } from './core/Logger.js';
 
 class SyntropyFront {
     constructor() {
-        // Managers básicos
+        // Basic managers
         this.breadcrumbManager = new BreadcrumbManager();
         this.errorManager = new ErrorManager();
         this.logger = new Logger();
         
-        // Configuración por defecto
+        // Default configuration
         this.maxEvents = 50;
-        this.fetchConfig = null; // Configuración completa de fetch
+        this.fetchConfig = null; // Complete fetch configuration
         this.isActive = false;
         
-        // Captura automática
+        // Automatic capture
         this.originalHandlers = {};
         
-        // Auto-inicializar
+        // Auto-initialize
         this.init();
     }
 
     init() {
         this.isActive = true;
         
-        // Configurar captura automática inmediatamente
+        // Configure automatic capture immediately
         this.setupAutomaticCapture();
         
-        console.log('🚀 SyntropyFront: Inicializado con captura automática');
+        console.log('🚀 SyntropyFront: Initialized with automatic capture');
     }
 
     /**
-     * Configura SyntropyFront
-     * @param {Object} config - Configuración
-     * @param {number} config.maxEvents - Máximo número de eventos a guardar
-     * @param {Object} config.fetch - Configuración completa de fetch
-     * @param {string} config.fetch.url - URL del endpoint
-     * @param {Object} config.fetch.options - Opciones de fetch (headers, method, etc.)
+     * Configure SyntropyFront
+     * @param {Object} config - Configuration
+     * @param {number} config.maxEvents - Maximum number of events to store
+     * @param {Object} config.fetch - Complete fetch configuration
+     * @param {string} config.fetch.url - Endpoint URL
+     * @param {Object} config.fetch.options - Fetch options (headers, method, etc.)
      */
     configure(config = {}) {
         this.maxEvents = config.maxEvents || this.maxEvents;
         this.fetchConfig = config.fetch;
         
         if (this.fetchConfig) {
-            console.log(`✅ SyntropyFront: Configurado - maxEvents: ${this.maxEvents}, endpoint: ${this.fetchConfig.url}`);
+            console.log(`✅ SyntropyFront: Configured - maxEvents: ${this.maxEvents}, endpoint: ${this.fetchConfig.url}`);
         } else {
-            console.log(`✅ SyntropyFront: Configurado - maxEvents: ${this.maxEvents}, solo console`);
+            console.log(`✅ SyntropyFront: Configured - maxEvents: ${this.maxEvents}, console only`);
         }
     }
 
     /**
-     * Configura captura automática de eventos
+     * Configure automatic event capture
      */
     setupAutomaticCapture() {
         if (typeof window === 'undefined') return;
 
-        // Capturar clicks
+        // Capture clicks
         this.setupClickCapture();
         
-        // Capturar errores
+        // Capture errors
         this.setupErrorCapture();
         
-        // Capturar llamadas HTTP
+        // Capture HTTP calls
         this.setupHttpCapture();
         
-        // Capturar console logs
+        // Capture console logs
         this.setupConsoleCapture();
     }
 
     /**
-     * Captura clicks del usuario
+     * Capture user clicks
      */
     setupClickCapture() {
         const clickHandler = (event) => {
@@ -91,14 +91,14 @@ class SyntropyFront {
     }
 
     /**
-     * Captura errores automáticamente
+     * Automatically capture errors
      */
     setupErrorCapture() {
-        // Guardar handlers originales
+        // Save original handlers
         this.originalHandlers.onerror = window.onerror;
         this.originalHandlers.onunhandledrejection = window.onunhandledrejection;
 
-        // Interceptar errores
+        // Intercept errors
         window.onerror = (message, source, lineno, colno, error) => {
             const errorPayload = {
                 type: 'uncaught_exception',
@@ -109,7 +109,7 @@ class SyntropyFront {
 
             this.handleError(errorPayload);
             
-            // Llamar handler original
+            // Call original handler
             if (this.originalHandlers.onerror) {
                 return this.originalHandlers.onerror(message, source, lineno, colno, error);
             }
@@ -117,7 +117,7 @@ class SyntropyFront {
             return false;
         };
 
-        // Interceptar rejected promises
+        // Intercept rejected promises
         window.onunhandledrejection = (event) => {
             const errorPayload = {
                 type: 'unhandled_rejection',
@@ -131,7 +131,7 @@ class SyntropyFront {
 
             this.handleError(errorPayload);
             
-            // Llamar handler original
+            // Call original handler
             if (this.originalHandlers.onunhandledrejection) {
                 this.originalHandlers.onunhandledrejection(event);
             }
@@ -139,10 +139,10 @@ class SyntropyFront {
     }
 
     /**
-     * Captura llamadas HTTP
+     * Capture HTTP calls
      */
     setupHttpCapture() {
-        // Interceptar fetch
+        // Intercept fetch
         const originalFetch = window.fetch;
         window.fetch = (...args) => {
             const [url, options] = args;
@@ -169,7 +169,7 @@ class SyntropyFront {
     }
 
     /**
-     * Captura console logs
+     * Capture console logs
      */
     setupConsoleCapture() {
         const originalLog = console.log;
@@ -193,25 +193,25 @@ class SyntropyFront {
     }
 
     /**
-     * Maneja errores - logea y postea si hay configuración de fetch
+     * Handle errors - log and post if fetch configuration exists
      */
     handleError(errorPayload) {
-        // Log por defecto
+        // Default log
         this.logger.error('❌ Error:', errorPayload);
         
-        // Postear si hay configuración de fetch
+        // Post if fetch configuration exists
         if (this.fetchConfig) {
             this.postToEndpoint(errorPayload);
         }
     }
 
     /**
-     * Postea el objeto de error usando la configuración de fetch
+     * Post error object using fetch configuration
      */
     postToEndpoint(errorPayload) {
         const { url, options = {} } = this.fetchConfig;
         
-        // Configuración por defecto
+        // Default configuration
         const defaultOptions = {
             method: 'POST',
             headers: {
@@ -223,17 +223,17 @@ class SyntropyFront {
         };
 
         fetch(url, defaultOptions).catch(error => {
-            console.warn('SyntropyFront: Error posteando al endpoint:', error);
+            console.warn('SyntropyFront: Error posting to endpoint:', error);
         });
     }
 
-    // API pública simple
+    // Public API
     addBreadcrumb(category, message, data = {}) {
         if (!this.isActive) return;
         
         const breadcrumb = this.breadcrumbManager.add(category, message, data);
         
-        // Mantener solo los últimos maxEvents
+        // Keep only the last maxEvents
         const breadcrumbs = this.breadcrumbManager.getAll();
         if (breadcrumbs.length > this.maxEvents) {
             this.breadcrumbManager.clear();
@@ -273,7 +273,7 @@ class SyntropyFront {
         this.errorManager.clear();
     }
 
-    // Métodos de utilidad
+    // Utility methods
     getStats() {
         return {
             breadcrumbs: this.breadcrumbManager.getCount(),
@@ -286,8 +286,8 @@ class SyntropyFront {
     }
 }
 
-// Instancia única - se auto-inicializa
+// Single instance - auto-initializes
 const syntropyFront = new SyntropyFront();
 
-// Exportar la instancia
+// Export the instance
 export default syntropyFront; 
