@@ -1,9 +1,8 @@
 import React from 'react';
-import './App.css';
+import './css/App.css';
 
 // Import hooks
-import { useSyntropyFront, useBreadcrumbs, useErrorSimulation, useDebugLogging, useClickCounter } from './hooks';
-import { useErrorInterceptor } from './useErrorInterceptor';
+import { useAppReady, useBreadcrumbs, useErrorSimulation, useDebugLogging, useClickCounter, useSyntropyFront, useReactInterceptors } from './hooks';
 
 // Import components
 import { Header, Actions, Breadcrumbs, Errors } from './components';
@@ -13,14 +12,17 @@ import { Header, Actions, Breadcrumbs, Errors } from './components';
  * Single responsibility: Coordinate components
  */
 function App() {
-  // Hook to integrate with SyntropyFront
-  const { isReady, syntropyFront } = useSyntropyFront();
+  // Hook to detect when app is ready
+  const { isReady } = useAppReady();
 
-  // Hook to integrate ErrorInterceptor
-  const { errorInterceptor, isErrorInterceptorInitialized } = useErrorInterceptor(syntropyFront);
+  // Hook to integrate with SyntropyFront
+  const { syntropyFront, isLoaded } = useSyntropyFront();
+
+  // Hook to load React interceptors
+  const { interceptors, isLoaded: interceptorsLoaded } = useReactInterceptors();
 
   // Hook to handle breadcrumbs
-  const { breadcrumbs, addBreadcrumb, clearBreadcrumbs } = useBreadcrumbs(syntropyFront, isReady);
+  const { breadcrumbs, addBreadcrumb, clearBreadcrumbs } = useBreadcrumbs();
 
   // Hook to count clicks
   const { clickCount, incrementClick, resetClickCount } = useClickCounter();
@@ -32,7 +34,6 @@ function App() {
   const { 
     logUserAction, 
     logBreadcrumbAdded, 
-    logLibraryUnavailable,
     logClearing,
     logDataCleared,
     logSimulatingError,
@@ -44,16 +45,24 @@ function App() {
     incrementClick();
     logUserAction('Button clicked');
     addBreadcrumb('user', 'Button clicked');
-    if (syntropyFront && syntropyFront.addBreadcrumb) {
-      logBreadcrumbAdded();
-    } else {
-      logLibraryUnavailable();
+    
+    // También agregar breadcrumb a SyntropyFront si está cargado
+    if (syntropyFront && isLoaded) {
+      syntropyFront.addBreadcrumb('user', 'Button clicked');
     }
+    
+    logBreadcrumbAdded();
   };
 
   const handleSimulateError = () => {
     logSimulatingError();
     simulateError();
+    
+    // También enviar error a SyntropyFront si está cargado
+    if (syntropyFront && isLoaded) {
+      syntropyFront.sendError(new Error('Simulated error from React app'));
+    }
+    
     logExploding();
   };
 
@@ -61,18 +70,21 @@ function App() {
     logClearing();
     clearBreadcrumbs();
     resetClickCount();
-    if (syntropyFront && syntropyFront.clearBreadcrumbs) {
-      logDataCleared();
+    
+    // También limpiar breadcrumbs en SyntropyFront si está cargado
+    if (syntropyFront && isLoaded) {
+      syntropyFront.clearBreadcrumbs();
     }
+    
+    logDataCleared();
   };
 
   return (
     <div className="App">
       <Header 
         isReady={isReady} 
-        syntropyFront={syntropyFront} 
-        errorInterceptor={errorInterceptor}
-        isErrorInterceptorInitialized={isErrorInterceptorInitialized}
+        syntropyFrontLoaded={isLoaded} 
+        interceptorsLoaded={interceptorsLoaded}
       />
       
       <main className="App-main">

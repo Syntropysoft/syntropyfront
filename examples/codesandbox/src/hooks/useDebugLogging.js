@@ -8,11 +8,7 @@ export const useDebugLogging = () => {
   };
 
   const logBreadcrumbAdded = () => {
-    console.log('✅ Breadcrumb added to library');
-  };
-
-  const logLibraryUnavailable = () => {
-    console.log('⚠️ Library not available, using local state');
+    console.log('✅ Breadcrumb added');
   };
 
   const logClearing = () => {
@@ -20,7 +16,7 @@ export const useDebugLogging = () => {
   };
 
   const logDataCleared = () => {
-    console.log('✅ Data cleared in library');
+    console.log('✅ Data cleared');
   };
 
   const logSimulatingError = () => {
@@ -34,7 +30,6 @@ export const useDebugLogging = () => {
   return {
     logUserAction,
     logBreadcrumbAdded,
-    logLibraryUnavailable,
     logClearing,
     logDataCleared,
     logSimulatingError,

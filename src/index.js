@@ -5,6 +5,7 @@
 import { BreadcrumbManager } from './core/BreadcrumbManager.js';
 import { ErrorManager } from './core/ErrorManager.js';
 import { Logger } from './core/Logger.js';
+import { ConfigurationManager } from './utils/ConfigurationManager.js';
 
 class SyntropyFront {
     constructor() {
@@ -12,6 +13,9 @@ class SyntropyFront {
         this.breadcrumbManager = new BreadcrumbManager();
         this.errorManager = new ErrorManager();
         this.logger = new Logger();
+        
+        // ConfigurationManager para manejar configuración e interceptores
+        this.configManager = new ConfigurationManager(this);
         
         this.isActive = false;
         this.init();
@@ -56,12 +60,22 @@ class SyntropyFront {
         this.errorManager.clear();
     }
 
+    // Configuración e interceptores
+    configure(config = {}) {
+        this.configManager.configure(config);
+    }
+
+    getConfigInfo() {
+        return this.configManager.getConfigInfo();
+    }
+
     // Métodos de utilidad
     getStats() {
         return {
             breadcrumbs: this.breadcrumbManager.getCount(),
             errors: this.errorManager.getCount(),
-            isActive: this.isActive
+            isActive: this.isActive,
+            config: this.getConfigInfo()
         };
     }
 }
