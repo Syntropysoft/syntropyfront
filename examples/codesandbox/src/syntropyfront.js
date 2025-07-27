@@ -137,7 +137,8 @@ class SyntropyFront {
         this.originalHandlers = {};
         
         this.init();
-        this.setupErrorInterceptors(); // Inject automatic interceptors
+        // Removed setupErrorInterceptors() to avoid duplicate interceptors
+        // ErrorInterceptor from @syntropyfront/interceptors will handle this
     }
 
     init() {
