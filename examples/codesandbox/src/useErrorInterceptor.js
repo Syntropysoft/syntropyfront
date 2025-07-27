@@ -11,9 +11,8 @@
 
 import { useEffect, useState } from 'react';
 
-// Import the ErrorInterceptor from the interceptors package
-// Note: In a real project, this would be: import { ErrorInterceptor } from '@syntropyfront/interceptors';
-import { ErrorInterceptor } from '../../../../@syntropyfront/dist/index.js';
+// Import the ErrorInterceptor from the installed package
+import { ErrorInterceptor } from '@syntropyfront/interceptors';
 
 /**
  * Hook to integrate ErrorInterceptor
