@@ -1,34 +1,34 @@
 /**
- * Hook para logging/debugging
- * Responsabilidad única: Mostrar logs de debug
+ * Hook for logging/debugging
+ * Single responsibility: Show debug logs
  */
 export const useDebugLogging = () => {
   const logUserAction = (message) => {
-    console.log(`🖱️ ${message} - agregando breadcrumb...`);
+    console.log(`🖱️ ${message} - adding breadcrumb...`);
   };
 
   const logBreadcrumbAdded = () => {
-    console.log('✅ Breadcrumb agregado a la librería');
+    console.log('✅ Breadcrumb added to library');
   };
 
   const logLibraryUnavailable = () => {
-    console.log('⚠️ Librería no disponible, usando estado local');
+    console.log('⚠️ Library not available, using local state');
   };
 
   const logClearing = () => {
-    console.log('🧹 Limpiando datos...');
+    console.log('🧹 Clearing data...');
   };
 
   const logDataCleared = () => {
-    console.log('✅ Datos limpiados en la librería');
+    console.log('✅ Data cleared in library');
   };
 
   const logSimulatingError = () => {
-    console.log('💥 Simulando error - agregando breadcrumb...');
+    console.log('💥 Simulating error - adding breadcrumb...');
   };
 
   const logExploding = () => {
-    console.log('💥 ¡REVENTANDO AHORA!');
+    console.log('💥 EXPLODING NOW!');
   };
 
   return {

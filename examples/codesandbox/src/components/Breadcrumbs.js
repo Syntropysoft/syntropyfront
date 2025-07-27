@@ -1,8 +1,8 @@
 import React from 'react';
 
 /**
- * Breadcrumbs - Muestra la lista de breadcrumbs
- * Responsabilidad única: Renderizar breadcrumbs
+ * Breadcrumbs - Shows the breadcrumbs list
+ * Single responsibility: Render breadcrumbs
  */
 export const Breadcrumbs = ({ breadcrumbs }) => {
   return (

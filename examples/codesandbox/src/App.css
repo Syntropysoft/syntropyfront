@@ -473,10 +473,6 @@
     gap: 10px;
   }
 
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
   .request-details,
   .response-details {
     flex-direction: column;
@@ -487,4 +483,21 @@
   .response-details span {
     text-align: center;
   }
+} 
+
+/* Click counter styles */
+.click-counter {
+  background: #3b82f6;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.click-counter span {
+  display: block;
 } 

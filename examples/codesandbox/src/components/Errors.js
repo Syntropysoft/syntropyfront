@@ -1,8 +1,8 @@
 import React from 'react';
 
 /**
- * Errors - Muestra la lista de errores
- * Responsabilidad única: Renderizar errores
+ * Errors - Shows the errors list
+ * Single responsibility: Render errors
  */
 export const Errors = ({ errors }) => {
   return (

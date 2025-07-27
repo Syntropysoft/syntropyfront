@@ -1,29 +1,30 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './App.css';
 
-// Importar hooks
-import { useSyntropyFront, useBreadcrumbs, useErrorSimulation, useDebugLogging } from './hooks';
+// Import hooks
+import { useSyntropyFront, useBreadcrumbs, useErrorSimulation, useDebugLogging, useClickCounter } from './hooks';
 
-// Importar componentes
+// Import components
 import { Header, Actions, Breadcrumbs, Errors } from './components';
 
 /**
- * App - Orquesta los componentes
- * Responsabilidad única: Coordinar los componentes
+ * App - Orchestrates the components
+ * Single responsibility: Coordinate components
  */
 function App() {
-  const [errors, setErrors] = useState([]);
-
-  // Hook para integrar con SyntropyFront
+  // Hook to integrate with SyntropyFront
   const { isReady, syntropyFront } = useSyntropyFront();
 
-  // Hook para manejar breadcrumbs
+  // Hook to handle breadcrumbs
   const { breadcrumbs, addBreadcrumb, clearBreadcrumbs } = useBreadcrumbs(syntropyFront, isReady);
 
-  // Hook para manejar error simulation
+  // Hook to count clicks
+  const { clickCount, incrementClick, resetClickCount } = useClickCounter();
+
+  // Hook to handle error simulation
   const { simulateError } = useErrorSimulation(addBreadcrumb);
 
-  // Hook para logging/debugging
+  // Hook for logging/debugging
   const { 
     logUserAction, 
     logBreadcrumbAdded, 
@@ -34,8 +35,9 @@ function App() {
     logExploding
   } = useDebugLogging();
 
-  // Event handlers simples
+  // Simple event handlers
   const handleUserAction = () => {
+    incrementClick();
     logUserAction('Button clicked');
     addBreadcrumb('user', 'Button clicked');
     if (syntropyFront && syntropyFront.addBreadcrumb) {
@@ -54,25 +56,26 @@ function App() {
   const handleClearData = () => {
     logClearing();
     clearBreadcrumbs();
+    resetClickCount();
     if (syntropyFront && syntropyFront.clearBreadcrumbs) {
       logDataCleared();
     }
-    setErrors([]);
   };
 
   return (
     <div className="App">
-      <Header isReady={isReady} />
+      <Header isReady={isReady} syntropyFront={syntropyFront} />
       
       <main className="App-main">
         <Actions 
           onUserAction={handleUserAction}
           onSimulateError={handleSimulateError}
           onClearData={handleClearData}
+          clickCount={clickCount}
         />
         
         <Breadcrumbs breadcrumbs={breadcrumbs} />
-        <Errors errors={errors} />
+        <Errors errors={[]} />
       </main>
     </div>
   );

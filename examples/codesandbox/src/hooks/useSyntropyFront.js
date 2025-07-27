@@ -3,8 +3,8 @@ import { useAppReady } from './useAppReady';
 import syntropyFront from '../syntropyfront.js';
 
 /**
- * Hook para integrar con SyntropyFront
- * Responsabilidad única: Integración con la librería
+ * Hook to integrate with SyntropyFront
+ * Single responsibility: Library integration
  */
 export const useSyntropyFront = () => {
   const isReady = useAppReady();

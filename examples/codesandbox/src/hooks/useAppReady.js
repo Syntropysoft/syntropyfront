@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 
 /**
- * Hook súper simple - solo detecta cuando React se montó
- * Sin ciclos, sin estado complejo
+ * Super simple hook - only detects when React is mounted
+ * No cycles, no complex state
  */
 export const useAppReady = () => {
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
-        // Solo una vez, cuando el componente se monta
+        // Only once, when the component mounts
         setIsReady(true);
-    }, []); // Array vacío = solo una vez
+    }, []); // Empty array = only once
 
     return isReady;
 }; 

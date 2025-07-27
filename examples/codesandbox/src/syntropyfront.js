@@ -1,10 +1,11 @@
 /**
- * BreadcrumbManager - Gestiona breadcrumbs
- * Responsabilidad única: Almacenar y gestionar breadcrumbs
+ * BreadcrumbManager - Manages breadcrumbs
+ * Single responsibility: Store and manage breadcrumbs
  */
 class BreadcrumbManager {
     constructor() {
         this.breadcrumbs = [];
+        this.maxBreadcrumbs = 10; // Limit to 10 breadcrumbs
     }
 
     add(category, message, data = {}) {
@@ -16,6 +17,12 @@ class BreadcrumbManager {
         };
         
         this.breadcrumbs.push(breadcrumb);
+        
+        // Keep only the last 10 breadcrumbs
+        if (this.breadcrumbs.length > this.maxBreadcrumbs) {
+            this.breadcrumbs = this.breadcrumbs.slice(-this.maxBreadcrumbs);
+        }
+        
         return breadcrumb;
     }
 
@@ -33,8 +40,8 @@ class BreadcrumbManager {
 }
 
 /**
- * ErrorManager - Gestiona errores
- * Responsabilidad única: Formatear y gestionar errores
+ * ErrorManager - Manages errors
+ * Single responsibility: Format and manage errors
  */
 class ErrorManager {
     constructor() {
@@ -67,16 +74,16 @@ class ErrorManager {
 }
 
 /**
- * Logger - Hace logging solo en errores
- * Responsabilidad única: Mostrar mensajes solo cuando hay errores
+ * Logger - Logs only on errors
+ * Single responsibility: Show messages only when there are errors
  */
 class Logger {
     constructor() {
-        this.isSilent = true; // Por defecto silente
+        this.isSilent = true; // Silent by default
     }
 
     log(message, data = null) {
-        // No loggear nada en modo silente
+        // Don't log anything in silent mode
         if (this.isSilent) return;
         
         if (data) {
@@ -87,7 +94,7 @@ class Logger {
     }
 
     error(message, data = null) {
-        // SIEMPRE loggear errores
+        // ALWAYS log errors
         if (data) {
             console.error(message, data);
         } else {
@@ -96,7 +103,7 @@ class Logger {
     }
 
     warn(message, data = null) {
-        // Solo warnings importantes
+        // Only important warnings
         if (data) {
             console.warn(message, data);
         } else {
@@ -104,24 +111,24 @@ class Logger {
         }
     }
 
-    // Método para activar logging (solo para debug)
+    // Method to enable logging (only for debug)
     enableLogging() {
         this.isSilent = false;
     }
 
-    // Método para desactivar logging
+    // Method to disable logging
     disableLogging() {
         this.isSilent = true;
     }
 }
 
 /**
- * SyntropyFront - Orquesta los managers
- * Responsabilidad única: Coordinar los diferentes managers
+ * SyntropyFront - Orchestrates the managers
+ * Single responsibility: Coordinate different managers
  */
 class SyntropyFront {
     constructor() {
-        // Cada manager tiene una responsabilidad única
+        // Each manager has a single responsibility
         this.breadcrumbManager = new BreadcrumbManager();
         this.errorManager = new ErrorManager();
         this.logger = new Logger();
@@ -130,19 +137,19 @@ class SyntropyFront {
         this.originalHandlers = {};
         
         this.init();
-        this.setupErrorInterceptors(); // 🎯 INYECTAR INTERCEPTORES AUTOMÁTICOS
+        this.setupErrorInterceptors(); // Inject automatic interceptors
     }
 
     init() {
         this.isActive = true;
-        // No loggear nada en inicialización
+        // Don't log anything during initialization
     }
 
-    // 🎯 INTERCEPTORES AUTOMÁTICOS DE ERRORES
+    // Automatic error interceptors
     setupErrorInterceptors() {
         if (typeof window === 'undefined') return;
 
-        // Interceptar errores no capturados
+        // Intercept uncaught errors
         this.originalHandlers.onerror = window.onerror;
         window.onerror = (message, source, lineno, colno, error) => {
             const errorPayload = {
@@ -158,13 +165,13 @@ class SyntropyFront {
                 timestamp: new Date().toISOString()
             };
 
-            // 🎯 ENDPOINT SIMULADO - LOG A CONSOLA
-            console.log('🚨 SyntropyFront - Error detectado automáticamente:', errorPayload);
+            // Simulated endpoint - log to console
+            console.log('🚨 SyntropyFront - Error detected automatically:', errorPayload);
             
-            // Enviar a la librería
+            // Send to library
             this.sendError(errorPayload);
             
-            // Llamar al handler original si existe
+            // Call original handler if exists
             if (this.originalHandlers.onerror) {
                 return this.originalHandlers.onerror(message, source, lineno, colno, error);
             }
@@ -172,38 +179,38 @@ class SyntropyFront {
             return false;
         };
 
-        // Interceptar promesas rechazadas
+        // Intercept rejected promises
         this.originalHandlers.onunhandledrejection = window.onunhandledrejection;
         window.onunhandledrejection = (event) => {
             const errorPayload = {
                 type: 'unhandled_rejection',
                 error: {
-                    message: event.reason?.message || 'Rechazo de promesa sin mensaje',
+                    message: event.reason?.message || 'Promise rejection without message',
                     stack: event.reason?.stack,
                 },
                 breadcrumbs: this.breadcrumbManager.getAll(),
                 timestamp: new Date().toISOString()
             };
 
-            // 🎯 ENDPOINT SIMULADO - LOG A CONSOLA
-            console.log('🚨 SyntropyFront - Promesa rechazada detectada automáticamente:', errorPayload);
+            // Simulated endpoint - log to console
+            console.log('🚨 SyntropyFront - Promise rejection detected automatically:', errorPayload);
             
-            // Enviar a la librería
+            // Send to library
             this.sendError(errorPayload);
             
-            // Llamar al handler original si existe
+            // Call original handler if exists
             if (this.originalHandlers.onunhandledrejection) {
                 this.originalHandlers.onunhandledrejection(event);
             }
         };
     }
 
-    // Delegar a BreadcrumbManager
+    // Delegate to BreadcrumbManager
     addBreadcrumb(category, message, data = {}) {
         if (!this.isActive) return;
         
         const breadcrumb = this.breadcrumbManager.add(category, message, data);
-        // No loggear breadcrumbs - solo almacenar
+        // Don't log breadcrumbs - just store
         return breadcrumb;
     }
 
@@ -215,12 +222,12 @@ class SyntropyFront {
         this.breadcrumbManager.clear();
     }
 
-    // Delegar a ErrorManager
+    // Delegate to ErrorManager
     sendError(error, context = {}) {
         if (!this.isActive) return;
         
         const errorData = this.errorManager.send(error, context);
-        this.logger.error('❌ Error:', errorData); // SOLO errores se loggean
+        this.logger.error('❌ Error:', errorData); // Only errors are logged
         return errorData;
     }
 
@@ -232,7 +239,7 @@ class SyntropyFront {
         this.errorManager.clear();
     }
 
-    // Métodos de utilidad
+    // Utility methods
     getStats() {
         return {
             breadcrumbs: this.breadcrumbManager.getCount(),
@@ -242,7 +249,7 @@ class SyntropyFront {
     }
 }
 
-// Instancia única - se auto-inicializa
+// Single instance - auto-initializes
 const syntropyFront = new SyntropyFront();
 
 export default syntropyFront; 

@@ -1,6 +1,6 @@
 /**
- * Hook para manejar error simulation
- * Responsabilidad única: Simular errores
+ * Hook to handle error simulation
+ * Single responsibility: Simulate errors
  */
 export const useErrorSimulation = (addBreadcrumb) => {
   const simulateError = () => {
