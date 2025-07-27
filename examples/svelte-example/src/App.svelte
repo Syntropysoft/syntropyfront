@@ -155,7 +155,7 @@
       </ol>
 
       <h3>How to configure error handling?</h3>
-      <pre><code>import syntropyFront from '@syntropysoft/syntropyfront';
+      {@html `<pre><code>import syntropyFront from '@syntropysoft/syntropyfront';
 
 // Option 1: Console only (default)
 syntropyFront.configure({
@@ -196,7 +196,7 @@ syntropyFront.configure({
   }
 });
 
-// Ready! Auto-initializes</code></pre>
+// Ready! Auto-initializes</code></pre>`}
 
       <h3>⚠️ Note about CORS:</h3>
       <p>
@@ -205,7 +205,7 @@ syntropyFront.configure({
       </p>
 
       <h3>What gets captured?</h3>
-      <pre><code>{
+      {@html `<pre><code>{
   "type": "uncaught_exception",
   "error": {
     "message": "Error message",
@@ -224,12 +224,12 @@ syntropyFront.configure({
     // ... last N events
   ],
   "timestamp": "2024-01-01T12:00:00.000Z"
-}</code></pre>
+}</code></pre>`}
 
       <p><strong>You only need 1 line of basic code!</strong></p>
       <p><strong>Choose your error handling strategy: console, fetch, or custom handler</strong></p>
-      <pre><code>import syntropyFront from '@syntropysoft/syntropyfront';
-// Ready! Auto-initializes</code></pre>
+      {@html `<pre><code>import syntropyFront from '@syntropysoft/syntropyfront';
+// Ready! Auto-initializes</code></pre>`}
     </div>
   </div>
 </main>
