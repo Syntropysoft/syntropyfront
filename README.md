@@ -150,6 +150,57 @@ const stats = syntropyFront.getStats();
 // Returns: { breadcrumbs: 5, errors: 2, isActive: true, maxEvents: 50, endpoint: 'console' }
 ```
 
+## 🎯 Extending SyntropyFront
+
+SyntropyFront captures the essentials by default, but you can extend it to capture any DOM events you want:
+
+### Adding Custom Event Capture
+
+```javascript
+import syntropyFront from 'syntropyfront';
+
+// Add scroll tracking
+window.addEventListener('scroll', () => {
+  syntropyFront.addBreadcrumb('user', 'scroll', {
+    scrollY: window.scrollY,
+    scrollX: window.scrollX
+  });
+});
+
+// Add form submissions
+document.addEventListener('submit', (event) => {
+  syntropyFront.addBreadcrumb('user', 'form_submit', {
+    formId: event.target.id,
+    formAction: event.target.action
+  });
+});
+
+// Add window resize
+window.addEventListener('resize', () => {
+  syntropyFront.addBreadcrumb('system', 'window_resize', {
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+});
+
+// Add custom business events
+function trackPurchase(productId, amount) {
+  syntropyFront.addBreadcrumb('business', 'purchase', {
+    productId,
+    amount,
+    timestamp: new Date().toISOString()
+  });
+}
+```
+
+### Common Events You Can Track
+
+- **User interactions**: `click`, `scroll`, `keydown`, `focus`, `blur`
+- **Form events**: `submit`, `input`, `change`, `reset`
+- **System events**: `resize`, `online`, `offline`, `visibilitychange`
+- **Custom events**: Any business logic or user actions
+- **Performance**: `load`, `DOMContentLoaded`, timing events
+
 ## 🌐 CORS Configuration
 
 To use with your API, ensure your server allows CORS:
@@ -231,6 +282,36 @@ try {
 
 // Or manually report
 syntropyFront.sendError(new Error('Something went wrong'));
+```
+
+### Extending with Custom Events
+
+```javascript
+import syntropyFront from 'syntropyfront';
+
+// Add your custom event listeners
+window.addEventListener('scroll', () => {
+  syntropyFront.addBreadcrumb('user', 'scroll', {
+    scrollY: window.scrollY,
+    scrollX: window.scrollX
+  });
+});
+
+// Track business events
+function userCompletedCheckout(orderId, total) {
+  syntropyFront.addBreadcrumb('business', 'checkout_completed', {
+    orderId,
+    total,
+    timestamp: new Date().toISOString()
+  });
+}
+
+// Track performance
+window.addEventListener('load', () => {
+  syntropyFront.addBreadcrumb('performance', 'page_loaded', {
+    loadTime: performance.now()
+  });
+});
 ```
 
 ## 🔍 Debugging
