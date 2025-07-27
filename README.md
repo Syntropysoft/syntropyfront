@@ -28,9 +28,14 @@ import syntropyFront from 'syntropyfront';
 ```javascript
 import syntropyFront from 'syntropyfront';
 
-// Optional: Configure endpoint and event limit
+// Option 1: Console only (default)
 syntropyFront.configure({
-  maxEvents: 50, // Keep last 50 events
+  maxEvents: 50
+});
+
+// Option 2: With endpoint (automatic fetch)
+syntropyFront.configure({
+  maxEvents: 50,
   fetch: {
     url: 'https://your-api.com/errors',
     options: {
@@ -40,6 +45,29 @@ syntropyFront.configure({
       },
       mode: 'cors'
     }
+  }
+});
+
+// Option 3: With custom error handler (maximum flexibility)
+syntropyFront.configure({
+  maxEvents: 50,
+  onError: (errorPayload) => {
+    // You can do anything with the error:
+    // - Send to your API
+    // - Save to localStorage
+    // - Send to a repository
+    // - Upload to cloud
+    // - Whatever you want!
+    console.log('Error captured:', errorPayload);
+    
+    // Example: send to multiple places
+    fetch('https://api1.com/errors', {
+      method: 'POST',
+      body: JSON.stringify(errorPayload)
+    });
+    
+    // Also save locally
+    localStorage.setItem('lastError', JSON.stringify(errorPayload));
   }
 });
 ```
@@ -100,7 +128,13 @@ SyntropyFront automatically:
 
 ## ⚙️ Configuration Options
 
-### Basic Configuration
+SyntropyFront uses a priority system for error handling:
+
+1. **Custom Error Handler** (`onError`) - Maximum flexibility
+2. **Endpoint** (`fetch`) - Automatic posting
+3. **Console** - Default fallback
+
+### Basic Configuration (Console Only)
 
 ```javascript
 syntropyFront.configure({
@@ -108,7 +142,7 @@ syntropyFront.configure({
 });
 ```
 
-### With Endpoint
+### With Endpoint (Automatic Fetch)
 
 ```javascript
 syntropyFront.configure({
@@ -124,6 +158,37 @@ syntropyFront.configure({
       mode: 'cors',
       credentials: 'include'
     }
+  }
+});
+```
+
+### With Custom Error Handler (Maximum Flexibility)
+
+```javascript
+syntropyFront.configure({
+  maxEvents: 50,
+  onError: (errorPayload) => {
+    // You have complete control over what to do with the error
+    
+    // Send to your API
+    fetch('https://your-api.com/errors', {
+      method: 'POST',
+      body: JSON.stringify(errorPayload)
+    });
+    
+    // Save to localStorage
+    localStorage.setItem('lastError', JSON.stringify(errorPayload));
+    
+    // Send to multiple services
+    Promise.all([
+      fetch('https://service1.com/errors', { method: 'POST', body: JSON.stringify(errorPayload) }),
+      fetch('https://service2.com/errors', { method: 'POST', body: JSON.stringify(errorPayload) })
+    ]);
+    
+    // Upload to cloud storage
+    // Send to repository
+    // Log to file
+    // Whatever you want!
   }
 });
 ```

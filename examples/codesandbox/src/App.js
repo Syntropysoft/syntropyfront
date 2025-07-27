@@ -11,15 +11,15 @@ import syntropyFront from 'syntropyfront';
 function App() {
   const [clickCount, setClickCount] = useState(0);
   const [stats, setStats] = useState(null);
-  const [configMode, setConfigMode] = useState('console'); // 'console', 'jsonplaceholder', 'custom'
+  const [configMode, setConfigMode] = useState('console'); // 'console', 'fetch', 'callback'
 
   // Configure SyntropyFront when app mounts
   useEffect(() => {
-    let fetchConfig = null;
+    let config = { maxEvents: 20 };
 
-    if (configMode === 'jsonplaceholder') {
-      // Use JSONPlaceholder which allows CORS
-      fetchConfig = {
+    if (configMode === 'fetch') {
+      // Use fetch configuration
+      config.fetch = {
         url: 'https://jsonplaceholder.typicode.com/posts',
         options: {
           headers: {
@@ -28,26 +28,29 @@ function App() {
           mode: 'cors',
         },
       };
-    } else if (configMode === 'custom') {
-      // Custom configuration (example)
-      fetchConfig = {
-        url: 'https://httpbin.org/post', // Allows CORS
-        options: {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Custom-Header': 'SyntropyFront',
-          },
-          mode: 'cors',
-        },
+    } else if (configMode === 'callback') {
+      // Use custom error handler
+      config.onError = (errorPayload) => {
+        console.log('🎯 Custom error handler called:', errorPayload);
+        
+        // Example: send to multiple places
+        fetch('https://jsonplaceholder.typicode.com/posts', {
+          method: 'POST',
+          body: JSON.stringify(errorPayload),
+          headers: { 'Content-Type': 'application/json' }
+        }).catch(err => console.log('Fetch failed:', err));
+        
+        // Also save locally
+        localStorage.setItem('lastError', JSON.stringify(errorPayload));
+        
+        // You can do anything here!
+        console.log('✅ Error handled by custom callback');
       };
     }
-    // If 'console', fetchConfig remains null
+    // If 'console', no additional config needed
 
     // Configure SyntropyFront
-    syntropyFront.configure({
-      maxEvents: 20, // Keep only the last 20 events
-      fetch: fetchConfig,
-    });
+    syntropyFront.configure(config);
 
     // Update stats every second
     const interval = setInterval(() => {
@@ -96,7 +99,9 @@ function App() {
             <div className='stats'>
               <span>📊 Breadcrumbs: {stats.breadcrumbs}</span>
               <span>🚨 Errors: {stats.errors}</span>
-              <span>📤 Endpoint: {stats.endpoint}</span>
+              <span>📤 Mode: {configMode}</span>
+              {stats.hasErrorCallback && <span>🎯 Custom handler: ✅</span>}
+              {stats.hasFetchConfig && <span>🌐 Endpoint: {stats.endpoint}</span>}
             </div>
           )}
         </div>
@@ -104,7 +109,7 @@ function App() {
 
       <main className='App-main'>
         <div className='config-selector'>
-          <h3>🔧 Endpoint Configuration:</h3>
+          <h3>🔧 Error Handling Configuration:</h3>
           <div className='config-buttons'>
             <button
               onClick={() => setConfigMode('console')}
@@ -113,16 +118,16 @@ function App() {
               Console Only
             </button>
             <button
-              onClick={() => setConfigMode('jsonplaceholder')}
-              className={configMode === 'jsonplaceholder' ? 'active' : ''}
+              onClick={() => setConfigMode('fetch')}
+              className={configMode === 'fetch' ? 'active' : ''}
             >
-              JSONPlaceholder (CORS OK)
+              Automatic Fetch
             </button>
             <button
-              onClick={() => setConfigMode('custom')}
-              className={configMode === 'custom' ? 'active' : ''}
+              onClick={() => setConfigMode('callback')}
+              className={configMode === 'callback' ? 'active' : ''}
             >
-              HttpBin (CORS OK)
+              Custom Handler
             </button>
           </div>
         </div>
@@ -149,46 +154,56 @@ function App() {
             <li>🌐 Intercepts HTTP calls</li>
             <li>📝 Records console logs</li>
             <li>💾 Keeps the last N events (configurable)</li>
-            <li>📤 Posts errors with complete fetch configuration</li>
+            <li>📤 Handles errors with priority system</li>
           </ul>
 
-          <h3>How to configure fetch?</h3>
+          <h3>Error Handling Priority:</h3>
+          <ol>
+            <li><strong>Custom Handler</strong> - You decide what to do with errors</li>
+            <li><strong>Automatic Fetch</strong> - Posts to your endpoint</li>
+            <li><strong>Console Only</strong> - Default fallback</li>
+          </ol>
+
+          <h3>How to configure error handling?</h3>
           <pre>
             {`import syntropyFront from 'syntropyfront';
 
-// Option 1: Console only (no configuration)
+// Option 1: Console only (default)
 syntropyFront.configure({
   maxEvents: 50
 });
 
-// Option 2: With endpoint that allows CORS
-syntropyFront.configure({
-  maxEvents: 50,
-  fetch: {
-    url: 'https://jsonplaceholder.typicode.com/posts',
-    options: {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      mode: 'cors',
-    }
-  }
-});
-
-// Option 3: With your API (needs CORS configured)
+// Option 2: Automatic fetch
 syntropyFront.configure({
   maxEvents: 50,
   fetch: {
     url: 'https://your-api.com/errors',
     options: {
-      headers: {
-        'Authorization': 'Bearer your-token',
-        'X-API-Key': 'your-api-key',
-        'Content-Type': 'application/json',
-      },
-      mode: 'cors',
-      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      mode: 'cors'
     }
+  }
+});
+
+// Option 3: Custom handler (maximum flexibility)
+syntropyFront.configure({
+  maxEvents: 50,
+  onError: (errorPayload) => {
+    // You can do anything:
+    // - Send to your API
+    // - Save to localStorage
+    // - Send to multiple services
+    // - Upload to cloud
+    // - Whatever you want!
+    console.log('Error:', errorPayload);
+    
+    // Example: send to multiple places
+    fetch('https://api1.com/errors', {
+      method: 'POST',
+      body: JSON.stringify(errorPayload)
+    });
+    
+    localStorage.setItem('lastError', JSON.stringify(errorPayload));
   }
 });
 
@@ -198,10 +213,10 @@ syntropyFront.configure({
           <h3>⚠️ Note about CORS:</h3>
           <p>
             To work with your API, you need to configure CORS on your server to allow requests from your domain.
-            The example endpoints (JSONPlaceholder, HttpBin) already have CORS configured.
+            The example endpoints (JSONPlaceholder) already have CORS configured.
           </p>
 
-          <h3>What gets posted?</h3>
+          <h3>What gets captured?</h3>
           <pre>
             {`{
   "type": "uncaught_exception",
@@ -229,7 +244,7 @@ syntropyFront.configure({
             <strong>You only need 1 line of basic code!</strong>
           </p>
           <p>
-            <strong>If you give it an endpoint, it posts there, if not, it posts to console</strong>
+            <strong>Choose your error handling strategy: console, fetch, or custom handler</strong>
           </p>
           <pre>
             {`import syntropyFront from 'syntropyfront';

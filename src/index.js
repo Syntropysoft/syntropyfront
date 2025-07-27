@@ -16,6 +16,7 @@ class SyntropyFront {
         // Default configuration
         this.maxEvents = 50;
         this.fetchConfig = null; // Complete fetch configuration
+        this.onErrorCallback = null; // User-defined error handler
         this.isActive = false;
         
         // Automatic capture
@@ -41,12 +42,16 @@ class SyntropyFront {
      * @param {Object} config.fetch - Complete fetch configuration
      * @param {string} config.fetch.url - Endpoint URL
      * @param {Object} config.fetch.options - Fetch options (headers, method, etc.)
+     * @param {Function} config.onError - User-defined error handler callback
      */
     configure(config = {}) {
         this.maxEvents = config.maxEvents || this.maxEvents;
         this.fetchConfig = config.fetch;
+        this.onErrorCallback = config.onError;
         
-        if (this.fetchConfig) {
+        if (this.onErrorCallback) {
+            console.log(`✅ SyntropyFront: Configured - maxEvents: ${this.maxEvents}, custom error handler`);
+        } else if (this.fetchConfig) {
             console.log(`✅ SyntropyFront: Configured - maxEvents: ${this.maxEvents}, endpoint: ${this.fetchConfig.url}`);
         } else {
             console.log(`✅ SyntropyFront: Configured - maxEvents: ${this.maxEvents}, console only`);
@@ -193,16 +198,30 @@ class SyntropyFront {
     }
 
     /**
-     * Handle errors - log and post if fetch configuration exists
+     * Handle errors - priority: onError callback > fetch > console
      */
     handleError(errorPayload) {
         // Default log
         this.logger.error('❌ Error:', errorPayload);
         
-        // Post if fetch configuration exists
+        // Priority 1: User-defined callback (maximum flexibility)
+        if (this.onErrorCallback) {
+            try {
+                this.onErrorCallback(errorPayload);
+            } catch (callbackError) {
+                console.warn('SyntropyFront: Error in user callback:', callbackError);
+            }
+            return;
+        }
+        
+        // Priority 2: Fetch to endpoint
         if (this.fetchConfig) {
             this.postToEndpoint(errorPayload);
+            return;
         }
+        
+        // Priority 3: Console only (default)
+        // Already logged above
     }
 
     /**
@@ -281,6 +300,7 @@ class SyntropyFront {
             isActive: this.isActive,
             maxEvents: this.maxEvents,
             hasFetchConfig: !!this.fetchConfig,
+            hasErrorCallback: !!this.onErrorCallback,
             endpoint: this.fetchConfig?.url || 'console'
         };
     }
