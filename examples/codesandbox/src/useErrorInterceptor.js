@@ -12,7 +12,7 @@
 import { useEffect, useState } from 'react';
 
 // Import the ErrorInterceptor from the installed package
-import { ErrorInterceptor } from '@syntropyfront/interceptors';
+import { ErrorInterceptor } from 'syntropyfront-interceptors';
 
 /**
  * Hook to integrate ErrorInterceptor
