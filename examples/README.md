@@ -1,221 +1,77 @@
 # SyntropyFront Examples
 
-This directory contains interactive examples and demos for SyntropyFront.
+This directory contains examples demonstrating how to use SyntropyFront with different frameworks.
 
-## 🎯 Interactive Demos
+## Examples
 
-### CodeSandbox - React Demo
-**URL**: [Coming soon - will be added after npm publish]
+### React Example (`react-example/`)
+- **Port:** 3000
+- **Framework:** React 18
+- **Build Tool:** Create React App
+- **Features:** Complete demo with all SyntropyFront features
 
-A complete React application demonstrating:
-- ✅ SyntropyFront initialization with presets
-- ✅ Reactive object tracking with Proxy
-- ✅ Breadcrumb system
-- ✅ Error handling and reporting
-- ✅ Real-time UI updates
+### Vue Example (`vue-example/`)
+- **Port:** 3001
+- **Framework:** Vue 3
+- **Build Tool:** Vite
+- **Features:** Complete demo with all SyntropyFront features
 
-**Features**:
-- User profile tracking with reactive updates
-- Simulated error generation
-- Network error handling
-- Statistics dashboard
-- Real-time breadcrumb display
+### Svelte Example (`svelte-example/`)
+- **Port:** 3002
+- **Framework:** Svelte 4
+- **Build Tool:** Vite
+- **Features:** Complete demo with all SyntropyFront features
 
-### StackBlitz - Vanilla JavaScript Demo
-**URL**: [Coming soon - will be added after npm publish]
+## Running the Examples
 
-A pure JavaScript demo showcasing:
-- ✅ Framework-agnostic usage
-- ✅ Proxy object tracking
-- ✅ Breadcrumb management
-- ✅ Error simulation
-- ✅ Statistics display
-
-**Features**:
-- No framework dependencies
-- Interactive form with proxy tracking
-- Real-time statistics
-- Error simulation
-- Clean, modern UI
-
-### CodePen - Quick Demo
-**URL**: [Coming soon - will be added after npm publish]
-
-A minimal demo for quick testing:
-- ✅ Basic initialization
-- ✅ Simple breadcrumb tracking
-- ✅ Error handling
-- ✅ Minimal setup
-
-## 🚀 How to Use These Examples
-
-### 1. CodeSandbox
-1. Click the CodeSandbox link (after npm publish)
-2. The demo will load automatically
-3. Interact with the form to see proxy tracking in action
-4. Click buttons to test different features
-5. Watch breadcrumbs and errors update in real-time
-
-### 2. StackBlitz
-1. Click the StackBlitz link (after npm publish)
-2. The demo runs in your browser
-3. Modify the user profile to see reactive tracking
-4. Test error simulation
-5. View statistics and breadcrumbs
-
-### 3. CodePen
-1. Click the CodePen link (after npm publish)
-2. Quick demo for basic functionality
-3. Perfect for understanding core concepts
-
-## 📦 Local Development
-
-To run these examples locally:
-
+### React Example
 ```bash
-# Clone the repository
-git clone https://github.com/Syntropysoft/syntropyfront.git
-cd syntropyfront
-
-# Install dependencies
-npm install
-
-# Build the package
-npm run build
-
-# Run examples locally
-cd examples/codesandbox
+cd react-example
 npm install
 npm start
+# Open http://localhost:3000
 ```
 
-## 🎨 Customization
+### Vue Example
+```bash
+cd vue-example
+npm install
+npm run dev
+# Open http://localhost:3001
+```
 
-Each example can be customized:
+### Svelte Example
+```bash
+cd svelte-example
+npm install
+npm run dev
+# Open http://localhost:3002
+```
 
-### React Demo
-- Modify `src/App.js` to add new features
-- Update `src/App.css` for styling changes
-- Add new components to test different scenarios
+## What Each Example Demonstrates
 
-### StackBlitz Demo
-- Edit the HTML file directly
-- Modify the JavaScript simulation
-- Update CSS for different themes
+All examples showcase:
 
-### CodePen Demo
-- Minimal setup for quick testing
-- Easy to modify and experiment
+1. **Auto-initialization** - SyntropyFront starts automatically on import
+2. **Configuration options** - Console, Fetch, and Custom Handler modes
+3. **Automatic capture** - Clicks, HTTP requests, console logs, errors
+4. **Manual API** - Adding breadcrumbs and sending errors manually
+5. **Real-time stats** - Live statistics display
+6. **Error handling** - All three error handling strategies
 
-## 🔧 Testing Different Features
+## Framework-Agnostic
 
-### Presets
-Try different presets in the initialization:
+SyntropyFront works identically across all frameworks because it uses vanilla JavaScript and browser APIs. The only difference is the import syntax:
+
 ```javascript
-// Safe preset - minimal impact
-await SyntropyFront.init({ preset: 'safe' });
-
-// Balanced preset - default
-await SyntropyFront.init({ preset: 'balanced' });
-
-// Debug preset - maximum information
-await SyntropyFront.init({ preset: 'debug' });
-
-// Performance preset - minimal overhead
-await SyntropyFront.init({ preset: 'performance' });
+// Same import in all frameworks
+import syntropyFront from '@syntropysoft/syntropyfront';
 ```
 
-### Proxy Tracking
-Test reactive object tracking:
-```javascript
-const userProfile = SyntropyFront.addProxyObject('userProfile', {
-  name: 'John Doe',
-  preferences: { theme: 'dark' }
-});
+## Key Features Demonstrated
 
-// Changes are automatically tracked
-userProfile.name = 'Jane Doe';
-userProfile.preferences.theme = 'light';
-```
-
-### Breadcrumbs
-Add custom breadcrumbs:
-```javascript
-SyntropyFront.addBreadcrumb('user', 'Button clicked', {
-  buttonId: 'submit',
-  timestamp: Date.now()
-});
-```
-
-### Error Handling
-Simulate errors:
-```javascript
-try {
-  throw new Error('Test error');
-} catch (error) {
-  SyntropyFront.sendError(error, { context: 'Demo' });
-}
-```
-
-## 📊 What You'll See
-
-### Real-time Updates
-- Breadcrumbs appear instantly when actions occur
-- Error count updates automatically
-- Statistics refresh in real-time
-- Proxy tracking shows object changes
-
-### Console Logging
-- Detailed logs for debugging
-- Initialization messages
-- Error details
-- Performance metrics
-
-### Network Activity
-- Requests to test endpoints (httpbin.org)
-- Error simulation with failed requests
-- Batch sending of data
-
-## 🎯 Learning Path
-
-1. **Start with CodePen** - Basic concepts
-2. **Try StackBlitz** - Framework-agnostic usage
-3. **Explore CodeSandbox** - Full React integration
-4. **Experiment locally** - Custom modifications
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Example doesn't load:**
-- Check browser console for errors
-- Ensure JavaScript is enabled
-- Try refreshing the page
-
-**SyntropyFront not found:**
-- Examples use CDN links (after npm publish)
-- For local development, use `npm link`
-
-**Proxy tracking not working:**
-- Check browser console for errors
-- Ensure the object is properly wrapped
-- Verify initialization completed
-
-### Getting Help
-
-- Check the [main documentation](../README.md)
-- Open an issue on GitHub
-- Review console logs for error details
-
-## 🚀 Next Steps
-
-After exploring these examples:
-
-1. **Integrate into your project** - Use the npm package
-2. **Customize for your needs** - Modify presets and configuration
-3. **Add to your monitoring stack** - Combine with other tools
-4. **Contribute** - Submit improvements and new examples
-
----
-
-**Happy coding! 🎉** 
+- ✅ **1-line setup** - Just import and it works
+- ✅ **Automatic capture** - No configuration needed for basic functionality
+- ✅ **Flexible configuration** - Choose your error handling strategy
+- ✅ **Real-time monitoring** - Live statistics and event tracking
+- ✅ **Framework independence** - Same API across React, Vue, Svelte, and vanilla JS 

@@ -1,0 +1,19 @@
+{
+  "name": "syntropyfront-svelte-demo",
+  "version": "1.0.0",
+  "description": "SyntropyFront Svelte Demo",
+  "type": "module",
+  "dependencies": {
+    "@syntropysoft/syntropyfront": "^0.2.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^2.4.0",
+    "svelte": "^4.0.0",
+    "vite": "^4.3.0"
+  }
+} 

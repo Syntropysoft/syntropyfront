@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './css/App.css';
 
 // Import SyntropyFront - Auto-initializes!
-import syntropyFront from 'syntropyfront';
+import syntropyFront from '@syntropysoft/syntropyfront';
 
 /**
  * App - Minimalist SyntropyFront Demo
@@ -166,7 +166,7 @@ function App() {
 
           <h3>How to configure error handling?</h3>
           <pre>
-            {`import syntropyFront from 'syntropyfront';
+            {`import syntropyFront from '@syntropysoft/syntropyfront';
 
 // Option 1: Console only (default)
 syntropyFront.configure({
@@ -247,7 +247,7 @@ syntropyFront.configure({
             <strong>Choose your error handling strategy: console, fetch, or custom handler</strong>
           </p>
           <pre>
-            {`import syntropyFront from 'syntropyfront';
+            {`import syntropyFront from '@syntropysoft/syntropyfront';
 // Ready! Auto-initializes`}
           </pre>
         </div>
