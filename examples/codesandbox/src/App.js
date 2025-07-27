@@ -1,105 +1,244 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './css/App.css';
 
-// Import hooks
-import { useAppReady, useBreadcrumbs, useErrorSimulation, useDebugLogging, useClickCounter, useSyntropyFront, useReactInterceptors } from './hooks';
-
-// Import components
-import { Header, Actions, Breadcrumbs, Errors } from './components';
+// Import SyntropyFront - ¡Se auto-inicializa!
+import syntropyFront from 'syntropyfront';
 
 /**
- * App - Orchestrates the components
- * Single responsibility: Coordinate components
+ * App - Demo minimalista de SyntropyFront
+ * Single responsibility: Demostrar que funciona con 2 líneas de código
  */
 function App() {
-  // Hook to detect when app is ready
-  const { isReady } = useAppReady();
+  const [clickCount, setClickCount] = useState(0);
+  const [stats, setStats] = useState(null);
+  const [configMode, setConfigMode] = useState('console'); // 'console', 'jsonplaceholder', 'custom'
 
-  // Hook to integrate with SyntropyFront
-  const { syntropyFront, isLoaded } = useSyntropyFront();
+  // Configurar SyntropyFront cuando la app se monta
+  useEffect(() => {
+    let fetchConfig = null;
 
-  // Hook to load React interceptors
-  const { interceptors, isLoaded: interceptorsLoaded } = useReactInterceptors();
-
-  // Hook to handle breadcrumbs
-  const { breadcrumbs, addBreadcrumb, clearBreadcrumbs } = useBreadcrumbs();
-
-  // Hook to count clicks
-  const { clickCount, incrementClick, resetClickCount } = useClickCounter();
-
-  // Hook to handle error simulation
-  const { simulateError } = useErrorSimulation(addBreadcrumb);
-
-  // Hook for logging/debugging
-  const { 
-    logUserAction, 
-    logBreadcrumbAdded, 
-    logClearing,
-    logDataCleared,
-    logSimulatingError,
-    logExploding
-  } = useDebugLogging();
-
-  // Simple event handlers
-  const handleUserAction = () => {
-    incrementClick();
-    logUserAction('Button clicked');
-    addBreadcrumb('user', 'Button clicked');
-    
-    // También agregar breadcrumb a SyntropyFront si está cargado
-    if (syntropyFront && isLoaded) {
-      syntropyFront.addBreadcrumb('user', 'Button clicked');
+    if (configMode === 'jsonplaceholder') {
+      // Usar JSONPlaceholder que permite CORS
+      fetchConfig = {
+        url: 'https://jsonplaceholder.typicode.com/posts',
+        options: {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          mode: 'cors',
+        },
+      };
+    } else if (configMode === 'custom') {
+      // Configuración personalizada (ejemplo)
+      fetchConfig = {
+        url: 'https://httpbin.org/post', // Permite CORS
+        options: {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Custom-Header': 'SyntropyFront',
+          },
+          mode: 'cors',
+        },
+      };
     }
-    
-    logBreadcrumbAdded();
+    // Si es 'console', fetchConfig queda null
+
+    // Configurar SyntropyFront
+    syntropyFront.configure({
+      maxEvents: 20, // Mantener solo los últimos 20 eventos
+      fetch: fetchConfig,
+    });
+
+    // Actualizar stats cada segundo
+    const interval = setInterval(() => {
+      setStats(syntropyFront.getStats());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [configMode]);
+
+  const handleClick = () => {
+    setClickCount((prev) => prev + 1);
+    console.log('Click registrado!');
   };
 
-  const handleSimulateError = () => {
-    logSimulatingError();
-    simulateError();
-    
-    // También enviar error a SyntropyFront si está cargado
-    if (syntropyFront && isLoaded) {
-      syntropyFront.sendError(new Error('Simulated error from React app'));
-    }
-    
-    logExploding();
+  const handleError = () => {
+    throw new Error('Error simulado para probar SyntropyFront');
   };
 
-  const handleClearData = () => {
-    logClearing();
-    clearBreadcrumbs();
-    resetClickCount();
-    
-    // También limpiar breadcrumbs en SyntropyFront si está cargado
-    if (syntropyFront && isLoaded) {
-      syntropyFront.clearBreadcrumbs();
+  const handleFetch = async () => {
+    try {
+      await fetch('https://jsonplaceholder.typicode.com/posts/1');
+      console.log('Fetch exitoso!');
+    } catch (error) {
+      console.error('Fetch falló:', error);
     }
-    
-    logDataCleared();
+  };
+
+  const handleManualBreadcrumb = () => {
+    syntropyFront.addBreadcrumb('user', 'Breadcrumb manual agregado');
+    console.log('Breadcrumb manual agregado!');
+  };
+
+  const handleManualError = () => {
+    syntropyFront.sendError(new Error('Error manual enviado'));
+    console.log('Error manual enviado!');
   };
 
   return (
-    <div className="App">
-      <Header 
-        isReady={isReady} 
-        syntropyFrontLoaded={isLoaded} 
-        interceptorsLoaded={interceptorsLoaded}
-      />
-      
-      <main className="App-main">
-        <Actions 
-          onUserAction={handleUserAction}
-          onSimulateError={handleSimulateError}
-          onClearData={handleClearData}
-          clickCount={clickCount}
-        />
-        
-        <Breadcrumbs breadcrumbs={breadcrumbs} />
-        <Errors errors={[]} />
+    <div className='App'>
+      <header className='App-header'>
+        <h1>🚀 SyntropyFront Demo</h1>
+        <p>Librería de observabilidad con captura automática</p>
+        <div className='status'>
+          <span>✅ SyntropyFront cargado y funcionando</span>
+          {stats && (
+            <div className='stats'>
+              <span>📊 Breadcrumbs: {stats.breadcrumbs}</span>
+              <span>🚨 Errores: {stats.errors}</span>
+              <span>📤 Endpoint: {stats.endpoint}</span>
+            </div>
+          )}
+        </div>
+      </header>
+
+      <main className='App-main'>
+        <div className='config-selector'>
+          <h3>🔧 Configuración de Endpoint:</h3>
+          <div className='config-buttons'>
+            <button
+              onClick={() => setConfigMode('console')}
+              className={configMode === 'console' ? 'active' : ''}
+            >
+              Solo Console
+            </button>
+            <button
+              onClick={() => setConfigMode('jsonplaceholder')}
+              className={configMode === 'jsonplaceholder' ? 'active' : ''}
+            >
+              JSONPlaceholder (CORS OK)
+            </button>
+            <button
+              onClick={() => setConfigMode('custom')}
+              className={configMode === 'custom' ? 'active' : ''}
+            >
+              HttpBin (CORS OK)
+            </button>
+          </div>
+        </div>
+
+        <div className='actions'>
+          <button onClick={handleClick}>Click me! ({clickCount})</button>
+
+          <button onClick={handleFetch}>Test HTTP Request</button>
+
+          <button onClick={handleManualBreadcrumb}>Agregar Breadcrumb Manual</button>
+
+          <button onClick={handleManualError}>Enviar Error Manual</button>
+
+          <button onClick={handleError} style={{ backgroundColor: '#ff4444' }}>
+            Simular Error
+          </button>
+        </div>
+
+        <div className='info'>
+          <h3>¿Qué hace SyntropyFront automáticamente?</h3>
+          <ul>
+            <li>🎯 Captura todos los clicks</li>
+            <li>🚨 Detecta errores automáticamente</li>
+            <li>🌐 Intercepta llamadas HTTP</li>
+            <li>📝 Registra console logs</li>
+            <li>💾 Mantiene los últimos N eventos (configurable)</li>
+            <li>📤 Postea errores con configuración completa de fetch</li>
+          </ul>
+
+          <h3>¿Cómo configurar fetch?</h3>
+          <pre>
+            {`import syntropyFront from 'syntropyfront';
+
+// Opción 1: Solo console (sin configuración)
+syntropyFront.configure({
+  maxEvents: 50
+});
+
+// Opción 2: Con endpoint que permite CORS
+syntropyFront.configure({
+  maxEvents: 50,
+  fetch: {
+    url: 'https://jsonplaceholder.typicode.com/posts',
+    options: {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+    }
+  }
+});
+
+// Opción 3: Con tu API (necesita CORS configurado)
+syntropyFront.configure({
+  maxEvents: 50,
+  fetch: {
+    url: 'https://tu-api.com/errors',
+    options: {
+      headers: {
+        'Authorization': 'Bearer tu-token',
+        'X-API-Key': 'tu-api-key',
+        'Content-Type': 'application/json',
+      },
+      mode: 'cors',
+      credentials: 'include',
+    }
+  }
+});
+
+// ¡Ya está! Se auto-inicializa`}
+          </pre>
+
+          <h3>⚠️ Nota sobre CORS:</h3>
+          <p>
+            Para que funcione con tu API, necesitas configurar CORS en tu servidor para permitir requests desde tu dominio.
+            Los endpoints de ejemplo (JSONPlaceholder, HttpBin) ya tienen CORS configurado.
+          </p>
+
+          <h3>¿Qué se postea?</h3>
+          <pre>
+            {`{
+  "type": "uncaught_exception",
+  "error": {
+    "message": "Error message",
+    "source": "file.js",
+    "lineno": 42,
+    "colno": 15,
+    "stack": "Error stack trace..."
+  },
+  "breadcrumbs": [
+    {
+      "category": "user",
+      "message": "click",
+      "data": { "element": "BUTTON", "x": 100, "y": 200 },
+      "timestamp": "2024-01-01T12:00:00.000Z"
+    }
+    // ... últimos N eventos
+  ],
+  "timestamp": "2024-01-01T12:00:00.000Z"
+}`}
+          </pre>
+
+          <p>
+            <strong>¡Solo necesitas 1 línea de código básico!</strong>
+          </p>
+          <p>
+            <strong>Si le das un endpoint, se postea ahí, si no, se postea en la consola</strong>
+          </p>
+          <pre>
+            {`import syntropyFront from 'syntropyfront';
+// ¡Ya está! Se auto-inicializa`}
+          </pre>
+        </div>
       </main>
     </div>
   );
 }
 
-export default App; 
+export default App;
