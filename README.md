@@ -7,7 +7,7 @@
 <p align="center">
   <strong>From Chaos to Clarity</strong>
   <br />
-  The Observability Framework for High-Performance Teams
+  The Observability Library for High-Performance Teams
 </p>
 
 <p align="center">
