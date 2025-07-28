@@ -1,4 +1,24 @@
-# SyntropyFront
+<p align="center">
+  <img src="./assets/syntropysoft-logo.png" alt="SyntropySoft Logo" width="170"/>
+</p>
+
+<h1 align="center">SyntropyFront</h1>
+
+<p align="center">
+  <strong>From Chaos to Clarity</strong>
+  <br />
+  The Observability Framework for High-Performance Teams
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/syntropyfront"><img src="https://img.shields.io/npm/v/syntropyfront.svg" alt="NPM Version"></a>
+  <a href="https://github.com/Syntropysoft/SyntropyLog/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/syntropyfront.svg" alt="License"></a>
+  <a href="#"><img src="https://img.shields.io/badge/status-beta-blue.svg" alt="Beta"></a>
+  <a href="https://github.com/Syntropysoft/SyntropyLog/actions/workflows/codeql.yml"><img src="https://github.com/Syntropysoft/SyntropyLog/workflows/CodeQL/badge.svg" alt="CodeQL"></a>
+  <a href="https://github.com/Syntropysoft/SyntropyLog/security/advisories"><img src="https://img.shields.io/badge/dependabot-enabled-brightgreen.svg" alt="Dependabot"></a>
+</p>
+
+---
 
 🚀 **Observability library with automatic capture - Just 1 line of code!**
 
