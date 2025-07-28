@@ -153,19 +153,19 @@ class SyntropyFront {
             const [url, options] = args;
             
             this.addBreadcrumb('http', 'fetch', {
-                url: url,
+                url,
                 method: options?.method || 'GET'
             });
 
             return originalFetch(...args).then(response => {
                 this.addBreadcrumb('http', 'fetch_response', {
-                    url: url,
+                    url,
                     status: response.status
                 });
                 return response;
             }).catch(error => {
                 this.addBreadcrumb('http', 'fetch_error', {
-                    url: url,
+                    url,
                     error: error.message
                 });
                 throw error;

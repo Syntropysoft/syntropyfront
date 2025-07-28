@@ -218,7 +218,7 @@ export class ContextCollector {
      */
     generateSessionId() {
         if (!this._sessionId) {
-            this._sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            this._sessionId = `session_${  Date.now()  }_${  Math.random().toString(36).substr(2, 9)}`;
         }
         return this._sessionId;
     }

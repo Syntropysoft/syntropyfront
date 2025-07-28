@@ -89,7 +89,7 @@ export class RobustSerializer {
                 const refId = this.circularRefs.get(obj);
                 return {
                     __circular: true,
-                    refId: refId
+                    refId
                 };
             }
 
@@ -109,7 +109,7 @@ export class RobustSerializer {
                 const refId = this.circularRefs.get(obj);
                 return {
                     __circular: true,
-                    refId: refId
+                    refId
                 };
             }
 
@@ -121,7 +121,7 @@ export class RobustSerializer {
 
             // Procesar propiedades del objeto
             for (const key in obj) {
-                if (obj.hasOwnProperty(key)) {
+                if (Object.prototype.hasOwnProperty.call(obj, key)) {
                     try {
                         const value = obj[key];
                         const safeValue = this.makeSerializable(value, `${path}.${key}`);
@@ -164,7 +164,7 @@ export class RobustSerializer {
                 __type: 'Function',
                 name: obj.name || 'anonymous',
                 length: obj.length,
-                toString: obj.toString().substring(0, 200) + '...'
+                toString: `${obj.toString().substring(0, 200)  }...`
             };
         }
 
@@ -172,7 +172,7 @@ export class RobustSerializer {
         return {
             __type: 'Unknown',
             constructor: obj.constructor ? obj.constructor.name : 'Unknown',
-            toString: String(obj).substring(0, 200) + '...'
+            toString: `${String(obj).substring(0, 200)  }...`
         };
     }
 
@@ -257,7 +257,7 @@ export class RobustSerializer {
             refs.set(obj, result);
 
             for (const key in obj) {
-                if (obj.hasOwnProperty(key)) {
+                if (Object.prototype.hasOwnProperty.call(obj, key)) {
                     if (key.startsWith('__')) {
                         // Propiedades especiales
                         continue;

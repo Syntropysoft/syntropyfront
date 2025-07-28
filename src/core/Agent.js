@@ -217,7 +217,7 @@ export class Agent {
         // Agregar contexto si está disponible
         const payloadWithContext = context ? {
             ...errorPayload,
-            context: context
+            context
         } : errorPayload;
 
         // Aplicar encriptación si está configurada
@@ -384,7 +384,7 @@ export class Agent {
     async sendToBackend(items) {
         const payload = {
             timestamp: new Date().toISOString(),
-            items: items
+            items
         };
 
         // ✅ SERIALIZACIÓN ROBUSTA: Usar serializador que maneja referencias circulares
