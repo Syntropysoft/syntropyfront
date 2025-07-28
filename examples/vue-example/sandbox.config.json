@@ -1,0 +1,9 @@
+{
+  "template": "node",
+  "container": {
+    "node": "18"
+  },
+  "sandbox": {
+    "startScript": "dev"
+  }
+} 
