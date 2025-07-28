@@ -11,11 +11,9 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/syntropyfront"><img src="https://img.shields.io/npm/v/syntropyfront.svg" alt="NPM Version"></a>
-  <a href="https://github.com/Syntropysoft/SyntropyLog/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/syntropyfront.svg" alt="License"></a>
-  <a href="#"><img src="https://img.shields.io/badge/status-beta-blue.svg" alt="Beta"></a>
-  <a href="https://github.com/Syntropysoft/SyntropyLog/actions/workflows/codeql.yml"><img src="https://github.com/Syntropysoft/SyntropyLog/workflows/CodeQL/badge.svg" alt="CodeQL"></a>
-  <a href="https://github.com/Syntropysoft/SyntropyLog/security/advisories"><img src="https://img.shields.io/badge/dependabot-enabled-brightgreen.svg" alt="Dependabot"></a>
+  <a href="https://www.npmjs.com/package/@syntropysoft/syntropyfront"><img src="https://img.shields.io/npm/v/@syntropysoft/syntropyfront.svg" alt="NPM Version"></a>
+  <a href="https://github.com/Syntropysoft/SyntropyLog/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@syntropysoft/syntropyfront.svg" alt="License"></a>
+  <a href="#"><img src="https://img.shields.io/badge/status-ready%20for%20production-brightgreen.svg" alt="Ready for Production"></a>
 </p>
 
 ---
