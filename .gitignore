@@ -48,4 +48,8 @@ pids
 
 # Temporary folders
 tmp/
-temp/ 
+temp/
+
+# Stryker mutation testing
+reports/mutation/
+.stryker-tmp/ 

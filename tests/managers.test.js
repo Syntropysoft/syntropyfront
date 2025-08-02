@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BreadcrumbManager } from '../src/core/BreadcrumbManager.js';
-import { ErrorManager } from '../src/core/ErrorManager.js';
-import { Logger } from '../src/core/Logger.js';
+const { describe, it, expect, beforeEach } = require('@jest/globals');
+const { BreadcrumbManager } = require('../src/core/breadcrumbs/BreadcrumbManager.js');
+const { ErrorManager } = require('../src/core/utils/ErrorManager.js');
+const { Logger } = require('../src/core/utils/Logger.js');
 
 describe('BreadcrumbManager', () => {
   let breadcrumbManager;
@@ -164,9 +164,9 @@ describe('Logger', () => {
   beforeEach(() => {
     logger = new Logger();
     
-    mockConsoleLog = vi.fn();
-    mockConsoleError = vi.fn();
-    mockConsoleWarn = vi.fn();
+    mockConsoleLog = jest.fn();
+    mockConsoleError = jest.fn();
+    mockConsoleWarn = jest.fn();
     
     global.console.log = mockConsoleLog;
     global.console.error = mockConsoleError;
@@ -246,7 +246,7 @@ describe('Logger', () => {
       logger.log('Should log');
       expect(mockConsoleLog).toHaveBeenCalledWith('Should log');
       
-      vi.clearAllMocks();
+      jest.clearAllMocks();
       
       logger.disableLogging();
       logger.log('Should not log');

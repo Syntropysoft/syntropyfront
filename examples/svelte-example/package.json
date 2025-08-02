@@ -4,7 +4,7 @@
   "description": "SyntropyFront Svelte Demo",
   "type": "module",
   "dependencies": {
-    "@syntropysoft/syntropyfront": "^0.2.0"
+   "@syntropysoft/syntropyfront": "file:../../"
   },
   "scripts": {
     "dev": "vite --port 3002 --host",

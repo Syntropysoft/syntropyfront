@@ -1,6 +1,6 @@
 {
   "name": "@syntropysoft/syntropyfront",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "description": "🚀 Observability library with automatic capture - Just 1 line of code! Automatically captures clicks, errors, HTTP calls, and console logs with flexible error handling.",
   "main": "dist/index.js",
@@ -23,13 +23,16 @@
     "build": "rollup -c",
     "build:watch": "rollup -c -w",
     "dev": "npm run build:watch",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest --coverage",
-    "prepublishOnly": "npm run build",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --config jest.config.coverage.cjs",
+    "test:mutation": "stryker run",
+    "test:mutation:watch": "stryker run --watch",
+    "test:mutation:quick": "stryker run stryker.quick.conf.json",
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .js",
-    "lint:fix": "eslint src --ext .js --fix"
+    "lint:fix": "eslint src --ext .js --fix",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "keywords": [
     "frontend",
@@ -65,14 +68,20 @@
     "flatted": "^3.3.3"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@jest/globals": "^30.0.5",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-node-resolve": "^15.0.0",
     "@rollup/plugin-terser": "^0.4.0",
-    "@vitest/coverage-v8": "^3.2.4",
+    "@stryker-mutator/core": "^8.7.1",
+    "@stryker-mutator/jest-runner": "^8.7.1",
+    "@stryker-mutator/vitest-runner": "^8.7.1",
+    "babel-jest": "^30.0.5",
     "eslint": "^8.0.0",
-    "jsdom": "^26.1.0",
-    "rollup": "^3.0.0",
-    "vitest": "^3.2.4"
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
+    "rollup": "^3.0.0"
   },
   "browserslist": [
     "> 1%",

@@ -9,8 +9,6 @@
           <span>📊 Breadcrumbs: {{ stats.breadcrumbs }}</span>
           <span>🚨 Errors: {{ stats.errors }}</span>
           <span>📤 Mode: {{ configMode }}</span>
-          <span v-if="stats.hasErrorCallback">🎯 Custom handler: ✅</span>
-          <span v-if="stats.hasFetchConfig">🌐 Endpoint: {{ stats.endpoint }}</span>
         </div>
       </div>
     </header>
@@ -59,24 +57,17 @@
           <li>📤 Handles errors with priority system</li>
         </ul>
 
-        <h3>Error Handling Priority:</h3>
-        <ol>
-          <li><strong>Custom Handler</strong> - You decide what to do with errors</li>
-          <li><strong>Automatic Fetch</strong> - Posts to your endpoint</li>
-          <li><strong>Console Only</strong> - Default fallback</li>
-        </ol>
-
         <h3>How to configure error handling?</h3>
         <pre><code>import syntropyFront from '@syntropysoft/syntropyfront';
 
 // Option 1: Console only (default)
 syntropyFront.configure({
-  maxEvents: 50
+  maxEvents: 20
 });
 
 // Option 2: Automatic fetch
 syntropyFront.configure({
-  maxEvents: 50,
+  maxEvents: 20,
   fetch: {
     url: 'https://your-api.com/errors',
     options: {
@@ -88,58 +79,16 @@ syntropyFront.configure({
 
 // Option 3: Custom handler (maximum flexibility)
 syntropyFront.configure({
-  maxEvents: 50,
+  maxEvents: 20,
   onError: (errorPayload) => {
-    // You can do anything:
-    // - Send to your API
-    // - Save to localStorage
-    // - Send to multiple services
-    // - Upload to cloud
-    // - Whatever you want!
     console.log('Error:', errorPayload);
-    
-    // Example: send to multiple places
-    fetch('https://api1.com/errors', {
-      method: 'POST',
-      body: JSON.stringify(errorPayload)
-    });
-    
-    localStorage.setItem('lastError', JSON.stringify(errorPayload));
+    // Do whatever you want with the error!
   }
 });
 
 // Ready! Auto-initializes</code></pre>
 
-        <h3>⚠️ Note about CORS:</h3>
-        <p>
-          To work with your API, you need to configure CORS on your server to allow requests from your domain.
-          The example endpoints (JSONPlaceholder) already have CORS configured.
-        </p>
-
-        <h3>What gets captured?</h3>
-        <pre><code>{
-  "type": "uncaught_exception",
-  "error": {
-    "message": "Error message",
-    "source": "file.js",
-    "lineno": 42,
-    "colno": 15,
-    "stack": "Error stack trace..."
-  },
-  "breadcrumbs": [
-    {
-      "category": "user",
-      "message": "click",
-      "data": { "element": "BUTTON", "x": 100, "y": 200 },
-      "timestamp": "2024-01-01T12:00:00.000Z"
-    }
-    // ... last N events
-  ],
-  "timestamp": "2024-01-01T12:00:00.000Z"
-}</code></pre>
-
         <p><strong>You only need 1 line of basic code!</strong></p>
-        <p><strong>Choose your error handling strategy: console, fetch, or custom handler</strong></p>
         <pre><code>import syntropyFront from '@syntropysoft/syntropyfront';
 // Ready! Auto-initializes</code></pre>
       </div>
@@ -164,7 +113,7 @@ export default {
 
     const handleClick = () => {
       clickCount.value++
-      console.log('Button clicked!')
+      console.log('Click registered!')
     }
 
     const handleError = () => {
@@ -173,22 +122,21 @@ export default {
 
     const handleFetch = async () => {
       try {
-        const response = await fetch('https://jsonplaceholder.typicode.com/posts/1')
-        const data = await response.json()
-        console.log('Fetch response:', data)
+        await fetch('https://jsonplaceholder.typicode.com/posts/1')
+        console.log('Fetch successful!')
       } catch (error) {
-        console.error('Fetch error:', error)
+        console.error('Fetch failed:', error)
       }
     }
 
     const handleManualBreadcrumb = () => {
       syntropyFront.addBreadcrumb('user', 'Manual breadcrumb added')
-      console.log('Manual breadcrumb added')
+      console.log('Manual breadcrumb added!')
     }
 
     const handleManualError = () => {
       syntropyFront.sendError(new Error('Manual error sent'))
-      console.log('Manual error sent')
+      console.log('Manual error sent!')
     }
 
     // Configure SyntropyFront when configMode changes
@@ -209,21 +157,17 @@ export default {
         config.onError = (errorPayload) => {
           console.log('🎯 Custom error handler called:', errorPayload)
           
-          // Example: send to multiple places
           fetch('https://jsonplaceholder.typicode.com/posts', {
             method: 'POST',
             body: JSON.stringify(errorPayload),
             headers: { 'Content-Type': 'application/json' }
           }).catch(err => console.log('Fetch failed:', err))
           
-          // Also save locally
           localStorage.setItem('lastError', JSON.stringify(errorPayload))
-          
           console.log('✅ Error handled by custom callback')
         }
       }
 
-      // Configure SyntropyFront
       syntropyFront.configure(config)
     }, { immediate: true })
 
@@ -263,7 +207,7 @@ export default {
   text-align: center;
   margin-bottom: 40px;
   padding: 40px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #42b883 0%, #35495e 100%);
   color: white;
   border-radius: 12px;
 }
@@ -323,8 +267,8 @@ export default {
 }
 
 .config-buttons button.active {
-  border-color: #667eea;
-  background: #667eea;
+  border-color: #42b883;
+  background: #42b883;
   color: white;
 }
 
@@ -340,7 +284,7 @@ export default {
   padding: 12px 24px;
   border: none;
   border-radius: 8px;
-  background: #667eea;
+  background: #42b883;
   color: white;
   cursor: pointer;
   font-size: 1rem;
@@ -348,7 +292,7 @@ export default {
 }
 
 .actions button:hover {
-  background: #5a6fd8;
+  background: #42d392;
   transform: translateY(-2px);
 }
 
@@ -368,7 +312,7 @@ export default {
 }
 
 .info h3 {
-  color: #333;
+  color: #35495e;
   margin-top: 30px;
   margin-bottom: 15px;
 }
@@ -383,7 +327,7 @@ export default {
 }
 
 .info pre {
-  background: #2d3748;
+  background: #35495e;
   color: #e2e8f0;
   padding: 20px;
   border-radius: 8px;

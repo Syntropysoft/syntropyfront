@@ -1,7 +1,7 @@
 // Mock browser APIs for testing
 global.window = {
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
   location: {
     href: 'http://localhost:3000',
     pathname: '/',
@@ -20,33 +20,33 @@ global.window = {
   innerWidth: 1920,
   innerHeight: 1080,
   localStorage: {
-    getItem: vi.fn(),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn()
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    clear: jest.fn()
   },
   sessionStorage: {
-    getItem: vi.fn(),
-    setItem: vi.fn(),
-    removeItem: vi.fn(),
-    clear: vi.fn()
+    getItem: jest.fn(),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    clear: jest.fn()
   },
-  fetch: vi.fn(),
+  fetch: jest.fn(),
   onerror: null,
   onunhandledrejection: null
 };
 
 global.document = {
-  addEventListener: vi.fn(),
-  removeEventListener: vi.fn(),
-  createElement: vi.fn(() => ({
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
+  addEventListener: jest.fn(),
+  removeEventListener: jest.fn(),
+  createElement: jest.fn(() => ({
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
     style: {}
   })),
-  getElementById: vi.fn(),
-  querySelector: vi.fn(),
-  querySelectorAll: vi.fn(() => []),
+  getElementById: jest.fn(),
+  querySelector: jest.fn(),
+  querySelectorAll: jest.fn(() => []),
   title: 'Test Page'
 };
 
@@ -58,25 +58,25 @@ global.fetch = global.window.fetch;
 
 // Mock IndexedDB
 global.indexedDB = {
-  open: vi.fn(),
-  deleteDatabase: vi.fn()
+  open: jest.fn(),
+  deleteDatabase: jest.fn()
 };
 
 // Mock Worker
-global.Worker = vi.fn();
+global.Worker = jest.fn();
 
 // Mock performance API
 global.performance = {
-  now: vi.fn(() => Date.now()),
-  mark: vi.fn(),
-  measure: vi.fn()
+  now: jest.fn(() => Date.now()),
+  mark: jest.fn(),
+  measure: jest.fn()
 };
 
 // Mock console methods
 global.console = {
-  log: vi.fn(),
-  warn: vi.fn(),
-  error: vi.fn(),
-  info: vi.fn(),
-  debug: vi.fn()
+  log: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  info: jest.fn(),
+  debug: jest.fn()
 }; 
