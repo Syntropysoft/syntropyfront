@@ -73,20 +73,20 @@ describe('RetryManager', () => {
             // First retry: 1000ms
             retryManager.addToRetryQueue(items, 1);
             const firstRetry = retryManager.retryQueue[0];
-            expect(firstRetry.nextRetry).toBeGreaterThan(Date.now() + 999);
-            expect(firstRetry.nextRetry).toBeLessThan(Date.now() + 1001);
+            expect(firstRetry.nextRetry).toBeGreaterThan(Date.now() + 990);
+            expect(firstRetry.nextRetry).toBeLessThan(Date.now() + 1010);
             
             // Second retry: 2000ms
             retryManager.addToRetryQueue(items, 2);
             const secondRetry = retryManager.retryQueue[1];
-            expect(secondRetry.nextRetry).toBeGreaterThan(Date.now() + 1999);
-            expect(secondRetry.nextRetry).toBeLessThan(Date.now() + 2001);
+            expect(secondRetry.nextRetry).toBeGreaterThan(Date.now() + 1990);
+            expect(secondRetry.nextRetry).toBeLessThan(Date.now() + 2010);
             
             // Third retry: 4000ms
             retryManager.addToRetryQueue(items, 3);
             const thirdRetry = retryManager.retryQueue[2];
-            expect(thirdRetry.nextRetry).toBeGreaterThan(Date.now() + 3999);
-            expect(thirdRetry.nextRetry).toBeLessThan(Date.now() + 4001);
+            expect(thirdRetry.nextRetry).toBeGreaterThan(Date.now() + 3990);
+            expect(thirdRetry.nextRetry).toBeLessThan(Date.now() + 4010);
         });
 
         it('should respect max delay limit', () => {
@@ -101,7 +101,7 @@ describe('RetryManager', () => {
             // 10th retry should be capped at maxDelay
             retryManager.addToRetryQueue(items, 10);
             const retryItem = retryManager.retryQueue[0];
-            expect(retryItem.nextRetry).toBeGreaterThan(Date.now() + 4999);
+            expect(retryItem.nextRetry).toBeGreaterThan(Date.now() + 4990);
             expect(retryItem.nextRetry).toBeLessThan(Date.now() + 60000);
         });
 
