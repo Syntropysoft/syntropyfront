@@ -16,8 +16,8 @@
   <a href="#"><img src="https://img.shields.io/badge/status-ready%20for%20production-brightgreen.svg" alt="Ready for Production"></a>
   <a href="#"><img src="https://github.com/Syntropysoft/syntropyfront/workflows/CodeQL/badge.svg" alt="CodeQL"></a>
   <a href="#"><img src="https://img.shields.io/badge/dependabot-enabled-brightgreen.svg" alt="Dependabot"></a>
-  <a href="#"><img src="https://img.shields.io/badge/mutation%20score-77.60%25-brightgreen.svg" alt="Mutation Score"></a>
-  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-80%2B%25-brightgreen.svg" alt="Test Coverage"></a>
+  <a href="#"><img src="https://img.shields.io/badge/mutation%20score-75.94%25-brightgreen.svg" alt="Mutation Score"></a>
+  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-91%2B%25-brightgreen.svg" alt="Test Coverage"></a>
 </p>
 
 ---
