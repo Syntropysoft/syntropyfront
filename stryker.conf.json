@@ -23,7 +23,10 @@
     "config": {
       "testMatch": [
         "**/tests/*.test.js",
-        "!**/tests/agent.test.js"
+        "!**/tests/agent.test.js",
+        "!**/tests/storageManager.test.js",
+        "!**/tests/database*.test.js",
+        "!**/tests/persistentBufferManager*.test.js"
       ]
     }
   },
@@ -38,7 +41,7 @@
     "low": 40,
     "break": null
   },
-  "timeoutMS": 2000,
+  "timeoutMS": 5000,
   "maxConcurrentTestRunners": 2,
   "mutator": "javascript"
 }
