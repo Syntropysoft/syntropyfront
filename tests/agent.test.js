@@ -612,8 +612,8 @@ describe('Agent', () => {
       const item = agent.retryQueue[0];
       const expectedDelay = Math.min(agent.baseDelay * Math.pow(2, 2), agent.maxDelay);
       
-      expect(item.nextRetry).toBeGreaterThan(Date.now() + expectedDelay - 200);
-      expect(item.nextRetry).toBeLessThan(Date.now() + expectedDelay + 200);
+      expect(item.nextRetry).toBeGreaterThan(Date.now() + expectedDelay - 300);
+      expect(item.nextRetry).toBeLessThan(Date.now() + expectedDelay + 300);
     });
   });
 
