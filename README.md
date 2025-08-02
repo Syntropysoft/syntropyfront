@@ -16,6 +16,8 @@
   <a href="#"><img src="https://img.shields.io/badge/status-ready%20for%20production-brightgreen.svg" alt="Ready for Production"></a>
   <a href="#"><img src="https://github.com/Syntropysoft/syntropyfront/workflows/CodeQL/badge.svg" alt="CodeQL"></a>
   <a href="#"><img src="https://img.shields.io/badge/dependabot-enabled-brightgreen.svg" alt="Dependabot"></a>
+  <a href="#"><img src="https://img.shields.io/badge/mutation%20score-68.55%25-brightgreen.svg" alt="Mutation Score"></a>
+  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-80%2B%25-brightgreen.svg" alt="Test Coverage"></a>
 </p>
 
 ---
@@ -399,6 +401,40 @@ window.addEventListener('load', () => {
     loadTime: performance.now()
   });
 });
+```
+
+## 🧪 Testing & Quality
+
+SyntropyFront maintains high code quality through comprehensive testing:
+
+### Test Coverage & Mutation Testing
+
+- **Mutation Score**: 68.55% - Our tests effectively detect code changes
+- **Test Coverage**: 80%+ - Comprehensive unit test coverage
+- **Key Components Performance**:
+  - `Agent.js`: 87.23% mutation score
+  - `ConfigurationManager.js`: 100% mutation score
+  - `QueueManager.js`: 97.37% mutation score
+  - `HttpTransport.js`: 86.96% mutation score
+
+### Testing Stack
+
+- **Jest**: Unit testing framework
+- **Stryker**: Mutation testing for test quality validation
+- **IndexedDB Mocking**: Browser storage testing
+- **Fetch Mocking**: HTTP request testing
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Run mutation testing
+npm run test:mutation
 ```
 
 ## 🔍 Debugging
