@@ -1,6 +1,6 @@
 {
   "name": "@syntropysoft/syntropyfront",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "type": "module",
   "description": "🚀 Observability library with automatic capture - Just 1 line of code! Automatically captures clicks, errors, HTTP calls, and console logs with flexible error handling.",
   "main": "dist/index.js",
@@ -31,7 +31,8 @@
     "test:mutation:quick": "stryker run stryker.quick.conf.json",
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .js",
-    "lint:fix": "eslint src --ext .js --fix"
+    "lint:fix": "eslint src --ext .js --fix",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "keywords": [
     "frontend",
