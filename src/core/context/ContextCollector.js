@@ -214,11 +214,49 @@ export class ContextCollector {
   }
 
   /**
+     * Genera un ID de sesión seguro usando crypto.randomUUID() cuando esté disponible
+     * @returns {string} ID de sesión seguro
+     */
+  generateSecureId() {
+    try {
+      // Intentar usar crypto.randomUUID() si está disponible (Node.js 14.17+, browsers modernos)
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      
+      // Fallback para navegadores más antiguos: usar crypto.getRandomValues()
+      if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        const array = new Uint8Array(16);
+        crypto.getRandomValues(array);
+        
+        // Convertir a formato UUID v4
+        const hex = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+        return [
+          hex.slice(0, 8),
+          hex.slice(8, 12),
+          hex.slice(12, 16),
+          hex.slice(16, 20),
+          hex.slice(20, 32)
+        ].join('-');
+      }
+      
+      // Fallback final: timestamp + random (menos seguro pero funcional)
+      const timestamp = Date.now().toString(36);
+      const random = Math.random().toString(36).substring(2, 15);
+      return `${timestamp}-${random}`;
+    } catch (error) {
+      console.warn('SyntropyFront: Error generando ID seguro, usando fallback:', error);
+      // Fallback de emergencia
+      return `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    }
+  }
+
+  /**
      * Genera un ID de sesión simple
      */
   generateSessionId() {
     if (!this._sessionId) {
-      this._sessionId = `session_${  Date.now()  }_${  Math.random().toString(36).substr(2, 9)}`;
+      this._sessionId = `session_${this.generateSecureId()}`;
     }
     return this._sessionId;
   }

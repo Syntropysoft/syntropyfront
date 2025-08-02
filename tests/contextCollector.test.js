@@ -313,7 +313,7 @@ describe('ContextCollector', () => {
       const sessionId1 = collector.generateSessionId();
       expect(sessionId1).toBeDefined();
       expect(typeof sessionId1).toBe('string');
-      expect(sessionId1).toMatch(/^session_\d+_[a-z0-9]{9}$/);
+      expect(sessionId1).toMatch(/^session_[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/);
     });
 
     it('should return same session ID on subsequent calls', () => {
@@ -583,7 +583,7 @@ describe('ContextCollector', () => {
       it('should collect session ID correctly', () => {
         const result = collector.allFields.session.sessionId();
         expect(typeof result).toBe('string');
-        expect(result).toMatch(/^session_\d+_[a-z0-9]{9}$/);
+        expect(result).toMatch(/^session_[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/);
       });
 
       it('should collect start time correctly', () => {
