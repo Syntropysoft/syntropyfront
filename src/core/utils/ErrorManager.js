@@ -3,31 +3,31 @@
  * Responsabilidad única: Formatear y gestionar errores
  */
 export class ErrorManager {
-    constructor() {
-        this.errors = [];
-    }
+  constructor() {
+    this.errors = [];
+  }
 
-    send(error, context = {}) {
-        const errorData = {
-            message: error.message,
-            stack: error.stack,
-            context,
-            timestamp: new Date().toISOString()
-        };
+  send(error, context = {}) {
+    const errorData = {
+      message: error.message,
+      stack: error.stack,
+      context,
+      timestamp: new Date().toISOString()
+    };
         
-        this.errors.push(errorData);
-        return errorData;
-    }
+    this.errors.push(errorData);
+    return errorData;
+  }
 
-    getAll() {
-        return this.errors;
-    }
+  getAll() {
+    return this.errors;
+  }
 
-    clear() {
-        this.errors = [];
-    }
+  clear() {
+    this.errors = [];
+  }
 
-    getCount() {
-        return this.errors.length;
-    }
+  getCount() {
+    return this.errors.length;
+  }
 } 

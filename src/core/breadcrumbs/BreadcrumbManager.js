@@ -3,31 +3,31 @@
  * Responsabilidad única: Almacenar y gestionar breadcrumbs
  */
 export class BreadcrumbManager {
-    constructor() {
-        this.breadcrumbs = [];
-    }
+  constructor() {
+    this.breadcrumbs = [];
+  }
 
-    add(category, message, data = {}) {
-        const breadcrumb = {
-            category,
-            message,
-            data,
-            timestamp: new Date().toISOString()
-        };
+  add(category, message, data = {}) {
+    const breadcrumb = {
+      category,
+      message,
+      data,
+      timestamp: new Date().toISOString()
+    };
         
-        this.breadcrumbs.push(breadcrumb);
-        return breadcrumb;
-    }
+    this.breadcrumbs.push(breadcrumb);
+    return breadcrumb;
+  }
 
-    getAll() {
-        return this.breadcrumbs;
-    }
+  getAll() {
+    return this.breadcrumbs;
+  }
 
-    clear() {
-        this.breadcrumbs = [];
-    }
+  clear() {
+    this.breadcrumbs = [];
+  }
 
-    getCount() {
-        return this.breadcrumbs.length;
-    }
+  getCount() {
+    return this.breadcrumbs.length;
+  }
 } 
