@@ -1,6 +1,6 @@
 const { describe, it, expect, beforeEach } = require('@jest/globals');
-const { QueueManager } = require('../src/core/QueueManager.js');
-const { ConfigurationManager } = require('../src/core/ConfigurationManager.js');
+const { QueueManager } = require('../src/core/agent/QueueManager.js');
+const { ConfigurationManager } = require('../src/core/agent/ConfigurationManager.js');
 
 // Mock setTimeout
 jest.useFakeTimers();
@@ -56,7 +56,7 @@ describe('QueueManager', () => {
         it('should schedule timeout when batchTimeout is configured', () => {
             configManager.configure({ 
                 endpoint: 'https://api.example.com',
-                batchTimeout: 1000 
+                batchTimeout: 100 
             });
 
             const flushCallback = jest.fn();
@@ -88,7 +88,7 @@ describe('QueueManager', () => {
         it('should not schedule multiple timeouts', () => {
             configManager.configure({ 
                 endpoint: 'https://api.example.com',
-                batchTimeout: 1000 
+                batchTimeout: 100 
             });
 
             const flushCallback = jest.fn();
@@ -121,7 +121,7 @@ describe('QueueManager', () => {
         it('should clear queue and timer', () => {
             configManager.configure({ 
                 endpoint: 'https://api.example.com',
-                batchTimeout: 1000 
+                batchTimeout: 100 
             });
 
             queueManager.queue = [{ type: 'error', data: 'test' }];
@@ -198,7 +198,7 @@ describe('QueueManager', () => {
         it('should clear timer after flush', async () => {
             configManager.configure({ 
                 endpoint: 'https://api.example.com',
-                batchTimeout: 1000 
+                batchTimeout: 100 
             });
 
             queueManager.queue = [{ type: 'error', data: 'test' }];

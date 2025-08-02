@@ -1,6 +1,7 @@
-import { DatabaseManager } from './DatabaseManager.js';
-import { StorageManager } from './StorageManager.js';
-import { RetryLogicManager } from './RetryLogicManager.js';
+import { DatabaseManager } from '../database/DatabaseManager.js';
+import { StorageManager } from '../database/StorageManager.js';
+import { RetryLogicManager } from '../retry/RetryLogicManager.js';
+import { SerializationManager } from '../database/SerializationManager.js';
 
 /**
  * PersistentBufferManager - Coordinador del buffer persistente
@@ -18,7 +19,8 @@ export class PersistentBufferManager {
             'failedItems'
         );
         
-        this.storageManager = new StorageManager(this.databaseManager);
+        this.serializationManager = new SerializationManager();
+        this.storageManager = new StorageManager(this.databaseManager, this.serializationManager);
         this.retryLogicManager = new RetryLogicManager(this.storageManager, this.config);
         
         // Inicializar buffer persistente si está disponible

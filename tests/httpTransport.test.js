@@ -1,6 +1,6 @@
 const { describe, it, expect, beforeEach } = require('@jest/globals');
-const { HttpTransport } = require('../src/core/HttpTransport.js');
-const { ConfigurationManager } = require('../src/core/ConfigurationManager.js');
+const { HttpTransport } = require('../src/core/agent/HttpTransport.js');
+const { ConfigurationManager } = require('../src/core/agent/ConfigurationManager.js');
 
 // Mock fetch
 const mockFetch = jest.fn();

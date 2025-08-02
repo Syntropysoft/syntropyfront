@@ -1,5 +1,5 @@
 const { describe, it, expect, beforeEach, afterEach } = require('@jest/globals');
-const { Agent } = require('../src/core/Agent.js');
+const { Agent } = require('../src/core/agent/Agent.js');
 
 // Mock console methods
 const mockConsoleLog = jest.fn();
@@ -91,7 +91,7 @@ describe('Agent (Refactored)', () => {
         endpoint: 'https://api.com/errors',
         headers: { 'Authorization': 'Bearer token' },
         batchSize: 20,
-        batchTimeout: 5000,
+        batchTimeout: 100,
         encrypt: jest.fn(),
         usePersistentBuffer: true,
         maxRetries: 3
@@ -105,7 +105,7 @@ describe('Agent (Refactored)', () => {
         'Authorization': 'Bearer token'
       });
       expect(agent.config.batchSize).toBe(20);
-      expect(agent.config.batchTimeout).toBe(5000);
+              expect(agent.config.batchTimeout).toBe(100);
       expect(agent.config.isEnabled).toBe(true);
       expect(agent.config.encrypt).toBe(config.encrypt);
       expect(agent.config.usePersistentBuffer).toBe(true);
@@ -128,7 +128,7 @@ describe('Agent (Refactored)', () => {
     it('should enable breadcrumbs when batchTimeout is provided', () => {
       const config = {
         endpoint: 'https://api.com/errors',
-        batchTimeout: 1000
+        batchTimeout: 100
       };
       
       agent.configure(config);
@@ -184,7 +184,7 @@ describe('Agent (Refactored)', () => {
     it('should send breadcrumbs when enabled', () => {
       agent.configure({ 
         endpoint: 'https://api.com/errors',
-        batchTimeout: 5000 
+        batchTimeout: 100 
       });
       
       const breadcrumbs = [
@@ -212,7 +212,7 @@ describe('Agent (Refactored)', () => {
     it('should not send empty breadcrumbs', () => {
       agent.configure({ 
         endpoint: 'https://api.com/errors',
-        batchTimeout: 5000 
+        batchTimeout: 100 
       });
       
       agent.sendBreadcrumbs([]);

@@ -1,5 +1,5 @@
 const { describe, it, expect, beforeEach, afterEach } = require('@jest/globals');
-const { ContextCollector } = require('../src/core/ContextCollector.js');
+const { ContextCollector } = require('../src/core/context/ContextCollector.js');
 
 describe('ContextCollector', () => {
   let collector;

@@ -16,7 +16,7 @@
   <a href="#"><img src="https://img.shields.io/badge/status-ready%20for%20production-brightgreen.svg" alt="Ready for Production"></a>
   <a href="#"><img src="https://github.com/Syntropysoft/syntropyfront/workflows/CodeQL/badge.svg" alt="CodeQL"></a>
   <a href="#"><img src="https://img.shields.io/badge/dependabot-enabled-brightgreen.svg" alt="Dependabot"></a>
-  <a href="#"><img src="https://img.shields.io/badge/mutation%20score-68.55%25-brightgreen.svg" alt="Mutation Score"></a>
+  <a href="#"><img src="https://img.shields.io/badge/mutation%20score-77.60%25-brightgreen.svg" alt="Mutation Score"></a>
   <a href="#"><img src="https://img.shields.io/badge/test%20coverage-80%2B%25-brightgreen.svg" alt="Test Coverage"></a>
 </p>
 
@@ -403,19 +403,68 @@ window.addEventListener('load', () => {
 });
 ```
 
+## 🏗️ Architecture & Code Quality
+
+SyntropyFront follows SOLID principles and maintains high code quality through:
+
+### Modular Architecture
+
+The codebase is organized into focused modules with single responsibilities:
+
+```
+src/core/
+├── agent/           # Core Agent components
+│   ├── Agent.js              # Main coordinator
+│   ├── ConfigurationManager.js # Configuration handling
+│   ├── QueueManager.js        # Batching and queuing
+│   └── HttpTransport.js       # HTTP communication
+├── database/        # IndexedDB management
+│   ├── DatabaseManager.js     # Database coordinator
+│   ├── DatabaseConfigManager.js # Configuration
+│   ├── DatabaseConnectionManager.js # Connection handling
+│   ├── DatabaseTransactionManager.js # Transaction management
+│   ├── StorageManager.js      # CRUD operations
+│   └── SerializationManager.js # Data serialization
+├── retry/           # Retry system
+│   ├── RetryManager.js        # Retry coordination
+│   └── RetryLogicManager.js   # Retry logic
+├── persistent/      # Persistent buffer
+│   └── PersistentBufferManager.js # Buffer management
+├── breadcrumbs/     # Event tracking
+│   ├── BreadcrumbManager.js   # Breadcrumb coordination
+│   └── BreadcrumbStore.js     # Breadcrumb storage
+├── context/         # Context collection
+│   └── ContextCollector.js    # Context gathering
+└── utils/           # Utilities
+    ├── Logger.js              # Logging utilities
+    └── ErrorManager.js        # Error handling
+```
+
+### Design Principles
+
+- **Single Responsibility Principle (SRP)**: Each class has one clear purpose
+- **Dependency Injection**: Components receive dependencies through constructors
+- **Declarative Error Handling**: Structured error responses with fallbacks
+- **Comprehensive Testing**: 484 tests with 77.60% mutation score
+- **Optimized Performance**: Timeouts optimized for faster execution
+
 ## 🧪 Testing & Quality
 
 SyntropyFront maintains high code quality through comprehensive testing:
 
 ### Test Coverage & Mutation Testing
 
-- **Mutation Score**: 68.55% - Our tests effectively detect code changes
-- **Test Coverage**: 80%+ - Comprehensive unit test coverage
+- **Mutation Score**: 77.60% - Our tests effectively detect code changes
+- **Test Coverage**: 92.22% - Comprehensive unit test coverage
 - **Key Components Performance**:
   - `Agent.js`: 87.23% mutation score
   - `ConfigurationManager.js`: 100% mutation score
   - `QueueManager.js`: 97.37% mutation score
   - `HttpTransport.js`: 86.96% mutation score
+  - `BreadcrumbManager.js`: 100% mutation score
+  - `BreadcrumbStore.js`: 95.00% mutation score
+  - `SerializationManager.js`: 100% mutation score
+  - `DatabaseTransactionManager.js`: 100% mutation score
 
 ### Testing Stack
 

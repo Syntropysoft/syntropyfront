@@ -25,11 +25,10 @@
     "dev": "npm run build:watch",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --config jest.config.coverage.cjs",
     "test:mutation": "stryker run",
     "test:mutation:watch": "stryker run --watch",
-    "test:mutation:quick": "stryker run --maxConcurrentTestRunners 1 --timeoutMS 5000",
-    "prepublishOnly": "npm run build",
+    "test:mutation:quick": "stryker run stryker.quick.conf.json",
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .js",
     "lint:fix": "eslint src --ext .js --fix"

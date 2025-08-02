@@ -1,6 +1,6 @@
 const { describe, it, expect, beforeEach } = require('@jest/globals');
-const { PersistentBufferManager } = require('../src/core/PersistentBufferManager.js');
-const { ConfigurationManager } = require('../src/core/ConfigurationManager.js');
+const { PersistentBufferManager } = require('../src/core/persistent/PersistentBufferManager.js');
+const { ConfigurationManager } = require('../src/core/agent/ConfigurationManager.js');
 
 // Mock RobustSerializer
 jest.mock('../src/utils/RobustSerializer.js', () => ({

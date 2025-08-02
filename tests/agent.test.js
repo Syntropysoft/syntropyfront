@@ -1,7 +1,7 @@
 const { describe, it, expect, beforeEach, afterEach } = require('@jest/globals');
 
 // Importar Agent directamente
-const { Agent } = require('../src/core/Agent.js');
+const { Agent } = require('../src/core/agent/Agent.js');
 
 describe('Agent', () => {
   let agent;
@@ -135,7 +135,7 @@ describe('Agent', () => {
         endpoint: 'https://api.com/errors',
         headers: { 'Authorization': 'Bearer token' },
         batchSize: 20,
-        batchTimeout: 5000,
+        batchTimeout: 100,
         encrypt: jest.fn(),
         usePersistentBuffer: true,
         maxRetries: 3
@@ -149,7 +149,7 @@ describe('Agent', () => {
         'Authorization': 'Bearer token'
       });
       expect(agent.batchSize).toBe(20);
-      expect(agent.batchTimeout).toBe(5000);
+      expect(agent.batchTimeout).toBe(1000);
       expect(agent.isEnabled).toBe(true);
       expect(agent.encrypt).toBe(config.encrypt);
       expect(agent.usePersistentBuffer).toBe(true);
@@ -246,7 +246,7 @@ describe('Agent', () => {
     it('should send breadcrumbs when enabled', () => {
       agent.configure({ 
         endpoint: 'https://api.com/errors',
-        batchTimeout: 5000 // Habilita envío de breadcrumbs
+        batchTimeout: 100 // Habilita envío de breadcrumbs
       });
       
       const breadcrumbs = [
@@ -278,7 +278,7 @@ describe('Agent', () => {
     it('should not send empty breadcrumbs', () => {
       agent.configure({ 
         endpoint: 'https://api.com/errors',
-        batchTimeout: 5000
+        batchTimeout: 100
       });
       
       // Simular que sendBreadcrumbs no agrega nada con breadcrumbs vacíos
@@ -289,7 +289,7 @@ describe('Agent', () => {
       const encryptFn = jest.fn().mockReturnValue({ encrypted: true });
       agent.configure({ 
         endpoint: 'https://api.com/errors',
-        batchTimeout: 5000,
+        batchTimeout: 100,
         encrypt: encryptFn
       });
       
@@ -310,7 +310,7 @@ describe('Agent', () => {
     it('should not send breadcrumbs when agent is disabled', () => {
       agent.configure({ 
         endpoint: 'https://api.com/errors',
-        batchTimeout: 5000
+        batchTimeout: 100
       });
       agent.isEnabled = false;
       
@@ -353,7 +353,7 @@ describe('Agent', () => {
       
       agent.configure({ 
         endpoint: 'https://api.com/errors',
-        batchTimeout: 5000
+        batchTimeout: 100
       });
       
       agent.addToQueue({ type: 'error', data: { message: 'test' } });
@@ -411,7 +411,7 @@ describe('Agent', () => {
       
       agent.configure({ 
         endpoint: 'https://api.com/errors',
-        batchTimeout: 5000
+        batchTimeout: 100
       });
       mockFetch.mockResolvedValue({ ok: true });
       
@@ -742,7 +742,7 @@ describe('Agent', () => {
       
       agent.configure({ 
         endpoint: 'https://api.com/errors',
-        batchTimeout: 5000
+        batchTimeout: 100
       });
       
       agent.addToQueue({ type: 'error', data: { message: 'test' } });

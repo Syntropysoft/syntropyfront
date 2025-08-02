@@ -1,5 +1,5 @@
 const { describe, it, expect, beforeEach } = require('@jest/globals');
-const { ConfigurationManager } = require('../src/core/ConfigurationManager.js');
+const { ConfigurationManager } = require('../src/core/agent/ConfigurationManager.js');
 
 describe('ConfigurationManager', () => {
     let configManager;
@@ -32,7 +32,7 @@ describe('ConfigurationManager', () => {
                 endpoint: 'https://api.example.com',
                 headers: { 'Authorization': 'Bearer token' },
                 batchSize: 20,
-                batchTimeout: 5000,
+                batchTimeout: 100,
                 encrypt: (data) => data,
                 usePersistentBuffer: true,
                 maxRetries: 3
@@ -46,7 +46,7 @@ describe('ConfigurationManager', () => {
                 'Authorization': 'Bearer token'
             });
             expect(configManager.batchSize).toBe(20);
-            expect(configManager.batchTimeout).toBe(5000);
+            expect(configManager.batchTimeout).toBe(100);
             expect(configManager.isEnabled).toBe(true);
             expect(configManager.sendBreadcrumbs).toBe(true);
             expect(configManager.encrypt).toBe(config.encrypt);
@@ -67,7 +67,7 @@ describe('ConfigurationManager', () => {
         it('should enable breadcrumbs when batchTimeout is provided', () => {
             configManager.configure({ 
                 endpoint: 'https://api.example.com',
-                batchTimeout: 1000 
+                batchTimeout: 100 
             });
             expect(configManager.sendBreadcrumbs).toBe(true);
         });
@@ -120,7 +120,7 @@ describe('ConfigurationManager', () => {
         it('should return true when breadcrumbs are enabled', () => {
             configManager.configure({ 
                 endpoint: 'https://api.example.com',
-                batchTimeout: 1000 
+                batchTimeout: 100 
             });
             expect(configManager.shouldSendBreadcrumbs()).toBe(true);
         });
@@ -137,7 +137,7 @@ describe('ConfigurationManager', () => {
                 endpoint: 'https://api.example.com',
                 headers: { 'Authorization': 'Bearer token' },
                 batchSize: 20,
-                batchTimeout: 5000,
+                batchTimeout: 100,
                 encrypt: (data) => data,
                 usePersistentBuffer: true,
                 maxRetries: 3
@@ -153,7 +153,7 @@ describe('ConfigurationManager', () => {
                     'Authorization': 'Bearer token'
                 },
                 batchSize: 20,
-                batchTimeout: 5000,
+                batchTimeout: 100,
                 isEnabled: true,
                 sendBreadcrumbs: true,
                 encrypt: config.encrypt,

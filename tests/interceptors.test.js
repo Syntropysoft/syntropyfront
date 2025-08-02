@@ -2,28 +2,28 @@ const { describe, it, expect, beforeEach, afterEach } = require('@jest/globals')
 const { Interceptors } = require('../src/interceptors/Interceptors.js');
 
 // Mock the dependencies
-jest.mock('../src/core/BreadcrumbStore.js', () => ({
+jest.mock('../src/core/breadcrumbs/BreadcrumbStore.js', () => ({
   breadcrumbStore: {
     add: jest.fn(),
     getAll: jest.fn().mockReturnValue([])
   }
 }));
 
-jest.mock('../src/core/Agent.js', () => ({
+jest.mock('../src/core/agent/Agent.js', () => ({
   agent: {
     sendError: jest.fn()
   }
 }));
 
-jest.mock('../src/core/ContextCollector.js', () => ({
+jest.mock('../src/core/context/ContextCollector.js', () => ({
   contextCollector: {
     collect: jest.fn().mockReturnValue({})
   }
 }));
 
-const { breadcrumbStore } = require('../src/core/BreadcrumbStore.js');
-const { agent } = require('../src/core/Agent.js');
-const { contextCollector } = require('../src/core/ContextCollector.js');
+const { breadcrumbStore } = require('../src/core/breadcrumbs/BreadcrumbStore.js');
+const { agent } = require('../src/core/agent/Agent.js');
+const { contextCollector } = require('../src/core/context/ContextCollector.js');
 
 describe('Interceptors', () => {
   let interceptors;

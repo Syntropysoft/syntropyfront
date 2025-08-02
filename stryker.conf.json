@@ -38,7 +38,7 @@
     "low": 40,
     "break": null
   },
-  "timeoutMS": 10000,
+  "timeoutMS": 2000,
   "maxConcurrentTestRunners": 2,
   "mutator": "javascript"
 }

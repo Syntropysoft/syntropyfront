@@ -1,7 +1,7 @@
 const { describe, it, expect, beforeEach } = require('@jest/globals');
-const { BreadcrumbManager } = require('../src/core/BreadcrumbManager.js');
-const { ErrorManager } = require('../src/core/ErrorManager.js');
-const { Logger } = require('../src/core/Logger.js');
+const { BreadcrumbManager } = require('../src/core/breadcrumbs/BreadcrumbManager.js');
+const { ErrorManager } = require('../src/core/utils/ErrorManager.js');
+const { Logger } = require('../src/core/utils/Logger.js');
 
 describe('BreadcrumbManager', () => {
   let breadcrumbManager;

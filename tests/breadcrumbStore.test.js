@@ -1,5 +1,5 @@
 const { describe, it, expect, beforeEach, afterEach } = require('@jest/globals');
-const { BreadcrumbStore } = require('../src/core/BreadcrumbStore.js');
+const { BreadcrumbStore } = require('../src/core/breadcrumbs/BreadcrumbStore.js');
 
 describe('BreadcrumbStore', () => {
   let store;

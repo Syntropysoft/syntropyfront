@@ -1,6 +1,6 @@
-import { breadcrumbStore } from '../core/BreadcrumbStore.js';
-import { agent } from '../core/Agent.js';
-import { contextCollector } from '../core/ContextCollector.js';
+import { breadcrumbStore } from '../core/breadcrumbs/BreadcrumbStore.js';
+import { agent } from '../core/agent/Agent.js';
+import { contextCollector } from '../core/context/ContextCollector.js';
 
 /**
  * Interceptors - Observadores que capturan eventos automáticamente

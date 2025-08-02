@@ -1,14 +1,14 @@
 const { describe, it, expect, beforeEach } = require('@jest/globals');
-const { PersistentBufferManager } = require('../src/core/PersistentBufferManager.js');
+const { PersistentBufferManager } = require('../src/core/persistent/PersistentBufferManager.js');
 
 // Mock the component classes
-jest.mock('../src/core/DatabaseManager.js');
-jest.mock('../src/core/StorageManager.js');
-jest.mock('../src/core/RetryLogicManager.js');
+jest.mock('../src/core/database/DatabaseManager.js');
+jest.mock('../src/core/database/StorageManager.js');
+jest.mock('../src/core/retry/RetryLogicManager.js');
 
-const { DatabaseManager } = require('../src/core/DatabaseManager.js');
-const { StorageManager } = require('../src/core/StorageManager.js');
-const { RetryLogicManager } = require('../src/core/RetryLogicManager.js');
+const { DatabaseManager } = require('../src/core/database/DatabaseManager.js');
+const { StorageManager } = require('../src/core/database/StorageManager.js');
+const { RetryLogicManager } = require('../src/core/retry/RetryLogicManager.js');
 
 describe('PersistentBufferManager (Refactored)', () => {
     let persistentBufferManager;
@@ -64,7 +64,7 @@ describe('PersistentBufferManager (Refactored)', () => {
                 1,
                 'failedItems'
             );
-            expect(StorageManager).toHaveBeenCalledWith(mockDatabaseManager);
+            expect(StorageManager).toHaveBeenCalledWith(mockDatabaseManager, expect.any(Object));
             expect(RetryLogicManager).toHaveBeenCalledWith(mockStorageManager, mockConfigManager);
         });
 

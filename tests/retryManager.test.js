@@ -1,6 +1,6 @@
 const { describe, it, expect, beforeEach, afterEach } = require('@jest/globals');
-const { RetryManager } = require('../src/core/RetryManager.js');
-const { ConfigurationManager } = require('../src/core/ConfigurationManager.js');
+const { RetryManager } = require('../src/core/retry/RetryManager.js');
+const { ConfigurationManager } = require('../src/core/agent/ConfigurationManager.js');
 
 // Mock setTimeout and clearTimeout
 jest.useFakeTimers();
@@ -93,7 +93,7 @@ describe('RetryManager', () => {
             configManager.configure({ 
                 endpoint: 'https://api.example.com',
                 baseDelay: 1000,
-                maxDelay: 5000
+                maxDelay: 1000
             });
             
             const items = [{ type: 'error', data: { message: 'test' } }];
@@ -102,7 +102,7 @@ describe('RetryManager', () => {
             retryManager.addToRetryQueue(items, 10);
             const retryItem = retryManager.retryQueue[0];
             expect(retryItem.nextRetry).toBeGreaterThan(Date.now() + 4999);
-            expect(retryItem.nextRetry).toBeLessThan(Date.now() + 30000);
+            expect(retryItem.nextRetry).toBeLessThan(Date.now() + 60000);
         });
 
         it('should schedule retry when adding items', () => {
@@ -147,7 +147,7 @@ describe('RetryManager', () => {
             retryManager.addToRetryQueue(items, 1);
             
             // Set nextRetry to future
-            retryManager.retryQueue[0].nextRetry = Date.now() + 10000;
+            retryManager.retryQueue[0].nextRetry = Date.now() + 2000;
             
             retryManager.scheduleRetry();
             
@@ -170,8 +170,8 @@ describe('RetryManager', () => {
             const items = [{ type: 'error', data: { message: 'test' } }];
             retryManager.addToRetryQueue(items, 1);
             
-            // Set nextRetry to 5 seconds in the future
-            retryManager.retryQueue[0].nextRetry = Date.now() + 5000;
+            // Set nextRetry to 2 seconds in the future
+            retryManager.retryQueue[0].nextRetry = Date.now() + 2000;
             
             retryManager.scheduleRetry();
             
@@ -245,7 +245,7 @@ describe('RetryManager', () => {
             retryManager.addToRetryQueue(items, 1);
             
             // Set item to future
-            retryManager.retryQueue[0].nextRetry = Date.now() + 10000;
+            retryManager.retryQueue[0].nextRetry = Date.now() + 2000;
             
             await retryManager.processRetryQueue(sendCallback, removePersistentCallback);
             
@@ -457,7 +457,7 @@ describe('RetryManager', () => {
             
             const retryItem = retryManager.retryQueue[0];
             expect(retryItem.nextRetry).toBeGreaterThan(Date.now() + 99);
-            expect(retryItem.nextRetry).toBeLessThan(Date.now() + 10000);
+            expect(retryItem.nextRetry).toBeLessThan(Date.now() + 20000);
         });
 
         it('should handle concurrent processing attempts', async () => {

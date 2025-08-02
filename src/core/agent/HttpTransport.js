@@ -1,4 +1,4 @@
-import { robustSerializer } from '../utils/RobustSerializer.js';
+import { robustSerializer } from '../../utils/RobustSerializer.js';
 
 /**
  * HttpTransport - Maneja el envío HTTP

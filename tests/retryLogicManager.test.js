@@ -1,5 +1,5 @@
 const { describe, it, expect, beforeEach } = require('@jest/globals');
-const { RetryLogicManager } = require('../src/core/RetryLogicManager.js');
+const { RetryLogicManager } = require('../src/core/retry/RetryLogicManager.js');
 
 // Mock RobustSerializer
 jest.mock('../src/utils/RobustSerializer.js', () => ({

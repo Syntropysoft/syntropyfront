@@ -22,10 +22,10 @@ module.exports = {
     '<rootDir>/tests/**/*.test.js',
     '<rootDir>/src/**/*.test.js'
   ],
-  testPathIgnorePatterns: [
-    '<rootDir>/tests/agent.test.js',
-    '<rootDir>/tests/persistentBufferManager.test.js'
-  ],
+      testPathIgnorePatterns: [
+        '<rootDir>/tests/agent.test.js',
+        '<rootDir>/tests/persistentBufferManager.test.js'
+    ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
   },

@@ -2,9 +2,9 @@
  * SyntropyFront - Observability library with automatic capture
  * Single responsibility: Automatically capture events and send errors with context
  */
-import { BreadcrumbManager } from './core/BreadcrumbManager.js';
-import { ErrorManager } from './core/ErrorManager.js';
-import { Logger } from './core/Logger.js';
+import { BreadcrumbManager } from './core/breadcrumbs/BreadcrumbManager.js';
+import { ErrorManager } from './core/utils/ErrorManager.js';
+import { Logger } from './core/utils/Logger.js';
 
 class SyntropyFront {
     constructor() {

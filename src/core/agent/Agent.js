@@ -1,8 +1,8 @@
 import { ConfigurationManager } from './ConfigurationManager.js';
 import { QueueManager } from './QueueManager.js';
-import { RetryManager } from './RetryManager.js';
+import { RetryManager } from '../retry/RetryManager.js';
 import { HttpTransport } from './HttpTransport.js';
-import { PersistentBufferManager } from './PersistentBufferManager.js';
+import { PersistentBufferManager } from '../persistent/PersistentBufferManager.js';
 
 /**
  * Agent - Envía datos de trazabilidad al backend
