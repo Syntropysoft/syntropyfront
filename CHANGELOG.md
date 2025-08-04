@@ -366,13 +366,14 @@ No migration required for end users. All public APIs remain unchanged.
 - Console logging support
 - Basic documentation
 
+
 ---
 
 ## Version History
 
-- **0.2.4**: UI/UX improvements, Node.js compatibility, and infrastructure updates
-- **0.2.3**: Major refactoring with SRP compliance and 77.60% mutation score
-- **0.2.2**: Bug fixes and performance improvements
-- **0.2.1**: Persistent buffer and retry mechanism
-- **0.2.0**: Complete rewrite with modular architecture
-- **0.1.0**: Initial release with basic functionality
+- **0.2.5**: Initial public release with full observability suite
+- **0.2.4**: Beta release with core functionality
+- **0.2.3**: Alpha release with basic error tracking
+- **0.2.2**: Development version with breadcrumb system
+- **0.2.1**: Early development with agent architecture
+- **0.2.0**: Initial project setup and architecture design

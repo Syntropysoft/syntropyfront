@@ -36,6 +36,7 @@
   },
   "keywords": [
     "frontend",
+    "frontend-monitoring",
     "observability",
     "error-tracking",
     "breadcrumbs",
@@ -47,11 +48,41 @@
     "error-handling",
     "apm",
     "debugging",
-    "performance",
+    "performance-monitoring",
     "vanilla-js",
-    "framework-agnostic"
+    "framework-agnostic",
+    "client-side",
+    "logging",
+    "bug-tracking",
+    "real-user-monitoring",
+    "RUM",
+    "Sentry-alternative",
+    "react",
+    "vue",
+    "svelte",
+    "typescript",
+    "javascript",
+    "web-analytics",
+    "user-behavior",
+    "crash-reporting",
+    "exception-handling",
+    "telemetry",
+    "application-monitoring",
+    "error-reporting",
+    "user-experience",
+    "web-performance"
   ],
-  "author": "SyntropyLog Team",
+  "author": {
+    "name": "Syntropysoft",
+    "url": "https://syntropysoft.com"
+  },
+  "contributors": [
+    {
+      "name": "Gabriel Alejandro Gomez",
+      "email": "gabriel70@gmail.com",
+      "url": "https://www.linkedin.com/in/gabriel-alejandro-gomez-652a5111/"
+    }
+  ],
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

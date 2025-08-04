@@ -12,12 +12,12 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@syntropysoft/syntropyfront"><img src="https://img.shields.io/npm/v/@syntropysoft/syntropyfront.svg" alt="NPM Version"></a>
-  <a href="https://github.com/Syntropysoft/SyntropyLog/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@syntropysoft/syntropyfront.svg" alt="License"></a>
+  <a href="https://github.com/Syntropysoft/syntropyfront/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@syntropysoft/syntropyfront.svg" alt="License"></a>
   <a href="#"><img src="https://img.shields.io/badge/status-ready%20for%20production-brightgreen.svg" alt="Ready for Production"></a>
   <a href="#"><img src="https://github.com/Syntropysoft/syntropyfront/workflows/CodeQL/badge.svg" alt="CodeQL"></a>
   <a href="#"><img src="https://img.shields.io/badge/dependabot-enabled-brightgreen.svg" alt="Dependabot"></a>
-  <a href="#"><img src="https://img.shields.io/badge/mutation%20score-77.60%25-brightgreen.svg" alt="Mutation Score"></a>
-  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-80%2B%25-brightgreen.svg" alt="Test Coverage"></a>
+  <a href="#"><img src="https://img.shields.io/badge/mutation%20score-75.94%25-brightgreen.svg" alt="Mutation Score"></a>
+  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-91%2B%25-brightgreen.svg" alt="Test Coverage"></a>
 </p>
 
 ---
@@ -467,7 +467,7 @@ src/core/
 - **Single Responsibility Principle (SRP)**: Each class has one clear purpose
 - **Dependency Injection**: Components receive dependencies through constructors
 - **Declarative Error Handling**: Structured error responses with fallbacks
-- **Comprehensive Testing**: 484 tests with 77.60% mutation score
+- **Comprehensive Testing**: 484 tests with 75.94% mutation score
 - **Optimized Performance**: Timeouts optimized for faster execution
 
 ## 🧪 Testing & Quality
@@ -476,8 +476,8 @@ SyntropyFront maintains high code quality through comprehensive testing:
 
 ### Test Coverage & Mutation Testing
 
-- **Mutation Score**: 77.60% - Our tests effectively detect code changes
-- **Test Coverage**: 92.22% - Comprehensive unit test coverage
+- **Mutation Score**: 75.94% - Our tests effectively detect code changes
+- **Test Coverage**: 91%+ - Comprehensive unit test coverage
 - **Key Components Performance**:
   - `Agent.js`: 87.23% mutation score
   - `ConfigurationManager.js`: 100% mutation score
@@ -520,7 +520,18 @@ SyntropyFront logs helpful information to the console:
 
 ## 📄 License
 
-Apache 2.0
+This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details.
+
+**Apache License 2.0** - A permissive license that allows for:
+- ✅ Commercial use
+- ✅ Modification
+- ✅ Distribution
+- ✅ Patent use
+- ✅ Private use
+
+The only requirement is that you include the original copyright notice and license text in any substantial portions of the software you distribute.
+
+For more information, visit: https://www.apache.org/licenses/LICENSE-2.0
 
 ## 🤝 Contributing
 
