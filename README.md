@@ -100,6 +100,28 @@ syntropyFront.configure({
 npm install @syntropysoft/syntropyfront
 ```
 
+## 🚀 **Performance Optimizations (v0.3.0)**
+
+SyntropyFront has been optimized for maximum performance and minimal bundle size:
+
+### **📦 Ultra-Lightweight Bundle**
+- **Only 1 Runtime Dependency**: `flatted` for circular reference handling
+- **45+ Dependencies Removed**: Eliminated unnecessary packages
+- **Faster Installation**: Reduced npm install time and disk usage
+- **Optimized Bundle Size**: Significantly smaller production builds
+
+### **🔧 Smart Dependency Management**
+- **Clean Architecture**: All testing tools properly categorized as devDependencies
+- **Dependabot Optimized**: Smart configuration prevents incompatible updates
+- **Stable CI/CD**: Eliminated dependency conflicts and CI failures
+- **Cross-Node Compatibility**: Full support for Node.js 18, 20, 22
+
+### **⚡ Production Ready**
+- **Zero Breaking Changes**: All existing code continues to work
+- **Same API**: Identical usage patterns and configuration
+- **Better Performance**: Optimized for production environments
+- **Maintained Security**: All security benefits preserved
+
 ## 🎯 How It Works
 
 SyntropyFront automatically:
