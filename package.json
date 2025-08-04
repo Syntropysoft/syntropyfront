@@ -1,6 +1,6 @@
 {
   "name": "@syntropysoft/syntropyfront",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "type": "module",
   "description": "🚀 Observability library with automatic capture - Just 1 line of code! Automatically captures clicks, errors, HTTP calls, and console logs with flexible error handling.",
   "main": "dist/index.js",
