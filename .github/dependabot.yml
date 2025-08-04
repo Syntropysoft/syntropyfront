@@ -26,10 +26,8 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
-      # Ignore Stryker updates that require Node.js >=20
+      # Ignore Stryker updates that require Node.js >=20 (testing tools only)
       - dependency-name: "@stryker-mutator/core"
         update-types: ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "@stryker-mutator/jest-runner"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-      - dependency-name: "@stryker-mutator/vitest-runner"
         update-types: ["version-update:semver-major", "version-update:semver-minor"] 
