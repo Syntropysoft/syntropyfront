@@ -18,6 +18,7 @@
   <a href="#"><img src="https://img.shields.io/badge/dependabot-enabled-brightgreen.svg" alt="Dependabot"></a>
   <a href="#"><img src="https://img.shields.io/badge/mutation%20score-74.96%25-brightgreen.svg" alt="Mutation Score"></a>
   <a href="#"><img src="https://img.shields.io/badge/test%20coverage-91.01%25-brightgreen.svg" alt="Test Coverage"></a>
+  <a href="#"><img src="https://img.shields.io/badge/bundle%20size-4.88%20KB-brightgreen.svg" alt="Bundle Size"></a>
 </p>
 
 ---
@@ -113,8 +114,10 @@ SyntropyFront has been optimized for maximum performance and minimal bundle size
 ### **📦 Ultra-Lightweight Bundle**
 - **Only 1 Runtime Dependency**: `flatted` for circular reference handling
 - **45+ Dependencies Removed**: Eliminated unnecessary packages
+- **Bundle Size**: **4.88 KB** minified (4,884 bytes)
+- **ES Module**: 10.9 KB
+- **CommonJS**: 10.98 KB
 - **Faster Installation**: Reduced npm install time and disk usage
-- **Optimized Bundle Size**: Significantly smaller production builds
 
 ### **🔧 Smart Dependency Management**
 - **Clean Architecture**: All testing tools properly categorized as devDependencies
