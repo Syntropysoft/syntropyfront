@@ -8,18 +8,16 @@ jobs:
   dependabot:
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
     
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
     
     steps:
-    - name: Enable auto-merge for Dependabot PRs
-      run: gh pr merge --auto --merge "$PR_URL"
-      env:
-        PR_URL: ${{github.event.pull_request.html_url}}
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        
     - name: Checkout code
       uses: actions/checkout@v4
       
@@ -37,6 +35,13 @@ jobs:
       
     - name: Build project
       run: npm run build
+      
+    - name: Enable auto-merge for Dependabot PRs
+      if: success()
+      run: gh pr merge --auto --merge "$PR_URL"
+      env:
+        PR_URL: ${{github.event.pull_request.html_url}}
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       
   codeql:
     name: CodeQL Security Analysis
