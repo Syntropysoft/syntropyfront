@@ -14,7 +14,7 @@
   <a href="https://www.npmjs.com/package/@syntropysoft/syntropyfront"><img src="https://img.shields.io/npm/v/@syntropysoft/syntropyfront.svg" alt="NPM Version"></a>
   <a href="https://github.com/Syntropysoft/syntropyfront/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@syntropysoft/syntropyfront.svg" alt="License"></a>
   <a href="#"><img src="https://img.shields.io/badge/status-ready%20for%20production-brightgreen.svg" alt="Ready for Production"></a>
-  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-89.94%25-brightgreen.svg" alt="Test Coverage"></a>
+  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-87%25-brightgreen.svg" alt="Test Coverage"></a>
   <a href="#"><img src="https://img.shields.io/badge/bundle%20size-34%20KB-brightgreen.svg" alt="Bundle Size"></a>
   <a href="https://socket.dev/npm/package/@syntropysoft/syntropyfront"><img src="https://socket.dev/api/badge/npm/package/@syntropysoft/syntropyfront" alt="Socket Badge"></a>
 </p>
@@ -163,7 +163,7 @@ syntropyFront.configure({
 
 ## 🏗️ Modular Architecture and Tree Shaking
 
-In version 0.5.0, we have moved interceptors to independent modules. To minimize your bundle size, you can import only what you need:
+In a future version (e.g. 0.5.0), interceptors may be exposed as independent modules. To minimize your bundle size, you would then import only what you need:
 
 ```javascript
 // Instead of global import, use specific interceptors directly
@@ -180,7 +180,7 @@ The system is divided into managers with unique responsibilities:
 ## 📊 Quality Metrics
 
 We take stability seriously. SyntropyFront maintains:
-- **Test Coverage**: **>91%** (Lines), **>81%** (Branches).
+- **Test Coverage**: **87%** (All files).
 - **Stryker Mutation Score**: **>71%** (Our tests truly verify logic, they don't just "pass through" it).
 - **Zero Dependencies**: We don't add third-party vulnerabilities to your project.
 
