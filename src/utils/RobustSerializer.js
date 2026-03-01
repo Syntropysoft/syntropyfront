@@ -3,6 +3,8 @@
  * Testable in isolation; state (circularRefs) is handled by RobustSerializer.
  */
 
+const MAX_STRING_SNIPPET_LENGTH = 200;
+
 export const serializedShapeOfDate = (date) => ({
   __type: 'Date',
   value: date.toISOString()
@@ -26,13 +28,13 @@ export const serializedShapeOfFunction = (fn) => ({
   __type: 'Function',
   name: fn.name || 'anonymous',
   length: fn.length,
-  toString: `${fn.toString().substring(0, 200)}...`
+  toString: `${fn.toString().substring(0, MAX_STRING_SNIPPET_LENGTH)}...`
 });
 
 export const serializedShapeOfUnknown = (obj) => ({
   __type: 'Unknown',
   constructor: obj.constructor ? obj.constructor.name : 'Unknown',
-  toString: `${String(obj).substring(0, 200)}...`
+  toString: `${String(obj).substring(0, MAX_STRING_SNIPPET_LENGTH)}...`
 });
 
 export const restoreDate = (obj) => new Date(obj.value);
@@ -75,18 +77,24 @@ export class RobustSerializer {
     }
   }
 
-  makeSerializable(obj, path = '') {
+  _serializeKnownType(obj, path) {
     if (obj === null || obj === undefined) return obj;
     if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') return obj;
-
     if (obj instanceof Date) return serializedShapeOfDate(obj);
-    if (obj instanceof Error) return serializedShapeOfError(obj, (x) => this.makeSerializable(x, `${path}.cause`));
+    if (obj instanceof Error) {
+      return serializedShapeOfError(obj, (x) => this.makeSerializable(x, `${path}.cause`));
+    }
     if (obj instanceof RegExp) return serializedShapeOfRegExp(obj);
     if (typeof obj === 'function') return serializedShapeOfFunction(obj);
+    return undefined;
+  }
 
+  makeSerializable(obj, path = '') {
+    if (obj === null || obj === undefined) return obj;
+    const known = this._serializeKnownType(obj, path);
+    if (known !== undefined) return known;
     if (Array.isArray(obj)) return this._serializeArray(obj, path);
     if (typeof obj === 'object') return this._serializeObject(obj, path);
-
     return serializedShapeOfUnknown(obj);
   }
 
@@ -97,6 +105,35 @@ export class RobustSerializer {
     return obj.map((item, i) => this.makeSerializable(item, `${path}[${i}]`));
   }
 
+  _serializeObjectKey(result, obj, key, path) {
+    try {
+      result[key] = this.makeSerializable(obj[key], `${path}.${key}`);
+    } catch (error) {
+      result[key] = {
+        __serializationError: true,
+        error: error.message,
+        propertyName: key
+      };
+    }
+  }
+
+  _serializeObjectSymbols(obj, path, result) {
+    if (!Object.getOwnPropertySymbols) return;
+    const symbols = Object.getOwnPropertySymbols(obj);
+    for (const symbol of symbols) {
+      const symKey = `__symbol_${symbol.description || 'anonymous'}`;
+      try {
+        result[symKey] = this.makeSerializable(obj[symbol], `${path}[Symbol]`);
+      } catch (error) {
+        result[symKey] = {
+          __serializationError: true,
+          error: error.message,
+          symbolName: symbol.description || 'anonymous'
+        };
+      }
+    }
+  }
+
   _serializeObject(obj, path) {
     if (this.seen.has(obj)) return { __circular: true, refId: this.circularRefs.get(obj) };
     this.seen.add(obj);
@@ -104,21 +141,9 @@ export class RobustSerializer {
     const result = {};
     for (const key in obj) {
       if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
-      try {
-        result[key] = this.makeSerializable(obj[key], `${path}.${key}`);
-      } catch (error) {
-        result[key] = { __serializationError: true, error: error.message, propertyName: key };
-      }
+      this._serializeObjectKey(result, obj, key, path);
     }
-    if (Object.getOwnPropertySymbols) {
-      for (const symbol of Object.getOwnPropertySymbols(obj)) {
-        try {
-          result[`__symbol_${symbol.description || 'anonymous'}`] = this.makeSerializable(obj[symbol], `${path}[Symbol]`);
-        } catch (error) {
-          result[`__symbol_${symbol.description || 'anonymous'}`] = { __serializationError: true, error: error.message, symbolName: symbol.description || 'anonymous' };
-        }
-      }
-    }
+    this._serializeObjectSymbols(obj, path, result);
     return result;
   }
 
@@ -137,18 +162,21 @@ export class RobustSerializer {
     }
   }
 
-  restoreCircularRefs(obj, refs = new Map()) {
+  _restoreKnownType(obj, refs) {
     if (obj === null || obj === undefined) return obj;
     if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') return obj;
-
     if (obj.__type === 'Date') return restoreDate(obj);
     if (obj.__type === 'Error') return restoreError(obj, (x) => this.restoreCircularRefs(x, refs));
     if (obj.__type === 'RegExp') return restoreRegExp(obj);
     if (obj.__type === 'Function') return restoreFunction(obj);
+    return undefined;
+  }
 
+  restoreCircularRefs(obj, refs = new Map()) {
+    const known = this._restoreKnownType(obj, refs);
+    if (known !== undefined) return known;
     if (Array.isArray(obj)) return this._restoreArray(obj, refs);
     if (typeof obj === 'object') return this._restoreObject(obj, refs);
-
     return obj;
   }
 

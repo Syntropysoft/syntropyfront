@@ -16,14 +16,14 @@
  * @returns {any} Result of the function execution or undefined if failed.
  */
 export const safeApply = (fn, context, args, label = 'original handler') => {
-    if (typeof fn !== 'function') return;
-    try {
-        return fn.apply(context, args);
-    } catch (error) {
-        // Log for instrumentation but don't crash the host application
-        console.error(`SyntropyFront: Error in ${label}:`, error);
-        return;
-    }
+  if (typeof fn !== 'function') return;
+  try {
+    return fn.apply(context, args);
+  } catch (error) {
+    // Log for instrumentation but don't crash the host application
+    console.error(`SyntropyFront: Error in ${label}:`, error);
+    return;
+  }
 };
 
 /**
@@ -34,31 +34,31 @@ export const safeApply = (fn, context, args, label = 'original handler') => {
  * @returns {Object|null} Disposable object with destroy() method.
  */
 export const wrap = (target, property, wrapperFactory) => {
-    // `in` operator accepts null values (e.g. window.onerror === null by default)
-    if (!target || !(property in target)) return null;
+  // `in` operator accepts null values (e.g. window.onerror === null by default)
+  if (!target || !(property in target)) return null;
 
-    const original = target[property]; // null is a valid initial value
-    const wrapped = wrapperFactory(original);
+  const original = target[property]; // null is a valid initial value
+  const wrapped = wrapperFactory(original);
 
-    // Apply the wrap
-    target[property] = wrapped;
+  // Apply the wrap
+  target[property] = wrapped;
 
-    return {
-        target,
-        property,
-        original,
-        wrapped,
-        destroy: () => {
-            // Only restore if it hasn't been re-wrapped by someone else (best effort)
-            if (target[property] === wrapped) {
-                target[property] = original;
-            }
-        }
-    };
+  return {
+    target,
+    property,
+    original,
+    wrapped,
+    destroy: () => {
+      // Only restore if it hasn't been re-wrapped by someone else (best effort)
+      if (target[property] === wrapped) {
+        target[property] = original;
+      }
+    }
+  };
 };
 
 // Legacy class export for backwards compatibility during transition
 export const FunctionWrapper = {
-    wrap,
-    safeApply
+  wrap,
+  safeApply
 };
