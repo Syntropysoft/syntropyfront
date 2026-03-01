@@ -101,7 +101,7 @@ syntropyFront.configure({
 ## 📦 Installation
 
 ```bash
-npm install @syntropysoft/syntropyfront
+pnpm add @syntropysoft/syntropyfront
 ```
 
 ## 🚀 **Performance Optimizations (v0.4.1)**

@@ -2,6 +2,15 @@
 
 All notable changes to SyntropyFront will be documented in this file.
 
+## [0.4.2] - 2026-03-01
+
+### Added
+- **TypeScript Support**: Added comprehensive type definitions (`index.d.ts`) for native autocompletado and better developer experience.
+
+### Fixed
+- **Supply Chain Security**: Fixed `LICENSE` placeholders to ensure proper recognition by security scanners (Socket.dev, Snyk).
+- **Package Metadata**: Standardized all internal scripts to use `pnpm` and fixed missing type declarations in the bundle.
+
 ## [0.4.1] - 2026-03-01
 
 ### Fixed
