@@ -15,315 +15,177 @@
  */
 
 /**
- * SyntropyFront - Observability library with automatic capture
- * Single responsibility: Automatically capture events and send errors with context
+ * SyntropyFront - Biblioteca de observabilidad con captura automática
+ * Actúa como Facade conectando el Agent y los Interceptors modulares
  */
-import { BreadcrumbManager } from './core/breadcrumbs/BreadcrumbManager.js';
-import { ErrorManager } from './core/utils/ErrorManager.js';
-import { Logger } from './core/utils/Logger.js';
+import { breadcrumbStore } from './core/breadcrumbs/BreadcrumbStore.js';
+import { agent } from './core/agent/Agent.js';
+import { interceptors } from './interceptors/Interceptors.js';
 
 class SyntropyFront {
   constructor() {
-    // Basic managers
-    this.breadcrumbManager = new BreadcrumbManager();
-    this.errorManager = new ErrorManager();
-    this.logger = new Logger();
-        
-    // Default configuration
-    this.maxEvents = 50;
-    this.fetchConfig = null; // Complete fetch configuration
-    this.onErrorCallback = null; // User-defined error handler
     this.isActive = false;
-        
-    // Automatic capture
-    this.originalHandlers = {};
-        
-    // Auto-initialize
+    this.config = {
+      maxEvents: 50,
+      endpoint: null,
+      headers: {},
+      usePersistentBuffer: true,
+      captureClicks: true,
+      captureFetch: true,
+      captureErrors: true,
+      captureUnhandledRejections: true,
+      onError: null
+    };
+
+    // Auto-inicializar
     this.init();
   }
 
+  /**
+   * Inicializa la biblioteca y activa los interceptores
+   */
   init() {
-    this.isActive = true;
-        
-    // Configure automatic capture immediately
-    this.setupAutomaticCapture();
-        
-    console.log('🚀 SyntropyFront: Initialized with automatic capture');
-  }
+    if (this.isActive) return;
 
-  /**
-     * Configure SyntropyFront
-     * @param {Object} config - Configuration
-     * @param {number} config.maxEvents - Maximum number of events to store
-     * @param {Object} config.fetch - Complete fetch configuration
-     * @param {string} config.fetch.url - Endpoint URL
-     * @param {Object} config.fetch.options - Fetch options (headers, method, etc.)
-     * @param {Function} config.onError - User-defined error handler callback
-     */
-  configure(config = {}) {
-    this.maxEvents = config.maxEvents || this.maxEvents;
-    this.fetchConfig = config.fetch;
-    this.onErrorCallback = config.onError;
-        
-    if (this.onErrorCallback) {
-      console.log(`✅ SyntropyFront: Configured - maxEvents: ${this.maxEvents}, custom error handler`);
-    } else if (this.fetchConfig) {
-      console.log(`✅ SyntropyFront: Configured - maxEvents: ${this.maxEvents}, endpoint: ${this.fetchConfig.url}`);
-    } else {
-      console.log(`✅ SyntropyFront: Configured - maxEvents: ${this.maxEvents}, console only`);
-    }
-  }
-
-  /**
-     * Configure automatic event capture
-     */
-  setupAutomaticCapture() {
-    if (typeof window === 'undefined') return;
-
-    // Capture clicks
-    this.setupClickCapture();
-        
-    // Capture errors
-    this.setupErrorCapture();
-        
-    // Capture HTTP calls
-    this.setupHttpCapture();
-        
-    // Capture console logs
-    this.setupConsoleCapture();
-  }
-
-  /**
-     * Capture user clicks
-     */
-  setupClickCapture() {
-    const clickHandler = (event) => {
-      const element = event.target;
-      this.addBreadcrumb('user', 'click', {
-        element: element.tagName,
-        id: element.id,
-        className: element.className,
-        x: event.clientX,
-        y: event.clientY
-      });
-    };
-
-    document.addEventListener('click', clickHandler);
-  }
-
-  /**
-     * Automatically capture errors
-     */
-  setupErrorCapture() {
-    // Save original handlers
-    this.originalHandlers.onerror = window.onerror;
-    this.originalHandlers.onunhandledrejection = window.onunhandledrejection;
-
-    // Intercept errors
-    window.onerror = (message, source, lineno, colno, error) => {
-      const errorPayload = {
-        type: 'uncaught_exception',
-        error: { message, source, lineno, colno, stack: error?.stack },
-        breadcrumbs: this.getBreadcrumbs(),
-        timestamp: new Date().toISOString()
-      };
-
-      this.handleError(errorPayload);
-            
-      // Call original handler
-      if (this.originalHandlers.onerror) {
-        return this.originalHandlers.onerror(message, source, lineno, colno, error);
-      }
-            
-      return false;
-    };
-
-    // Intercept rejected promises
-    window.onunhandledrejection = (event) => {
-      const errorPayload = {
-        type: 'unhandled_rejection',
-        error: {
-          message: event.reason?.message || 'Promise rejection without message',
-          stack: event.reason?.stack,
-        },
-        breadcrumbs: this.getBreadcrumbs(),
-        timestamp: new Date().toISOString()
-      };
-
-      this.handleError(errorPayload);
-            
-      // Call original handler
-      if (this.originalHandlers.onunhandledrejection) {
-        this.originalHandlers.onunhandledrejection(event);
-      }
-    };
-  }
-
-  /**
-     * Capture HTTP calls
-     */
-  setupHttpCapture() {
-    // Intercept fetch
-    const originalFetch = window.fetch;
-    window.fetch = (...args) => {
-      const [url, options] = args;
-            
-      this.addBreadcrumb('http', 'fetch', {
-        url,
-        method: options?.method || 'GET'
-      });
-
-      return originalFetch(...args).then(response => {
-        this.addBreadcrumb('http', 'fetch_response', {
-          url,
-          status: response.status
-        });
-        return response;
-      }).catch(error => {
-        this.addBreadcrumb('http', 'fetch_error', {
-          url,
-          error: error.message
-        });
-        throw error;
-      });
-    };
-  }
-
-  /**
-     * Capture console logs
-     */
-  setupConsoleCapture() {
-    const originalLog = console.log;
-    const originalError = console.error;
-    const originalWarn = console.warn;
-
-    console.log = (...args) => {
-      this.addBreadcrumb('console', 'log', { message: args.join(' ') });
-      originalLog.apply(console, args);
-    };
-
-    console.error = (...args) => {
-      this.addBreadcrumb('console', 'error', { message: args.join(' ') });
-      originalError.apply(console, args);
-    };
-
-    console.warn = (...args) => {
-      this.addBreadcrumb('console', 'warn', { message: args.join(' ') });
-      originalWarn.apply(console, args);
-    };
-  }
-
-  /**
-     * Handle errors - priority: onError callback > fetch > console
-     */
-  handleError(errorPayload) {
-    // Default log
-    this.logger.error('❌ Error:', errorPayload);
-        
-    // Priority 1: User-defined callback (maximum flexibility)
-    if (this.onErrorCallback) {
-      try {
-        this.onErrorCallback(errorPayload);
-      } catch (callbackError) {
-        console.warn('SyntropyFront: Error in user callback:', callbackError);
-      }
-      return;
-    }
-        
-    // Priority 2: Fetch to endpoint
-    if (this.fetchConfig) {
-      this.postToEndpoint(errorPayload);
-      return;
-    }
-        
-    // Priority 3: Console only (default)
-    // Already logged above
-  }
-
-  /**
-     * Post error object using fetch configuration
-     */
-  postToEndpoint(errorPayload) {
-    const { url, options = {} } = this.fetchConfig;
-        
-    // Default configuration
-    const defaultOptions = {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-      },
-      body: JSON.stringify(errorPayload),
-      ...options
-    };
-
-    fetch(url, defaultOptions).catch(error => {
-      console.warn('SyntropyFront: Error posting to endpoint:', error);
+    // Configurar el agent por defecto
+    agent.configure({
+      endpoint: this.config.endpoint,
+      headers: this.config.headers,
+      usePersistentBuffer: this.config.usePersistentBuffer
     });
-  }
 
-  // Public API
-  addBreadcrumb(category, message, data = {}) {
-    if (!this.isActive) return;
-        
-    const breadcrumb = this.breadcrumbManager.add(category, message, data);
-        
-    // Keep only the last maxEvents
-    const breadcrumbs = this.breadcrumbManager.getAll();
-    if (breadcrumbs.length > this.maxEvents) {
-      this.breadcrumbManager.clear();
-      breadcrumbs.slice(-this.maxEvents).forEach(b => this.breadcrumbManager.add(b.category, b.message, b.data));
+    // Inicializar interceptores
+    interceptors.configure({
+      captureClicks: this.config.captureClicks,
+      captureFetch: this.config.captureFetch,
+      captureErrors: this.config.captureErrors,
+      captureUnhandledRejections: this.config.captureUnhandledRejections
+    });
+
+    // Inyectar callback de error si existe
+    if (this.config.onError) {
+      interceptors.onError = this.config.onError;
     }
-        
-    return breadcrumb;
+
+    interceptors.init();
+
+    // Intentar reintentar items fallidos de sesiones previas
+    agent.retryFailedItems().catch(err => {
+      console.warn('SyntropyFront: Error al intentar recuperar items persistentes:', err);
+    });
+
+    this.isActive = true;
+    console.log('🚀 SyntropyFront: Inicializado con arquitectura modular resiliente');
   }
 
+  /**
+   * Configura SyntropyFront
+   * @param {Object} config - Configuración
+   */
+  configure(config = {}) {
+    // Actualizar configuración local
+    this.config = { ...this.config, ...config };
+
+    // Si se pasa 'fetch', extraer endpoint y headers por compatibilidad
+    if (config.fetch) {
+      this.config.endpoint = config.fetch.url;
+      this.config.headers = config.fetch.options?.headers || {};
+    }
+
+    // Re-configurar componentes internos
+    agent.configure({
+      endpoint: this.config.endpoint,
+      headers: this.config.headers,
+      usePersistentBuffer: this.config.usePersistentBuffer
+    });
+
+    interceptors.configure({
+      captureClicks: this.config.captureClicks,
+      captureFetch: this.config.captureFetch,
+      captureErrors: this.config.captureErrors,
+      captureUnhandledRejections: this.config.captureUnhandledRejections
+    });
+
+    if (this.config.onError) {
+      interceptors.onError = this.config.onError;
+    }
+
+    const mode = this.config.endpoint ? `endpoint: ${this.config.endpoint}` : 'console only';
+    console.log(`✅ SyntropyFront: Configurado - ${mode}`);
+  }
+
+  /**
+   * Añade un breadcrumb manualmente
+   */
+  addBreadcrumb(category, message, data = {}) {
+    return breadcrumbStore.add({ category, message, data });
+  }
+
+  /**
+   * Obtiene todos los breadcrumbs
+   */
   getBreadcrumbs() {
-    return this.breadcrumbManager.getAll();
+    return breadcrumbStore.getAll();
   }
 
+  /**
+   * Limpia los breadcrumbs
+   */
   clearBreadcrumbs() {
-    this.breadcrumbManager.clear();
+    breadcrumbStore.clear();
   }
 
+  /**
+   * Envía un error manualmente con contexto
+   */
   sendError(error, context = {}) {
-    if (!this.isActive) return;
-        
-    const errorData = this.errorManager.send(error, context);
     const errorPayload = {
-      ...errorData,
+      type: 'manual_error',
+      error: {
+        message: error.message || String(error),
+        name: error.name || 'Error',
+        stack: error.stack
+      },
       breadcrumbs: this.getBreadcrumbs(),
       timestamp: new Date().toISOString()
     };
-        
-    this.handleError(errorPayload);
-    return errorData;
+
+    agent.sendError(errorPayload, context);
+    return errorPayload;
   }
 
-  getErrors() {
-    return this.errorManager.getAll();
+  /**
+   * Fuerza el envío de datos pendientes
+   */
+  async flush() {
+    await agent.forceFlush();
   }
 
-  clearErrors() {
-    this.errorManager.clear();
-  }
-
-  // Utility methods
+  /**
+   * Obtiene estadísticas de uso
+   */
   getStats() {
     return {
-      breadcrumbs: this.breadcrumbManager.getCount(),
-      errors: this.errorManager.getCount(),
       isActive: this.isActive,
-      maxEvents: this.maxEvents,
-      hasFetchConfig: !!this.fetchConfig,
-      hasErrorCallback: !!this.onErrorCallback,
-      endpoint: this.fetchConfig?.url || 'console'
+      breadcrumbs: breadcrumbStore.count(),
+      agent: agent.getStats(),
+      config: { ...this.config }
     };
+  }
+
+  /**
+   * Desactiva la biblioteca y restaura hooks originales
+   */
+  destroy() {
+    interceptors.destroy();
+    agent.disable();
+    this.isActive = false;
+    console.log('SyntropyFront: Desactivado');
   }
 }
 
-// Single instance - auto-initializes
+// Instancia única (Singleton)
 const syntropyFront = new SyntropyFront();
 
-// Export the instance
-export default syntropyFront; 
+// Exportar la instancia por defecto
+export default syntropyFront;

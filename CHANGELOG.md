@@ -2,6 +2,18 @@
 
 All notable changes to SyntropyFront will be documented in this file.
 
+## [0.4.0] - 2026-03-01
+
+### Added
+- **Modular Architecture (Facade)**: Refactored the main entry point to delegate responsibilities to specialized components (`Agent`, `Interceptors`).
+- **Automatic Resilience**: The system now automatically recovers and retries sending failed data from previous sessions stored in IndexedDB upon initialization.
+- **Event Throttling**: Implemented a 500ms throttle for click capture to reduce event noise.
+- **Smart Click Filtering**: Only captures clicks on interactive elements (buttons, links, etc.), significantly improving breadcrumb quality.
+
+### Changed
+- Removed the `flatted` external dependency in favor of our own `RobustSerializer`.
+- Improved global error capture robustness using the Chaining Pattern.
+
 ## [0.3.0] - 2024-12-19
 
 ### 🚀 **Major Performance & Bundle Optimizations**

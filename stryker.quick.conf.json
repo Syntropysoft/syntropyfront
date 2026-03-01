@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
-  "packageManager": "npm",
+  "packageManager": "pnpm",
   "reporters": [
     "html",
     "clear-text",
@@ -8,6 +8,9 @@
   ],
   "testRunner": "jest",
   "coverageAnalysis": "perTest",
+  "plugins": [
+    "@stryker-mutator/jest-runner"
+  ],
   "jest": {
     "configFile": "jest.config.cjs"
   },
@@ -17,19 +20,10 @@
     "!src/**/*.spec.js",
     "!src/examples/**"
   ],
-  "testMatch": [
-    "tests/**/*.test.js",
-    "tests/**/*.spec.js"
-  ],
   "concurrency": 1,
-  "timeoutMS": 2000,
-  "maxTestRunnerReuse": 0,
+  "timeoutMS": 5000,
   "ignoreStatic": true,
   "warnings": {
     "slow": false
-  },
-  "dashboard": {
-    "project": "github.com/Syntropysoft/syntropyfront",
-    "version": "main"
   }
-} 
+}

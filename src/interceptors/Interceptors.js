@@ -32,14 +32,14 @@ export class Interceptors {
       captureUnhandledRejections: true
     };
     this.contextTypes = [];
-        
+
     // Referencias originales para restaurar en destroy()
     this.originalHandlers = {
       fetch: null,
       onerror: null,
       onunhandledrejection: null
     };
-        
+
     // Event listeners para limpiar
     this.eventListeners = new Map();
   }
@@ -88,16 +88,50 @@ export class Interceptors {
       return;
     }
 
+    let lastClickTime = 0;
+    const THROTTLE_MS = 500;
+
     const clickHandler = (event) => {
       const el = event.target;
       if (!el) return;
-            
+
+      // ✅ THROTTLE: Evitar ráfagas de clicks (ej: double clicks accidentales)
+      const now = Date.now();
+      if (now - lastClickTime < THROTTLE_MS) return;
+      lastClickTime = now;
+
+      // ✅ FILTER: Solo capturar elementos potencialmente interactivos
+      const isInteractive = (element) => {
+        if (!element || element.nodeType !== 1) return false;
+        const interactiveTags = ['a', 'button', 'input', 'select', 'textarea', 'label', 'summary'];
+        const isClickableRole = ['button', 'link', 'checkbox', 'radio', 'menuitem'].includes(element.getAttribute?.('role'));
+
+        let hasPointerCursor = false;
+        try {
+          hasPointerCursor = window.getComputedStyle?.(element)?.cursor === 'pointer';
+        } catch (e) {
+          // Ignorar errores en entornos donde getComputedStyle falla (ej: JSDOM con mocks incompletos)
+        }
+
+        return interactiveTags.includes(element.tagName.toLowerCase()) || isClickableRole || hasPointerCursor;
+      };
+
+      // Si el elemento no es interactivo, buscar hacia arriba en el DOM (bubbling)
+      let target = el;
+      while (target && target !== document.body) {
+        if (isInteractive(target)) break;
+        target = target.parentElement;
+      }
+
+      // Si no encontramos un elemento interactivo, ignoramos el click (reduce ruido)
+      if (!target || target === document.body) return;
+
       // Genera un selector CSS simple para identificar el elemento
-      let selector = el.tagName.toLowerCase();
-      if (el.id) {
-        selector += `#${el.id}`;
-      } else if (el.className && typeof el.className === 'string') {
-        selector += `.${el.className.split(' ').filter(Boolean).join('.')}`;
+      let selector = target.tagName.toLowerCase();
+      if (target.id) {
+        selector += `#${target.id}`;
+      } else if (target.className && typeof target.className === 'string') {
+        selector += `.${target.className.split(' ').filter(Boolean).join('.')}`;
       }
 
       breadcrumbStore.add({
@@ -105,9 +139,10 @@ export class Interceptors {
         message: `Usuario hizo click en '${selector}'`,
         data: {
           selector,
-          tagName: el.tagName,
-          id: el.id,
-          className: el.className
+          tagName: target.tagName,
+          id: target.id,
+          className: target.className,
+          text: target.innerText?.substring(0, 30).trim() || target.value?.substring(0, 30)
         }
       });
     };
@@ -129,12 +164,12 @@ export class Interceptors {
 
     // Guardar referencia original
     this.originalHandlers.fetch = window.fetch;
-        
+
     // Crear nuevo handler que encadena con el original
     const syntropyFetchHandler = (...args) => {
       const url = args[0] instanceof Request ? args[0].url : args[0];
       const method = args[0] instanceof Request ? args[0].method : (args[1]?.method || 'GET');
-            
+
       breadcrumbStore.add({
         category: 'network',
         message: `Request: ${method} ${url}`,
@@ -166,24 +201,24 @@ export class Interceptors {
     if (this.config.captureErrors) {
       // Guardar referencia original
       this.originalHandlers.onerror = window.onerror;
-            
+
       // Crear nuevo handler que encadena con el original
       const syntropyErrorHandler = (message, source, lineno, colno, error) => {
         const errorPayload = {
           type: 'uncaught_exception',
-          error: { 
-            message, 
-            source, 
-            lineno, 
-            colno, 
-            stack: error?.stack 
+          error: {
+            message,
+            source,
+            lineno,
+            colno,
+            stack: error?.stack
           },
           breadcrumbs: breadcrumbStore.getAll(),
           timestamp: new Date().toISOString()
         };
 
         this.handleError(errorPayload);
-                
+
         // ✅ CHAINING: Llamar al handler original si existe
         if (this.originalHandlers.onerror) {
           try {
@@ -193,7 +228,7 @@ export class Interceptors {
             return false;
           }
         }
-                
+
         return false; // No prevenir el error por defecto
       };
 
@@ -204,7 +239,7 @@ export class Interceptors {
     if (this.config.captureUnhandledRejections) {
       // Guardar referencia original
       this.originalHandlers.onunhandledrejection = window.onunhandledrejection;
-            
+
       // Crear nuevo handler que encadena con el original
       const syntropyRejectionHandler = (event) => {
         const errorPayload = {
@@ -218,7 +253,7 @@ export class Interceptors {
         };
 
         this.handleError(errorPayload);
-                
+
         // ✅ CHAINING: Llamar al handler original si existe
         if (this.originalHandlers.onunhandledrejection) {
           try {
@@ -241,10 +276,10 @@ export class Interceptors {
   handleError(errorPayload) {
     // Recolectar contexto si está configurado
     const context = this.contextTypes.length > 0 ? contextCollector.collect(this.contextTypes) : null;
-        
+
     // Enviar al agent si está configurado
     agent.sendError(errorPayload, context);
-        
+
     // Callback para manejo personalizado de errores
     if (this.onError) {
       this.onError(errorPayload);

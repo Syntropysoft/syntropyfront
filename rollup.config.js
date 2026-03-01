@@ -36,7 +36,6 @@ export default defineConfig({
     }),
     commonjs()
   ],
-  external: ['flatted'],
   onwarn(warning, warn) {
     // Ignore circular dependency warnings for our proxy tracking
     if (warning.code === 'CIRCULAR_DEPENDENCY') {

@@ -16,14 +16,15 @@
   <a href="#"><img src="https://img.shields.io/badge/status-ready%20for%20production-brightgreen.svg" alt="Ready for Production"></a>
   <a href="#"><img src="https://github.com/Syntropysoft/syntropyfront/workflows/CodeQL/badge.svg" alt="CodeQL"></a>
   <a href="#"><img src="https://img.shields.io/badge/dependabot-enabled-brightgreen.svg" alt="Dependabot"></a>
-  <a href="#"><img src="https://img.shields.io/badge/mutation%20score-74.96%25-brightgreen.svg" alt="Mutation Score"></a>
-  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-91.01%25-brightgreen.svg" alt="Test Coverage"></a>
-  <a href="#"><img src="https://img.shields.io/badge/bundle%20size-4.88%20KB-brightgreen.svg" alt="Bundle Size"></a>
+  <a href="#"><img src="https://img.shields.io/badge/mutation%20score-71.03%25-brightgreen.svg" alt="Mutation Score"></a>
+  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-89.47%25-brightgreen.svg" alt="Test Coverage"></a>
+  <a href="#"><img src="https://img.shields.io/badge/bundle%20size-34%20KB-brightgreen.svg" alt="Bundle Size"></a>
+  <a href="https://socket.dev/npm/package/@syntropysoft/syntropyfront"><img src="https://socket.dev/api/badge/npm/package/@syntropysoft/syntropyfront" alt="Socket Badge"></a>
 </p>
 
 ---
 
-🚀 **Observability library with automatic capture - Just 1 line of code!**
+🚀 **Observability library with automatic capture - Just 1 line of code! No dependencies!**
 
 SyntropyFront automatically captures user interactions, errors, HTTP calls, and console logs, providing comprehensive observability for your web applications with minimal setup.
 
@@ -36,6 +37,8 @@ SyntropyFront automatically captures user interactions, errors, HTTP calls, and 
 - 💾 **Smart storage** - Keeps the last N events (configurable)
 - 📤 **Flexible posting** - Posts errors to your endpoint or logs to console
 - ⚡ **Zero configuration** - Works out of the box with just an import
+- 📦 **Zero Dependencies** - 100% standalone, no runtime dependencies
+- 🛡️ **Highly Resilient** - Automatic retry and persistent queuing
 
 ## 🚀 Quick Start
 
@@ -101,23 +104,22 @@ syntropyFront.configure({
 npm install @syntropysoft/syntropyfront
 ```
 
-## 🚀 **Performance Optimizations (v0.3.0)**
+## 🚀 **Performance Optimizations (v0.4.0)**
 
 SyntropyFront has been optimized for maximum performance and minimal bundle size:
 
 ### **🎯 Testing Excellence**
-- **Mutation Score**: Improved from 58.14% to **74.96%** (+16.82 points!)
-- **Test Coverage**: **91.01%** with 488 comprehensive tests
+- **Mutation Score**: **71.03%** (Total) / **80.02%** (Covered) verified with Stryker
+- **Test Coverage**: **81.47% Branch Coverage** (90.07% Lines)
+- **430+ Comprehensive Tests**: Covering all edge cases and resilience scenarios
 - **Database Modules**: All modules now have 77-100% mutation score
 - **Core Components**: 92.70% average mutation score across agent modules
 
 ### **📦 Ultra-Lightweight Bundle**
-- **Only 1 Runtime Dependency**: `flatted` for circular reference handling
-- **45+ Dependencies Removed**: Eliminated unnecessary packages
-- **Bundle Size**: **4.88 KB** minified (4,884 bytes)
-- **ES Module**: 10.9 KB
-- **CommonJS**: 10.98 KB
-- **Faster Installation**: Reduced npm install time and disk usage
+- **Zero Runtime Dependencies**: No more external requirements.
+- **Bundle Size**: **34 KB** minified (fully featured with offline support)
+- **ES Module**: 80 KB (unminified)
+- **Zero Runtime Dependencies**: Near-instant installation and minimal noise
 
 ### **🔧 Smart Dependency Management**
 - **Clean Architecture**: All testing tools properly categorized as devDependencies
@@ -519,6 +521,16 @@ npm run test:coverage
 # Run mutation testing
 npm run test:mutation
 ```
+
+
+## 🛡️ Security & Privacy
+
+SyntropyFront is designed with security and transparency in mind:
+
+- **Network Access**: Telemetry is sent **only** to the endpoint you configure via `configure({ fetch: { url: '...' } })`. By default, it only logs to the browser console.
+- **No Third-Party Tracking**: We don't include any tracking or analytics scripts. Your data is yours.
+- **PII Protection**: Breadcrumbs focus on technical context. We recommend using a custom `onError` handler to scrub sensitive data if necessary.
+- **Zero Runtime Dependencies**: Minimizes the attack surface by not relying on external code at runtime.
 
 ## 🔍 Debugging
 

@@ -1,6 +1,6 @@
 {
   "name": "@syntropysoft/syntropyfront",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "description": "🚀 Observability library with automatic capture - Just 1 line of code! Automatically captures clicks, errors, HTTP calls, and console logs with flexible error handling.",
   "main": "dist/index.js",
@@ -27,7 +27,7 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --config jest.config.coverage.cjs",
     "test:mutation": "stryker run",
-    "test:mutation:watch": "stryker run --watch",
+    "test:mutation:watch": "stryker run",
     "test:mutation:quick": "stryker run stryker.quick.conf.json",
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .js",
@@ -95,9 +95,12 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {
-    "flatted": "^3.3.3"
+  "funding": {
+    "type": "individual",
+    "url": "https://github.com/sponsors/Syntropysoft"
   },
+  "sideEffects": true,
+  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.28.0",
     "@babel/preset-env": "^7.28.0",
