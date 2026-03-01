@@ -104,7 +104,7 @@ syntropyFront.configure({
 npm install @syntropysoft/syntropyfront
 ```
 
-## 🚀 **Performance Optimizations (v0.4.0)**
+## 🚀 **Performance Optimizations (v0.4.1)**
 
 SyntropyFront has been optimized for maximum performance and minimal bundle size:
 
@@ -478,7 +478,7 @@ src/core/
 - **Single Responsibility Principle (SRP)**: Each class has one clear purpose
 - **Dependency Injection**: Components receive dependencies through constructors
 - **Declarative Error Handling**: Structured error responses with fallbacks
-- **Comprehensive Testing**: 488 tests with 74.96% mutation score
+- **Comprehensive Testing**: 430+ tests with 71.03% mutation score
 - **Optimized Performance**: Timeouts optimized for faster execution
 
 ## 🧪 Testing & Quality
@@ -487,8 +487,8 @@ SyntropyFront maintains high code quality through comprehensive testing:
 
 ### Test Coverage & Mutation Testing
 
-- **Mutation Score**: 74.96% - Our tests effectively detect code changes
-- **Test Coverage**: 91.01% - Comprehensive unit test coverage
+- **Mutation Score**: 71.03% - Our tests effectively detect code changes
+- **Test Coverage**: 89.47% (Statements) / 81.47% (Branches)
 - **Key Components Performance**:
   - `Agent.js`: 87.23% mutation score
   - `ConfigurationManager.js`: 100% mutation score
@@ -501,6 +501,7 @@ SyntropyFront maintains high code quality through comprehensive testing:
   - `DatabaseConfigManager.js`: 86.89% mutation score
   - `DatabaseConnectionManager.js`: 85.96% mutation score
   - `PersistentBufferManager.js`: 77.63% mutation score
+  - `RobustSerializer.js`: 73.36% mutation score
 
 ### Testing Stack
 

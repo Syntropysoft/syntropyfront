@@ -2,6 +2,15 @@
 
 All notable changes to SyntropyFront will be documented in this file.
 
+## [0.4.1] - 2026-03-01
+
+### Fixed
+- **Security Vulnerabilities**: Resolved high-severity RCE and ReDoS vulnerabilities in devDependencies (`serialize-javascript`, `ajv`, `tmp`).
+- **Dependency Overrides**: Forced `serialize-javascript@7.0.3` to ensure a secure build environment.
+
+### Changed
+- **Node.js Engine**: Upgraded minimum required version to **Node >=20.0.0** to support secure dependency requirements (WebCrypto) natively.
+
 ## [0.4.0] - 2026-03-01
 
 ### Added

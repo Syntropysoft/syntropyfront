@@ -1,6 +1,6 @@
 {
   "name": "@syntropysoft/syntropyfront",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "description": "🚀 Observability library with automatic capture - Just 1 line of code! Automatically captures clicks, errors, HTTP calls, and console logs with flexible error handling.",
   "main": "dist/index.js",
@@ -93,28 +93,32 @@
   },
   "homepage": "https://github.com/Syntropysoft/syntropyfront#readme",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "funding": {
     "type": "individual",
     "url": "https://github.com/sponsors/Syntropysoft"
   },
   "sideEffects": true,
-  "dependencies": {},
   "devDependencies": {
-    "@babel/core": "^7.28.0",
-    "@babel/preset-env": "^7.28.0",
-    "@jest/globals": "^30.0.5",
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.0",
+    "@jest/globals": "^30.2.0",
     "@rollup/plugin-commonjs": "^29.0.0",
-    "@rollup/plugin-node-resolve": "^16.0.2",
-    "@rollup/plugin-terser": "^0.4.0",
-    "@stryker-mutator/core": "^8.7.1",
-    "@stryker-mutator/jest-runner": "^8.7.1",
-    "babel-jest": "^30.0.5",
-    "eslint": "^8.0.0",
-    "jest": "^30.0.5",
-    "jest-environment-jsdom": "^30.0.5",
-    "rollup": "^3.0.0"
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@stryker-mutator/core": "^9.6.0",
+    "@stryker-mutator/jest-runner": "^9.6.0",
+    "babel-jest": "^30.2.0",
+    "eslint": "^8.57.1",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "rollup": "^4.59.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "serialize-javascript": "^7.0.3"
+    }
   },
   "browserslist": [
     "> 1%",
