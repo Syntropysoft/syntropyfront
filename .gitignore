@@ -53,3 +53,5 @@ temp/
 # Stryker mutation testing
 reports/mutation/
 .stryker-tmp/ 
+docs/
+test_output.txt
