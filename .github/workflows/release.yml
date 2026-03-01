@@ -12,26 +12,31 @@ jobs:
     
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [20.x, 22.x]
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v3
+      with:
+        version: 9
+        
     - name: Setup Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        cache: 'pnpm'
         
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install
       
     - name: Run tests
-      run: npm run test
+      run: pnpm test
       
     - name: Build project
-      run: npm run build
+      run: pnpm run build
       
     - name: Verify build artifacts
       run: |
@@ -57,17 +62,22 @@ jobs:
       with:
         languages: javascript
 
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v3
+      with:
+        version: 9
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18.x'
-        cache: 'npm'
+        node-version: '20.x'
+        cache: 'pnpm'
 
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install
 
     - name: Build project
-      run: npm run build
+      run: pnpm run build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
@@ -81,21 +91,26 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v3
+      with:
+        version: 9
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18.x'
-        cache: 'npm'
+        node-version: '20.x'
+        cache: 'pnpm'
         registry-url: 'https://registry.npmjs.org'
         
     - name: Install dependencies
-      run: npm ci
+      run: pnpm install
       
     - name: Build project
-      run: npm run build
+      run: pnpm run build
       
     - name: Publish to NPM
-      run: npm publish
+      run: pnpm publish --no-git-checks
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         
@@ -113,18 +128,17 @@ jobs:
           - Bug fixes and improvements
           - Performance optimizations
           - Enhanced error handling
-          - **Multi-Node.js compatibility**: Tested on Node.js 18.x, 20.x, 22.x
+          - **Multi-Node.js compatibility**: Tested on Node.js 20.x, 22.x
           - **Security validated**: CodeQL analysis completed
           
           ## Installation
           
           ```bash
-          npm install @syntropysoft/syntropyfront
+          pnpm add @syntropysoft/syntropyfront
           ```
           
           ## Compatibility
           
-          ✅ **Node.js 18.x** - Full support
           ✅ **Node.js 20.x** - Full support  
           ✅ **Node.js 22.x** - Full support
           
