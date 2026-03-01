@@ -1,14 +1,10 @@
-// SUPER SIMPLE USAGE - JUST 2 LINES
+// Minimal usage — two lines to get value
+// 1. Import (auto-initializes)
+import syntropyFront from '@syntropysoft/syntropyfront';
 
-// 1. Import the library (it auto-initializes)
-import syntropyFront from './syntropyfront.js';
+// 2. Use it
+syntropyFront.addBreadcrumb('user', 'App loaded');
+syntropyFront.sendError(new Error('Test error')); // optional: second arg is context
 
-// 2. Use when the app is ready
-const isReady = useAppReady();
-if (isReady) {
-    // Ready! You can now use the library
-    syntropyFront.addBreadcrumb('user', 'App loaded');
-    syntropyFront.sendError(new Error('Test error'));
-}
-
-// THAT'S IT. No more config, no more complex setup.
+// Optional: send to your backend
+// syntropyFront.configure({ endpoint: 'https://your-api.com/errors' });

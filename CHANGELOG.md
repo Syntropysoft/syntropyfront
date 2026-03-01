@@ -1,3 +1,18 @@
+## [0.4.8] - 2026-03-01
+
+### Added
+- **Examples**: Single shared stylesheet `examples/examples.css` for all pure HTML demos.
+- **README (main)**: Examples section with table linking to examples/README.md, basic-usage.html, HTML demos, react-example, vue-example, svelte-example.
+
+### Changed
+- **Keywords (package.json)**: Tuned for accuracy (e.g. production-errors, lightweight, zero-dependencies); removed performance-monitoring / web-performance (not a full APM).
+- **README**: Reorganized for clarity—what it does, why use it, Quick Start, API table, PII/config summary, short Design, Quality, Contributing. Honest impact, no overclaim.
+- **SECURITY.md**: Added **Network access** section (data sent only to your endpoint or callback).
+- **Examples (HTML)**: All pure HTML demos now load the IIFE bundle (`dist/index.min.js`) so they work when opened via file:// after `pnpm run build`. Demos updated to current API (`configure`, `getStats`, no `init`/presets). Worker/Proxy/Presets demos simplified or stubbed where the API is not in the current build.
+- **examples/README.md**: Documents basic-usage, other HTML demos, React/Vue/Svelte with run commands; notes shared CSS and build requirement.
+
+---
+
 ## [0.4.7] - 2026-03-01
 
 ### Changed

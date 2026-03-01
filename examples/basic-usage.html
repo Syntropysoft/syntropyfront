@@ -9,34 +9,17 @@
 <body class="bg-gray-900 text-gray-100 p-8">
     <div class="max-w-4xl mx-auto">
         <h1 class="text-3xl font-bold mb-8">SyntropyFront - Basic Example</h1>
-        
+        <p class="text-gray-400 text-sm mb-4">Open this file directly (file://). From repo root run <code class="bg-gray-700 px-1 rounded">pnpm run build</code> once if you see &quot;Build missing&quot;.</p>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Controls Panel -->
             <div class="bg-gray-800 p-6 rounded-lg">
                 <h2 class="text-xl font-semibold mb-4">Controls</h2>
-                
-                <button id="btn-click" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-3 block w-full">
-                    Make Click
-                </button>
-                
-                <button id="btn-fetch" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mb-3 block w-full">
-                    API Call
-                </button>
-                
-                <button id="btn-error" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded mb-3 block w-full">
-                    Trigger Error
-                </button>
-                
-                <button id="btn-breadcrumb" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mb-3 block w-full">
-                    Add Breadcrumb
-                </button>
-                
-                <button id="btn-clear" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded block w-full">
-                    Clear Breadcrumbs
-                </button>
+                <button id="btn-click" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded mb-3 block w-full">Make Click</button>
+                <button id="btn-fetch" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded mb-3 block w-full">API Call</button>
+                <button id="btn-error" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded mb-3 block w-full">Trigger Error</button>
+                <button id="btn-breadcrumb" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded mb-3 block w-full">Add Breadcrumb</button>
+                <button id="btn-clear" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded block w-full">Clear Breadcrumbs</button>
             </div>
-            
-            <!-- Breadcrumbs Panel -->
             <div class="bg-gray-800 p-6 rounded-lg">
                 <h2 class="text-xl font-semibold mb-4">Breadcrumbs</h2>
                 <div id="breadcrumbs-list" class="space-y-2 text-sm">
@@ -44,8 +27,7 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Logs Panel -->
+
         <div class="mt-8 bg-gray-800 p-6 rounded-lg">
             <h2 class="text-xl font-semibold mb-4">Logs</h2>
             <div id="logs" class="bg-gray-900 p-4 rounded h-64 overflow-y-auto text-sm font-mono">
@@ -54,107 +36,84 @@
         </div>
     </div>
 
-    <script type="module">
-        // Import SyntropyFront (in a real project would be from npm)
-        import SyntropyFront from '../src/index.js';
-        
-        // Initialize with custom configuration
-        async function initializeSyntropyFront() {
-            try {
-                await SyntropyFront.init({
-                    preset: 'balanced', // Use balanced preset by default
-                    maxBreadcrumbs: 10,
-                    onError: (errorPayload) => {
-                        logToScreen(`🚨 ERROR: ${errorPayload.error.message}`, 'error');
-                        logToScreen(`Context: ${errorPayload.breadcrumbs.length} breadcrumbs`, 'error');
-                    },
-                    onBreadcrumbAdded: (breadcrumb) => {
-                        logToScreen(`📝 Breadcrumb: [${breadcrumb.category}] ${breadcrumb.message}`);
-                        updateBreadcrumbsList();
-                    }
-                });
-                
-                logToScreen('🚀 SyntropyFront initialized successfully');
-            } catch (error) {
-                logToScreen(`❌ Error initializing SyntropyFront: ${error.message}`, 'error');
-            }
-        }
-        
-        // Initialize when the page loads
-        initializeSyntropyFront();
-        
-        // UI Functions
-        function logToScreen(message, type = 'info') {
-            const logs = document.getElementById('logs');
-            const p = document.createElement('p');
-            const timestamp = new Date().toLocaleTimeString();
-            
-            p.innerHTML = `<span class="text-gray-500">${timestamp}:</span> `;
-            
-            if (type === 'error') {
-                p.className = 'text-red-400';
-            } else {
-                p.className = 'text-green-300';
-            }
-            
-            p.innerHTML += message;
-            logs.appendChild(p);
-            logs.scrollTop = logs.scrollHeight;
-        }
-        
-        function updateBreadcrumbsList() {
-            const container = document.getElementById('breadcrumbs-list');
-            const breadcrumbs = SyntropyFront.getBreadcrumbs();
-            
-            if (breadcrumbs.length === 0) {
-                container.innerHTML = '<p class="text-gray-400">No breadcrumbs...</p>';
+    <!-- IIFE bundle works with file://. From repo root run: pnpm run build (once), then open this file. -->
+    <script src="../dist/index.min.js"></script>
+    <script>
+        (function () {
+            var syntropyFront = window.SyntropyFront;
+            if (!syntropyFront) {
+                document.getElementById('logs').innerHTML = '<p class="text-red-400">Build missing. From repo root run: pnpm run build</p>';
                 return;
             }
-            
-            container.innerHTML = breadcrumbs.map(b => `
-                <div class="bg-gray-700 p-3 rounded">
-                    <div class="flex justify-between items-start">
-                        <span class="text-xs bg-blue-600 px-2 py-1 rounded">${b.category}</span>
-                        <span class="text-xs text-gray-400">${new Date(b.timestamp).toLocaleTimeString()}</span>
-                    </div>
-                    <p class="text-sm mt-1">${b.message}</p>
-                </div>
-            `).join('');
-        }
-        
-        // Event listeners
-        document.getElementById('btn-click').addEventListener('click', () => {
-            logToScreen('👆 Click on test button');
-        });
-        
-        document.getElementById('btn-fetch').addEventListener('click', () => {
-            logToScreen('🌐 Starting API call...');
-            fetch('https://jsonplaceholder.typicode.com/todos/1')
-                .then(response => response.json())
-                .then(data => logToScreen(`✅ API responded: ${JSON.stringify(data)}`))
-                .catch(error => logToScreen(`❌ API error: ${error.message}`, 'error'));
-        });
-        
-        document.getElementById('btn-error').addEventListener('click', () => {
-            logToScreen('💥 Triggering error...', 'error');
-            // This function doesn't exist, will cause a ReferenceError
-            functionThatDoesNotExist();
-        });
-        
-        document.getElementById('btn-breadcrumb').addEventListener('click', () => {
-            SyntropyFront.addBreadcrumb('custom', 'User added manual breadcrumb', {
-                source: 'button',
-                timestamp: Date.now()
-            });
-        });
-        
-        document.getElementById('btn-clear').addEventListener('click', () => {
-            SyntropyFront.clearBreadcrumbs();
-            updateBreadcrumbsList();
-            logToScreen('🧹 Breadcrumbs cleared');
-        });
-        
 
+            syntropyFront.configure({
+                onError: function (payload) {
+                    logToScreen('Error captured: ' + (payload.error && payload.error.message || payload.type || 'error'), 'error');
+                    logToScreen('Breadcrumbs at error: ' + (payload.breadcrumbs && payload.breadcrumbs.length || 0), 'error');
+                    refreshBreadcrumbsList();
+                }
+            });
+
+            logToScreen('SyntropyFront ready. Clicks, fetch, and errors are captured automatically.');
+
+            function logToScreen(message, type) {
+                type = type || 'info';
+                var logs = document.getElementById('logs');
+                var p = document.createElement('p');
+                p.innerHTML = '<span class="text-gray-500">' + new Date().toLocaleTimeString() + ':</span> ';
+                p.className = type === 'error' ? 'text-red-400' : 'text-green-300';
+                p.appendChild(document.createTextNode(message));
+                logs.appendChild(p);
+                logs.scrollTop = logs.scrollHeight;
+            }
+
+            function refreshBreadcrumbsList() {
+                var container = document.getElementById('breadcrumbs-list');
+                var breadcrumbs = syntropyFront.getBreadcrumbs();
+                if (breadcrumbs.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400">No breadcrumbs yet...</p>';
+                    return;
+                }
+                container.innerHTML = breadcrumbs.map(function (b) {
+                    var time = new Date(b.timestamp).toLocaleTimeString();
+                    var cat = b.category.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    var msg = b.message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    return '<div class="bg-gray-700 p-3 rounded"><div class="flex justify-between items-start"><span class="text-xs bg-blue-600 px-2 py-1 rounded">' + cat + '</span><span class="text-xs text-gray-400">' + time + '</span></div><p class="text-sm mt-1">' + msg + '</p></div>';
+                }).join('');
+            }
+
+            document.getElementById('btn-click').addEventListener('click', function () {
+                logToScreen('Click on test button');
+                refreshBreadcrumbsList();
+            });
+
+            document.getElementById('btn-fetch').addEventListener('click', function () {
+                logToScreen('Starting API call...');
+                fetch('https://jsonplaceholder.typicode.com/todos/1')
+                    .then(function (r) { return r.json(); })
+                    .then(function () { logToScreen('API responded'); refreshBreadcrumbsList(); })
+                    .catch(function (err) { logToScreen('API error: ' + err.message, 'error'); refreshBreadcrumbsList(); });
+            });
+
+            document.getElementById('btn-error').addEventListener('click', function () {
+                logToScreen('Triggering error...', 'error');
+                functionThatDoesNotExist();
+            });
+
+            document.getElementById('btn-breadcrumb').addEventListener('click', function () {
+                syntropyFront.addBreadcrumb('custom', 'User added manual breadcrumb', { source: 'button' });
+                logToScreen('Manual breadcrumb added');
+                refreshBreadcrumbsList();
+            });
+
+            document.getElementById('btn-clear').addEventListener('click', function () {
+                syntropyFront.clearBreadcrumbs();
+                refreshBreadcrumbsList();
+                logToScreen('Breadcrumbs cleared');
+            });
+
+            refreshBreadcrumbsList();
+        })();
     </script>
 </body>
-</html> 
+</html>

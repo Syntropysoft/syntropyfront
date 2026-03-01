@@ -5,9 +5,7 @@
 <h1 align="center">SyntropyFront</h1>
 
 <p align="center">
-  <strong>From Uncertainty to Clarity</strong>
-  <br />
-  The Observability Library for High-Performance Teams
+  <strong>Capture frontend errors and user actions. One line. ~34 KB. Zero dependencies.</strong>
 </p>
 
 <p align="center">
@@ -21,260 +19,139 @@
 
 ---
 
-🚀 **Automatic observability capture - Just 1 line of code! Zero external dependencies.**
+## What it does
 
-SyntropyFront automatically captures user interactions, errors, HTTP calls, and console logs, providing a 360° view of the user experience with minimal performance impact.
+When something breaks in production, you get **what broke** and **what the user did before it**. No giant platform, no per-seat pricing. One import and it starts capturing:
 
-## 🧠 Our Philosophy: Observability with Purpose
+- **Errors** — uncaught exceptions and unhandled promise rejections  
+- **Clicks** — on buttons, links, and interactive elements (throttled)  
+- **HTTP** — `fetch` calls (URL, method; no sensitive headers)  
+- **Breadcrumbs** — timeline you can extend with `addBreadcrumb()`
 
-SyntropyFront is not just a log collector; it is a piece of engineering designed under three fundamental pillars:
+Optional: PII masking, sampling, offline retry (IndexedDB), and sending to your endpoint or `onError` callback. **That’s it.** It’s not a full APM; it’s enough to stop debugging blind.
 
-1.  **SOLID Principles**: Each component has a single responsibility. From `QueueManager` to `RetryManager`, the system is extensible and predictable.
-2.  **Functional Programming**: We use declarative patterns to transform data, ensuring that error processing and PII obfuscation are pure and without unexpected side effects.
-3.  **Privacy by Design (Privacy-by-Default)**: Security is not optional. The system includes a sensitive data masking engine (PII) that acts before any information leaves the client.
+---
 
-**Network access:** This library uses the network only to send errors and breadcrumbs to the endpoint you configure (`configure({ endpoint })` or `onError`). It does not phone home or send data to third parties by default.
+## Why use it
 
-## ✨ Key Features
+| Who | What they get |
+|-----|----------------|
+| **Developers** | One import, no config. No excuse to ship with zero visibility. |
+| **PM / Tech Lead** | Visibility from day one. No long “observability” projects. |
+| **Management** | Low cost, no SaaS lock-in. Fewer outages, less firefighting. |
 
-- 🎯 **Smart Click Capture**: Tracks interactions on interactive elements with built-in throttling logic.
-- 🚨 **Global Error Management**: Captures uncaught exceptions (`window.onerror`) and promise rejections.
-- 🌐 **Network Monitoring**: Intercepts `fetch` calls for full API visibility.
-- 🛡️ **PII Masking & ANSI Cleaning**: Automatically protects sensitive data (emails, cards, tokens).
-- 🎲 **Probabilistic Sampling**: Controls the volume of data sent to optimize costs and traffic.
-- 💾 **Offline Resilience**: Retry queue with *Exponential Backoff* and persistent storage via IndexedDB.
-- 📦 **Native Tree Shaking**: Modular architecture that allows you to include only the interceptors you truly need.
+**Network:** Data is sent only to the endpoint or callback you configure. No third parties, no telemetry. See [SECURITY.md](SECURITY.md).
 
-## 🚀 Quick Start
+---
 
-### Installation
+## Quick Start
 
 ```bash
 pnpm add @syntropysoft/syntropyfront
 ```
 
-### Basic Usage (Zero Config)
-
-Simply import the library in your application's entry point:
+In your app entry (e.g. `main.jsx` or `index.js`):
 
 ```javascript
 import syntropyFront from '@syntropysoft/syntropyfront';
-// Done! SyntropyFront auto-initializes and starts capturing events.
+// Done. Errors and breadcrumbs go to the console by default.
 ```
 
-## ⚙️ Advanced Configuration
-
-SyntropyFront is highly configurable to suit your production needs.
+To send to your backend or handle in code:
 
 ```javascript
-import syntropyFront from '@syntropysoft/syntropyfront';
-
 syntropyFront.configure({
-  // Your observability backend URL (optional, defaults to console logging)
+  endpoint: 'https://your-api.com/errors',
+  headers: { 'Authorization': 'Bearer YOUR_TOKEN' },
+  // optional: samplingRate, batchSize, batchTimeout, usePersistentBuffer, onError
+});
+```
+
+---
+
+## Main API
+
+| Method | Description |
+|--------|-------------|
+| `configure(config)` | Set endpoint, headers, sampling, batching, `onError`, etc. |
+| `addBreadcrumb(category, message, data?)` | Add a step to the timeline. |
+| `sendError(error, context?)` | Send an error manually (e.g. from `catch`). |
+| `getBreadcrumbs()` | Current breadcrumbs. |
+| `clearBreadcrumbs()` | Clear the list. |
+| `getStats()` | Queue length, retry status. |
+| `flush()` | Send pending data now. |
+| `destroy()` | Stop capturing and clean up. |
+
+---
+
+## Optional: PII masking
+
+Sensitive data is masked before leaving the client (emails, tokens, cards, SSN/phone patterns). You can add custom rules via `configure({ maskingRules: [...] })`. See the [full config example](#advanced-configuration) below.
+
+---
+
+## Advanced configuration
+
+```javascript
+syntropyFront.configure({
   endpoint: 'https://your-api.com/v1/telemetry',
-  
-  // Custom headers for transmission
-  headers: {
-    'Authorization': 'Bearer your-app-token',
-    'X-Environment': 'production'
-  },
-
-  // 🎲 SAMPLING: Only sends 10% of errors to save resources
-  samplingRate: 0.1,
-
-  // 📦 BATCHING: Batch size and timeout before sending
+  headers: { 'Authorization': 'Bearer token', 'X-Environment': 'production' },
+  samplingRate: 0.1,           // send 10% of events
   batchSize: 10,
   batchTimeout: 5000,
-
-  // 🛡️ SECURITY: Basic payload encryption (base64/rot13)
-  encrypt: true,
-
-  // 💾 PERSISTENCE: Enable disk storage if the user is offline
-  usePersistentBuffer: true,
-
-  // Custom callback to handle the error before it is sent
+  usePersistentBuffer: true,   // retry when offline (IndexedDB)
   onError: (payload) => {
     console.warn('Error captured:', payload.type);
-    return payload; // You can modify the payload here if necessary
-  }
+    return payload;
+  },
+  context: { device: true, window: ['url', 'title'], storage: false }
 });
 ```
 
-## 🕹️ Event Capture & Custom Events
+**Context fields** (when enabled): `device`, `window`, `network`, `session`, `ui`, `performance`, `storage`. See docs in the repo for the full list.
 
-SyntropyFront provides both automatic tracking and manual tools to enrich your observability data.
+---
 
-### 🤖 Automatic Capture
-By default, the following interceptors are initialized:
-- **UI Clicks**: Captures clicks on interactive elements (buttons, links, etc.) with smart selection logic.
-- **Network**: Intercepts `fetch` calls, logging requests and responses (without sensitive headers).
-- **Errors**: Catch-all for uncaught exceptions and unhandled promise rejections.
+## Design (short)
 
-### 🛠️ Custom Breadcrumbs
-Breadcrumbs are a timeline of events that help you understand what happened before an error occurred. You can add your own milestones:
+Built to be predictable and safe: SOLID-style modules, pure functions where it matters, PII masking by default. Data goes only to your endpoint or callback—see [SECURITY.md](SECURITY.md).
 
-```javascript
-import syntropyFront from '@syntropysoft/syntropyfront';
+---
 
-// Simple breadcrumb
-syntropyFront.addBreadcrumb('auth', 'User logged in successfully');
+## Quality
 
-// Breadcrumb with data
-syntropyFront.addBreadcrumb('commerce', 'Item added to cart', {
-  productId: 'abc-123',
-  price: 49.99,
-  currency: 'USD'
-});
-```
+- **87%** test coverage  
+- **Zero** runtime dependencies  
+- **Mutation testing** (Stryker) >71%
 
-### 🚨 Manual Error Reporting
-You can manually send errors that you catch in your own `try/catch` blocks:
+---
 
-```javascript
-try {
-  performRiskyOperation();
-} catch (error) {
-  syntropyFront.sendError(error, {
-    severity: 'critical',
-    userId: 'user_99'
-  });
-}
+## Examples
+
+**[examples/README.md](examples/README.md)** — Overview and how to run each demo.
+
+| Example | Description |
+|---------|-------------|
+| [basic-usage.html](examples/basic-usage.html) | Vanilla HTML, no build. Run `pnpm run build` then open file:// or use a static server. |
+| [HTML demos](examples/README.md#examples) | More: circular-references, worker, presets, proxy-tracking, lazy-loading, lazy-initialization, custom-objects. |
+| [react-example](examples/react-example/) | React 18. `cd react-example && pnpm install && pnpm start` |
+| [vue-example](examples/vue-example/) | Vue 3 + Vite. `cd vue-example && pnpm install && pnpm run dev` |
+| [svelte-example](examples/svelte-example/) | Svelte 4 + Vite. `cd svelte-example && pnpm install && pnpm run dev` |
+
+## Contributing / local dev
+
+```bash
+git clone https://github.com/Syntropysoft/syntropyfront.git
+cd syntropyfront
+pnpm install
+pnpm test
+pnpm run build
 ```
 
 ---
 
-## 🛡️ Sensitive Data Protection (PII Masking)
+## License
 
-SyntropyFront automatically protects your users' privacy. The `DataMaskingManager` detects and obfuscates:
-- Email addresses (`j***@example.com`)
-- Authentication tokens and passwords
-- Credit card numbers (keeps only the last 4 digits)
-- SSN and phone numbers
+**Apache-2.0** — use in commercial and open-source projects.
 
-### Custom Rules Configuration
-```javascript
-syntropyFront.configure({
-  maskingRules: [
-    {
-      pattern: /custom_id_\d+/i,
-      mask: 'HIDDEN_ID'
-    }
-  ]
-});
-```
-
-## 🏗️ Modular Architecture and Tree Shaking
-
-In a future version (e.g. 0.5.0), interceptors may be exposed as independent modules. To minimize your bundle size, you would then import only what you need:
-
-```javascript
-// Instead of global import, use specific interceptors directly
-// (Coming soon in the granular export API)
-```
-
-### Core Structure
-The system is divided into managers with unique responsibilities:
-- **QueueManager**: Manages batching and output flow.
-- **RetryManager**: Handles smart retries with incremental waits.
-- **SerializationManager**: Ensures data is safe for transmission over the network.
-- **ContextCollector**: Collects device information and user environment context.
-
-## 📊 Quality Metrics
-
-We take stability seriously. SyntropyFront maintains:
-- **Test Coverage**: **87%** (All files).
-- **Stryker Mutation Score**: **>71%** (Our tests truly verify logic, they don't just "pass through" it).
-- **Zero Dependencies**: We don't add third-party vulnerabilities to your project.
-
-## 📖 API Reference
-
-### `syntropyFront.configure(config)`
-Updates the global configuration of the agent.
-
-### `syntropyFront.addBreadcrumb(category, message, data)`
-Adds a manual milestone to the timeline.
-- `category`: String (e.g., 'auth', 'ui', 'action')
-- `message`: Description of the event.
-- `data`: (Optional) Object with additional metadata.
-
-### `syntropyFront.sendError(error, context)`
-Manually reports an error.
-- `error`: Error object or string.
-- `context`: (Optional) Additional data to send with this specific error.
-
-### `syntropyFront.flush()`
-Forces the immediate sending of all pending events in the queue.
-
-### `syntropyFront.getBreadcrumbs()`
-Returns the list of current breadcrumbs in memory.
-
-### `syntropyFront.clearBreadcrumbs()`
-Clears the temporary breadcrumb history.
-
-### `syntropyFront.getStats()`
-Returns an object with library performance statistics (queue length, retry status, etc.).
-
-### `syntropyFront.destroy()`
-Deactivates all interceptors and stops the agent.
-
----
-
-## 🔍 Advanced Context Collection
-
-You can precisely control what environment data is collected when an error occurs.
-
-```javascript
-syntropyFront.configure({
-  context: {
-    // Collect all default fields for these types
-    device: true,
-    network: true,
-    
-    // Collect ONLY specific fields
-    window: ['url', 'title', 'viewport'],
-    performance: ['memory'],
-    
-    // Explicitly disable a type
-    storage: false
-  }
-});
-```
-
-### Available Context Fields
-- **`device`**: `userAgent`, `language`, `screen`, `timezone`, `cookieEnabled`.
-- **`window`**: `url`, `pathname`, `referrer`, `title`, `viewport`.
-- **`storage`**: `localStorage`, `sessionStorage` (size and keys only, no values).
-- **`network`**: `online`, `connection` (type, downlink).
-- **`ui`**: `focused`, `visibility`, `activeElement`.
-- **`performance`**: `memory` (heap usage), `timing`.
-- **`session`**: `sessionId`, `startTime`, `pageLoadTime`.
-
-## 🛠️ Local Development
-
-If you want to contribute or test the library locally:
-
-1.  **Clone and Install**:
-    ```bash
-    git clone https://github.com/Syntropysoft/syntropyfront.git
-    cd syntropyfront
-    pnpm install
-    ```
-
-2.  **Run Tests**:
-    ```bash
-    npm test          # Run all tests
-    npm run test:watch # Watch mode
-    ```
-
-3.  **Build**:
-    ```bash
-    npm run build
-    ```
-
-## 📄 License
-
-This project is licensed under the **Apache License 2.0**. You can freely use, modify, and distribute it in commercial projects.
-
----
-
-**Developed with ❤️ for a clearer and more stable web.**
+**Developed for a clearer and more stable web.**

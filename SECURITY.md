@@ -1,5 +1,9 @@
 # Security Policy
 
+## Network Access
+
+This package performs **outgoing HTTP requests only** to the URL that **you** configure via `configure({ endpoint })` or your `onError` callback. No requests are made to third-party servers, to the maintainers, or to any URL not under your control. No telemetry or analytics are sent by the library. You own the destination and the data.
+
 ## Supported Versions
 
 Only the latest version of SyntropyFront is supported for security updates.

@@ -3,121 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SyntropyFront - Lazy Loading Demo</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f8f9fa;
-        }
-        .container {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .demo-section {
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-        .demo-section h3 {
-            margin-top: 0;
-            color: #495057;
-        }
-        button {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .success {
-            color: #28a745;
-            font-weight: bold;
-        }
-        .warning {
-            color: #ffc107;
-            font-weight: bold;
-        }
-        .error {
-            color: #dc3545;
-            font-weight: bold;
-        }
-        .info {
-            color: #17a2b8;
-            font-weight: bold;
-        }
-        pre {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-            overflow-x: auto;
-            font-size: 12px;
-        }
-        .log {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 10px;
-            margin: 10px 0;
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .module-status {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin: 15px 0;
-        }
-        .module-card {
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 15px;
-            text-align: center;
-        }
-        .module-card.loaded {
-            border-color: #28a745;
-            background-color: #d4edda;
-        }
-        .module-card.not-loaded {
-            border-color: #dc3545;
-            background-color: #f8d7da;
-        }
-        .module-name {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        .module-size {
-            font-size: 12px;
-            color: #6c757d;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-    </style>
+    <title>SyntropyFront - Lazy loading</title>
+    <link rel="stylesheet" href="examples.css">
 </head>
 <body>
-    <h1>🔄 SyntropyFront - Lazy Loading Demo</h1>
-    
+    <h1>Lazy loading</h1>
+    <p class="note">Open file:// after <code>pnpm run build</code>. Demo uses <code>configure()</code>.</p>
     <div class="container">
-        <h2>Lazy Loading Architecture</h2>
-        <p>This example demonstrates how SyntropyFront loads modules dynamically based on configuration:</p>
+        <h2>Configuration options</h2>
+        <p>Apply different configurations; Proxy/Worker/Interceptor modules are not in the current build.</p>
         
-        <div class="demo-section">
+        <div class="section">
             <h3>📦 Module Status</h3>
             <div id="module-status" class="module-status">
                 <div class="module-card not-loaded" id="proxy-tracker">
@@ -139,7 +35,7 @@
         </div>
 
         <div class="grid">
-            <div class="demo-section">
+            <div class="section">
                 <h3>⚙️ Configuration</h3>
                 <button onclick="loadMinimalConfig()">Load Minimal Config</button>
                 <button onclick="loadBalancedConfig()">Load Balanced Config</button>
@@ -147,7 +43,7 @@
                 <pre id="current-config">Click a configuration button to see what gets loaded</pre>
             </div>
             
-            <div class="demo-section">
+            <div class="section">
                 <h3>🎯 Module Testing</h3>
                 <button onclick="testProxyTracker()">Test Proxy Tracker</button>
                 <button onclick="testInterceptorRegistry()">Test Interceptor Registry</button>
@@ -156,225 +52,76 @@
             </div>
         </div>
 
-        <div class="demo-section">
+        <div class="section">
             <h3>📊 Bundle Size Analysis</h3>
             <button onclick="showBundleAnalysis()">Show Bundle Analysis</button>
             <button onclick="compareConfigurations()">Compare Configurations</button>
             <div id="bundle-analysis"></div>
         </div>
 
-        <div class="demo-section">
+        <div class="section">
             <h3>📊 Event Log</h3>
             <button onclick="clearLog()">🧹 Clear Log</button>
             <div id="event-log" class="log"></div>
         </div>
     </div>
 
-    <script type="module">
-        import { SyntropyFront } from '../src/index.js';
-
-        let syntropyFront;
-        let logElement;
-
-        function log(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString();
-            const logEntry = document.createElement('div');
-            logEntry.className = type;
-            logEntry.textContent = `[${timestamp}] ${message}`;
-            logElement.appendChild(logEntry);
-            logElement.scrollTop = logElement.scrollHeight;
-        }
-
-        function updateModuleStatus(moduleName, isLoaded) {
-            const element = document.getElementById(moduleName);
-            if (element) {
-                element.className = `module-card ${isLoaded ? 'loaded' : 'not-loaded'}`;
-                element.querySelector('div:last-child').textContent = isLoaded ? 'Loaded' : 'Not Loaded';
+    <script src="../dist/index.min.js"></script>
+    <script>
+        (function () {
+            var syntropyFront = window.SyntropyFront;
+            var logElement;
+            if (!syntropyFront) {
+                document.getElementById('event-log').innerHTML = '<div class="error">Build missing. From repo root run: pnpm run build</div>';
+                return;
             }
-        }
-
-        async function initializeSyntropyFront(config) {
-            try {
-                log(`🚀 Initializing SyntropyFront with configuration...`, 'info');
-                log(`Configuration: ${JSON.stringify(config, null, 2)}`, 'info');
-                
-                await SyntropyFront.init(config);
-                syntropyFront = SyntropyFront;
-                
-                log('✅ SyntropyFront initialized successfully', 'success');
-                
-                // Update module status based on configuration
-                updateModuleStatus('proxy-tracker', config.proxyTracking?.enabled || false);
-                updateModuleStatus('interceptor-registry', config.useInterceptors !== false);
-                updateModuleStatus('worker-manager', config.useWorker !== false);
-                
+            function log(message, type) {
+                type = type || 'info';
+                var el = document.createElement('div');
+                el.className = type;
+                el.textContent = '[' + new Date().toLocaleTimeString() + '] ' + message;
+                logElement.appendChild(el);
+                logElement.scrollTop = logElement.scrollHeight;
+            }
+            function updateModuleStatus(id, loaded) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.className = 'module-card ' + (loaded ? 'loaded' : 'not-loaded');
+                    var last = el.querySelector('div:last-child');
+                    if (last) last.textContent = loaded ? 'Loaded' : 'Not in build';
+                }
+            }
+            function applyConfig(config, label) {
+                syntropyFront.configure(config);
                 document.getElementById('current-config').textContent = JSON.stringify(config, null, 2);
-                
-            } catch (error) {
-                log(`❌ Error initializing SyntropyFront: ${error.message}`, 'error');
+                log('Configured: ' + label, 'success');
+                updateModuleStatus('proxy-tracker', false);
+                updateModuleStatus('interceptor-registry', false);
+                updateModuleStatus('worker-manager', false);
             }
-        }
-
-        // Configuration presets
-        window.loadMinimalConfig = () => {
-            const config = {
-                preset: 'safe',
-                agent: {
-                    endpoint: 'https://api.example.com/errors'
-                }
+            window.loadMinimalConfig = function () { applyConfig({ samplingRate: 0.1 }, 'minimal'); };
+            window.loadBalancedConfig = function () { applyConfig({ endpoint: 'https://httpbin.org/post' }, 'balanced'); };
+            window.loadDebugConfig = function () { applyConfig({ endpoint: 'https://httpbin.org/post', captureClicks: true, captureFetch: true }, 'debug'); };
+            window.testProxyTracker = function () { document.getElementById('test-results').textContent = 'ProxyObjectTracker not in current build'; log('Proxy not in build', 'warning'); };
+            window.testInterceptorRegistry = function () { document.getElementById('test-results').textContent = 'InterceptorRegistry not in current build'; log('Interceptors not in build', 'warning'); };
+            window.testWorkerManager = function () { document.getElementById('test-results').textContent = 'WorkerManager not in current build'; log('Worker not in build', 'warning'); };
+            window.showBundleAnalysis = function () {
+                document.getElementById('bundle-analysis').innerHTML = '<h4>Bundle:</h4><pre>' + JSON.stringify({ 'Core (IIFE)': 'dist/index.min.js', 'Proxy/Worker/Interceptor': 'Not in current build' }, null, 2) + '</pre>';
+                log('Bundle info shown', 'info');
             };
-            initializeSyntropyFront(config);
-        };
-
-        window.loadBalancedConfig = () => {
-            const config = {
-                preset: 'balanced',
-                agent: {
-                    endpoint: 'https://api.example.com/errors'
-                }
+            window.compareConfigurations = function () {
+                document.getElementById('bundle-analysis').innerHTML = '<h4>Configs:</h4><pre>' + JSON.stringify({ minimal: { samplingRate: 0.1 }, balanced: { endpoint: '...' }, debug: { endpoint: '...', captureClicks: true } }, null, 2) + '</pre>';
+                log('Comparison shown', 'info');
             };
-            initializeSyntropyFront(config);
-        };
-
-        window.loadDebugConfig = () => {
-            const config = {
-                preset: 'debug',
-                agent: {
-                    endpoint: 'https://api.example.com/errors'
-                }
-            };
-            initializeSyntropyFront(config);
-        };
-
-        // Module testing
-        window.testProxyTracker = () => {
-            if (!syntropyFront) {
-                document.getElementById('test-results').textContent = 'SyntropyFront not initialized';
-                log('❌ SyntropyFront not initialized', 'error');
-                return;
-            }
-
-            try {
-                const result = syntropyFront.addProxyObject('test', { value: 1 });
-                if (result) {
-                    document.getElementById('test-results').textContent = '✅ ProxyObjectTracker is available and working';
-                    log('✅ ProxyObjectTracker test passed', 'success');
-                } else {
-                    document.getElementById('test-results').textContent = '⚠️ ProxyObjectTracker not loaded (fallback used)';
-                    log('⚠️ ProxyObjectTracker not loaded', 'warning');
-                }
-            } catch (error) {
-                document.getElementById('test-results').textContent = `❌ Error: ${error.message}`;
-                log(`❌ ProxyObjectTracker test failed: ${error.message}`, 'error');
-            }
-        };
-
-        window.testInterceptorRegistry = () => {
-            if (!syntropyFront) {
-                document.getElementById('test-results').textContent = 'SyntropyFront not initialized';
-                log('❌ SyntropyFront not initialized', 'error');
-                return;
-            }
-
-            try {
-                const result = syntropyFront.inject('test', { init: () => {} });
-                if (result) {
-                    document.getElementById('test-results').textContent = '✅ InterceptorRegistry is available and working';
-                    log('✅ InterceptorRegistry test passed', 'success');
-                } else {
-                    document.getElementById('test-results').textContent = '⚠️ InterceptorRegistry not loaded (fallback used)';
-                    log('⚠️ InterceptorRegistry not loaded', 'warning');
-                }
-            } catch (error) {
-                document.getElementById('test-results').textContent = `❌ Error: ${error.message}`;
-                log(`❌ InterceptorRegistry test failed: ${error.message}`, 'error');
-            }
-        };
-
-        window.testWorkerManager = () => {
-            if (!syntropyFront) {
-                document.getElementById('test-results').textContent = 'SyntropyFront not initialized';
-                log('❌ SyntropyFront not initialized', 'error');
-                return;
-            }
-
-            try {
-                const result = syntropyFront.isWorkerAvailable();
-                if (result) {
-                    document.getElementById('test-results').textContent = '✅ WorkerManager is available and working';
-                    log('✅ WorkerManager test passed', 'success');
-                } else {
-                    document.getElementById('test-results').textContent = '⚠️ WorkerManager not loaded (fallback used)';
-                    log('⚠️ WorkerManager not loaded', 'warning');
-                }
-            } catch (error) {
-                document.getElementById('test-results').textContent = `❌ Error: ${error.message}`;
-                log(`❌ WorkerManager test failed: ${error.message}`, 'error');
-            }
-        };
-
-        // Bundle analysis
-        window.showBundleAnalysis = () => {
-            const analysis = {
-                'Core Bundle': '~25KB (always loaded)',
-                'ProxyObjectTracker': '~15KB (lazy loaded)',
-                'InterceptorRegistry': '~8KB (lazy loaded)',
-                'WorkerManager': '~12KB (lazy loaded)',
-                'Total (minimal)': '~25KB',
-                'Total (balanced)': '~60KB',
-                'Total (debug)': '~60KB'
-            };
-
-            const element = document.getElementById('bundle-analysis');
-            element.innerHTML = `
-                <h4>Bundle Size Analysis:</h4>
-                <pre>${JSON.stringify(analysis, null, 2)}</pre>
-            `;
-            
-            log('📊 Bundle analysis shown', 'info');
-        };
-
-        window.compareConfigurations = () => {
-            const comparison = {
-                'Safe Preset': {
-                    'Core Bundle': '25KB',
-                    'Lazy Modules': '0KB',
-                    'Total': '25KB',
-                    'Features': ['Basic error tracking', 'Minimal context']
-                },
-                'Balanced Preset': {
-                    'Core Bundle': '25KB',
-                    'Lazy Modules': '35KB',
-                    'Total': '60KB',
-                    'Features': ['Full error tracking', 'Proxy tracking', 'Interceptors', 'Worker']
-                },
-                'Debug Preset': {
-                    'Core Bundle': '25KB',
-                    'Lazy Modules': '35KB',
-                    'Total': '60KB',
-                    'Features': ['Everything enabled', 'Maximum debugging']
-                }
-            };
-
-            const element = document.getElementById('bundle-analysis');
-            element.innerHTML = `
-                <h4>Configuration Comparison:</h4>
-                <pre>${JSON.stringify(comparison, null, 2)}</pre>
-            `;
-            
-            log('📊 Configuration comparison shown', 'info');
-        };
-
-        window.clearLog = () => {
-            document.getElementById('event-log').innerHTML = '';
-        };
-
-        // Initialize when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            logElement = document.getElementById('event-log');
-            log('🔄 Lazy Loading Demo loaded', 'info');
-            log('Click configuration buttons to see how modules are loaded dynamically', 'info');
-        });
+            window.clearLog = function () { document.getElementById('event-log').innerHTML = ''; };
+            document.addEventListener('DOMContentLoaded', function () {
+                logElement = document.getElementById('event-log');
+                updateModuleStatus('proxy-tracker', false);
+                updateModuleStatus('interceptor-registry', false);
+                updateModuleStatus('worker-manager', false);
+                log('Lazy loading demo loaded. Click config buttons to apply configure().', 'info');
+            });
+        })();
     </script>
 </body>
 </html> 
