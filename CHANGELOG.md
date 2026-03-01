@@ -1,15 +1,17 @@
-# Changelog
+## [0.4.3] - 2026-03-01
 
-All notable changes to SyntropyFront will be documented in this file.
+### Added
+- **Legal Compliance**: Standardized `LICENSE` file with official Apache-2.0 verbatim text and added official `NOTICE` file.
+- **Improved CJS Support**: Fixed `exports` mapping in `package.json` to correctly point to `dist/index.cjs`.
 
 ## [0.4.2] - 2026-03-01
 
 ### Added
-- **TypeScript Support**: Added comprehensive type definitions (`index.d.ts`) for native autocompletado and better developer experience.
+- **TypeScript Support**: Added comprehensive type definitions (`index.d.ts`) for native autocompletion and better developer experience.
 
 ### Fixed
-- **Supply Chain Security**: Fixed `LICENSE` placeholders to ensure proper recognition by security scanners (Socket.dev, Snyk).
-- **Package Metadata**: Standardized all internal scripts to use `pnpm` and fixed missing type declarations in the bundle.
+- **Supply Chain Security**: Preliminary fix for `LICENSE` placeholders and standardized internal scripts to use `pnpm`.
+- **Package Metadata**: Fixed missing type declarations in the distributed bundle.
 
 ## [0.4.1] - 2026-03-01
 

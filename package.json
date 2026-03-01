@@ -1,6 +1,6 @@
 {
   "name": "@syntropysoft/syntropyfront",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "type": "module",
   "description": "🚀 Observability library with automatic capture - Just 1 line of code! Automatically captures clicks, errors, HTTP calls, and console logs with flexible error handling.",
   "main": "dist/index.js",
@@ -9,7 +9,7 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
+      "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
     },
     "./package.json": "./package.json"
@@ -17,7 +17,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "NOTICE"
   ],
   "scripts": {
     "build": "rollup -c",
