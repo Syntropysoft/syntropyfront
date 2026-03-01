@@ -104,7 +104,7 @@ syntropyFront.configure({
 pnpm add @syntropysoft/syntropyfront
 ```
 
-## 🚀 **Performance Optimizations (v0.4.1)**
+## 🚀 **Quality & Performance (v0.4.2)**
 
 SyntropyFront has been optimized for maximum performance and minimal bundle size:
 
