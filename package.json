@@ -118,7 +118,10 @@
   "pnpm": {
     "overrides": {
       "serialize-javascript": "^7.0.3"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "unrs-resolver"
+    ]
   },
   "browserslist": [
     "> 1%",
