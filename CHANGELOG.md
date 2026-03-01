@@ -1,3 +1,11 @@
+## [0.4.7] - 2026-03-01
+
+### Changed
+- **Package**: Include `CHANGELOG.md` in published `files` (Socket.dev / maintainability).
+- **README**: Coverage badge and Quality Metrics set to 87%; "future version" wording for 0.5.0; explicit **Network access** note (data only to configured endpoint).
+
+---
+
 ## [0.4.6] - 2026-03-01
 
 ### Fixed
@@ -438,6 +446,7 @@ No migration required for end users. All public APIs remain unchanged.
 
 ## Version History
 
+- **0.4.7**: CHANGELOG in package, README metrics & Socket transparency
 - **0.4.6**: ClickInterceptor invalid selector fix, try/catch fallback for closest()
 - **0.4.5**: Refactor SOLID/DIP, code i18n, bug fixes, ESLint compliance for CI
 - **0.4.4**: Community health (CONTRIBUTING, SECURITY, CODE_OF_CONDUCT), .editorconfig
