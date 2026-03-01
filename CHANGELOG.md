@@ -1,22 +1,3 @@
-## [0.4.5] - 2026-03-01
-
-### Added
-- **Architecture review**: `docs/ARCHITECTURE_REVIEW.md` (internal analysis in Spanish).
-- **DIP & refactor**: Injected deps in SerializationManager and PersistentBufferManager; RobustSerializer split into pure shape/restore helpers; JSDoc contracts on Agent, QueueManager, RetryManager, HttpTransport.
-- **New modules**: DataMaskingManager, Environment, FunctionWrapper; ClickInterceptor, FetchInterceptor, ErrorInterceptor.
-
-### Fixed
-- **RetryManager**: `scheduleRetry` now passes send/remove callbacks so automatic retries persist correctly.
-- **BreadcrumbStore**: Decoupled from Agent via `onBreadcrumbAdded`; facade wires batchTimeout.
-- **RobustSerializer**: ESLint compliance (no-magic-numbers, complexity ≤10, max-len); guard for `makeSerializable(null|undefined)`; DataMaskingManager ANSI regex (intentional control char) with eslint-disable.
-- **CI**: Lint errors resolved (indent and rules); tests updated for English messages and behaviour.
-
-### Changed
-- **Codebase**: All source comments, JSDoc, console messages and error strings in English.
-- **Tests**: Behaviour-focused assertions; expectations aligned with refactor and i18n.
-
----
-
 ## [0.4.4] - 2026-03-01
 
 ### Added
@@ -431,8 +412,6 @@ No migration required for end users. All public APIs remain unchanged.
 
 ## Version History
 
-- **0.4.5**: Refactor SOLID/DIP, code i18n, bug fixes, ESLint compliance for CI
-- **0.4.4**: Community health (CONTRIBUTING, SECURITY, CODE_OF_CONDUCT), .editorconfig
 - **0.2.5**: Initial public release with full observability suite
 - **0.2.4**: Beta release with core functionality
 - **0.2.3**: Alpha release with basic error tracking
