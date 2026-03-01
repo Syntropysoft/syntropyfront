@@ -1,3 +1,12 @@
+## [0.4.4] - 2026-03-01
+
+### Added
+- **Community Health**: Added `CONTRIBUTING.md`, `SECURITY.md`, and `CODE_OF_CONDUCT.md` to establish community standards and security disclosure policies.
+- **Project Configuration**: Added `.editorconfig` for consistent development environment.
+
+### Changed
+- **Package Metadata**: Updated `package.json` to include new community documentation files in the published package.
+
 ## [0.4.3] - 2026-03-01
 
 ### Added
@@ -261,7 +270,7 @@ src/core/
 - **Overall Score**: 77.60% (excellent)
 - **Perfect Scores (100%)**:
   - `ConfigurationManager.js`
-  - `BreadcrumbManager.js` 
+  - `BreadcrumbManager.js`
   - `BreadcrumbStore.js`
   - `SerializationManager.js`
   - `DatabaseTransactionManager.js`
