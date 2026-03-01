@@ -13,7 +13,7 @@ export const DOM_UTILS = {
     '[role="button"]', '[role="link"]', '[role="checkbox"]', '[role="radio"]',
     '[role="menuitem"]', '[role="option"]', '[role="switch"]', '[role="tab"]',
     '.interactive', '.btn', '.clickable', // Convention selectors
-    '[onclick]', '[ng-click]', '[v-on:click]', '[@click]' // Selectores de framework
+    '[onclick]', '[ng-click]', '[v-on:click]' // Framework click attributes (@click is invalid in CSS selectors)
   ].join(', '),
 
   /**
@@ -39,14 +39,18 @@ export const DOM_UTILS = {
   },
 
   /**
-     * Finds the interactive target using closest() with CSS fallback (declarative).
-     */
+   * Finds the interactive target using closest() with CSS fallback (declarative).
+   * Uses try/catch so invalid selectors (e.g. from old bundles) don't break the app.
+   */
   findInteractiveTarget: (el) => {
-    // Guard: valid element
     if (!el || el === document.body || el.nodeType !== 1) return null;
-
-    // Declarative search via closest()
-    return el.closest(DOM_UTILS.INTERACTIVE_SELECTOR) || DOM_UTILS.findTargetByStyle(el);
+    try {
+      const found = el.closest(DOM_UTILS.INTERACTIVE_SELECTOR);
+      if (found) return found;
+    } catch (_) {
+      // Invalid selector (e.g. [@click] in old builds) or browser quirk; fallback only
+    }
+    return DOM_UTILS.findTargetByStyle(el);
   },
 
   /**

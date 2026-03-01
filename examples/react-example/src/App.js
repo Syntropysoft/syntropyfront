@@ -98,10 +98,10 @@ function App() {
           {stats && (
             <div className='stats'>
               <span>📊 Breadcrumbs: {stats.breadcrumbs}</span>
-              <span>🚨 Errors: {stats.errors}</span>
+              <span>📤 Queue: {stats.agent?.queueLength ?? 0}</span>
               <span>📤 Mode: {configMode}</span>
-              {stats.hasErrorCallback && <span>🎯 Custom handler: ✅</span>}
-              {stats.hasFetchConfig && <span>🌐 Endpoint: {stats.endpoint}</span>}
+              {stats.config?.onError && <span>🎯 Custom handler: ✅</span>}
+              {stats.config?.endpoint && <span>🌐 Endpoint: {stats.config.endpoint}</span>}
             </div>
           )}
         </div>
