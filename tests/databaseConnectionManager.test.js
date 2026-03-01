@@ -82,15 +82,15 @@ describe('DatabaseConnectionManager', () => {
         it('should fail with invalid configuration', async () => {
             mockConfigManager.validateConfig.mockReturnValue({
                 isValid: false,
-                errors: ['dbName inválido'],
+                errors: ['dbName must be a non-empty string'],
                 timestamp: '2023-01-01T00:00:00.000Z'
             });
 
             const result = await connectionManager.init();
 
             expect(result.success).toBe(false);
-            expect(result.error).toContain('Configuración inválida');
-            expect(result.error).toContain('dbName inválido');
+            expect(result.error).toContain('Invalid configuration');
+            expect(result.error).toContain('dbName must be a non-empty string');
             expect(connectionManager.db).toBeNull();
             expect(connectionManager.isAvailable).toBe(false);
         });
@@ -155,7 +155,7 @@ describe('DatabaseConnectionManager', () => {
             const result = await promise;
 
             expect(result.success).toBe(false);
-            expect(result.error).toBe('Error abriendo IndexedDB');
+            expect(result.error).toBe('Error opening IndexedDB');
             expect(connectionManager.db).toBeNull();
             expect(connectionManager.isAvailable).toBe(false);
 
@@ -236,7 +236,7 @@ describe('DatabaseConnectionManager', () => {
             const result = await promise;
 
             expect(result.success).toBe(false);
-            expect(result.error).toBe('Error abriendo IndexedDB');
+            expect(result.error).toBe('Error opening IndexedDB');
             expect(result.db).toBeNull();
 
             // Cleanup
@@ -267,7 +267,7 @@ describe('DatabaseConnectionManager', () => {
             const result = connectionManager.close();
 
             expect(result.success).toBe(false);
-            expect(result.error).toBe('No hay conexión activa para cerrar');
+            expect(result.error).toBe('No active connection to close');
             expect(result.timestamp).toBeDefined();
         });
 
@@ -283,7 +283,7 @@ describe('DatabaseConnectionManager', () => {
             const result = connectionManager.close();
 
             expect(result.success).toBe(false);
-            expect(result.error).toBe('Error cerrando conexión: Close failed');
+            expect(result.error).toBe('Error closing connection: Close failed');
             expect(result.timestamp).toBeDefined();
         });
     });

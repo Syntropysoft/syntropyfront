@@ -3,48 +3,52 @@ import { StorageManager } from '../database/StorageManager.js';
 import { RetryLogicManager } from '../retry/RetryLogicManager.js';
 import { SerializationManager } from '../database/SerializationManager.js';
 
+const DEFAULT_DB_NAME = 'SyntropyFrontBuffer';
+const DEFAULT_DB_VERSION = 1;
+const DEFAULT_STORE_NAME = 'failedItems';
+
 /**
- * PersistentBufferManager - Coordinador del buffer persistente
- * Responsabilidad única: Coordinar los componentes de almacenamiento persistente
+ * PersistentBufferManager - Persistent buffer coordinator
+ * Single Responsibility: Coordinate persistent storage components
+ * DIP: Accepts injected components (databaseManager, serializationManager, storageManager, retryLogicManager) for tests and substitution.
+ * @param {Object} configManager - Config (usePersistentBuffer, maxRetries, etc.)
+ * @param {Object} [deps] - Injected components; defaults created if not provided
  */
 export class PersistentBufferManager {
-  constructor(configManager) {
+  constructor(configManager, deps = {}) {
     this.config = configManager;
     this.usePersistentBuffer = false;
-        
-    // Inicializar componentes especializados
-    this.databaseManager = new DatabaseManager(
-      'SyntropyFrontBuffer',
-      1,
-      'failedItems'
+
+    this.databaseManager = deps.databaseManager ?? new DatabaseManager(
+      DEFAULT_DB_NAME,
+      DEFAULT_DB_VERSION,
+      DEFAULT_STORE_NAME
     );
-        
-    this.serializationManager = new SerializationManager();
-    this.storageManager = new StorageManager(this.databaseManager, this.serializationManager);
-    this.retryLogicManager = new RetryLogicManager(this.storageManager, this.config);
-        
-    // Inicializar buffer persistente si está disponible
+    this.serializationManager = deps.serializationManager ?? new SerializationManager();
+    this.storageManager = deps.storageManager ?? new StorageManager(this.databaseManager, this.serializationManager);
+    this.retryLogicManager = deps.retryLogicManager ?? new RetryLogicManager(this.storageManager, this.config);
+
     this.initPersistentBuffer();
   }
 
   /**
-     * Inicializa el buffer persistente
+     * Initializes the persistent buffer
      */
   async initPersistentBuffer() {
     try {
       const success = await this.databaseManager.init();
       if (success) {
         this.usePersistentBuffer = this.config.usePersistentBuffer;
-        console.log('SyntropyFront: Buffer persistente inicializado');
+        console.log('SyntropyFront: Persistent buffer initialized');
       }
     } catch (error) {
-      console.warn('SyntropyFront: Error inicializando buffer persistente:', error);
+      console.warn('SyntropyFront: Error initializing persistent buffer:', error);
     }
   }
 
   /**
-     * Guarda items fallidos en el buffer persistente
-     * @param {Array} items - Items a guardar
+     * Saves failed items to the persistent buffer
+     * @param {Array} items - Items to save
      */
   async save(items) {
     if (!this.usePersistentBuffer) {
@@ -53,14 +57,14 @@ export class PersistentBufferManager {
 
     try {
       await this.storageManager.save(items);
-      console.log('SyntropyFront: Items guardados en buffer persistente');
+      console.log('SyntropyFront: Items saved to persistent buffer');
     } catch (error) {
-      console.error('SyntropyFront: Error guardando en buffer persistente:', error);
+      console.error('SyntropyFront: Error saving to persistent buffer:', error);
     }
   }
 
   /**
-     * Obtiene items fallidos del buffer persistente
+     * Retrieves failed items from the persistent buffer
      */
   async retrieve() {
     if (!this.usePersistentBuffer) {
@@ -70,14 +74,14 @@ export class PersistentBufferManager {
     try {
       return await this.storageManager.retrieve();
     } catch (error) {
-      console.error('SyntropyFront: Error obteniendo del buffer persistente:', error);
+      console.error('SyntropyFront: Error retrieving from persistent buffer:', error);
       return [];
     }
   }
 
   /**
-     * Remueve items del buffer persistente
-     * @param {number} id - ID del item a remover
+     * Removes items from the persistent buffer
+     * @param {number} id - ID of the item to remove
      */
   async remove(id) {
     if (!this.usePersistentBuffer) {
@@ -87,14 +91,14 @@ export class PersistentBufferManager {
     try {
       await this.storageManager.remove(id);
     } catch (error) {
-      console.error('SyntropyFront: Error removiendo del buffer persistente:', error);
+      console.error('SyntropyFront: Error removing from persistent buffer:', error);
     }
   }
 
   /**
-     * Intenta enviar items fallidos del buffer persistente
-     * @param {Function} sendCallback - Callback para enviar items
-     * @param {Function} removeCallback - Callback para remover items exitosos
+     * Attempts to send failed items from the persistent buffer
+     * @param {Function} sendCallback - Callback to send items
+     * @param {Function} removeCallback - Callback to remove successful items
      */
   async retryFailedItems(sendCallback, removeCallback) {
     if (!this.usePersistentBuffer) {
@@ -105,7 +109,7 @@ export class PersistentBufferManager {
   }
 
   /**
-     * Limpia items que han excedido el máximo de reintentos
+     * Cleans up items that have exceeded the maximum retry count
      */
   async cleanupExpiredItems() {
     if (!this.usePersistentBuffer) {
@@ -116,7 +120,7 @@ export class PersistentBufferManager {
   }
 
   /**
-     * Obtiene estadísticas del buffer persistente
+     * Gets persistent buffer statistics
      */
   async getStats() {
     if (!this.usePersistentBuffer) {
@@ -135,7 +139,7 @@ export class PersistentBufferManager {
         isAvailable: this.isAvailable()
       };
     } catch (error) {
-      console.error('SyntropyFront: Error obteniendo estadísticas:', error);
+      console.error('SyntropyFront: Error getting statistics:', error);
       return {
         totalItems: 0,
         itemsByRetryCount: {},
@@ -146,14 +150,14 @@ export class PersistentBufferManager {
   }
 
   /**
-     * Verifica si el buffer persistente está disponible
+     * Checks if the persistent buffer is available
      */
   isAvailable() {
     return this.usePersistentBuffer && this.databaseManager.isDatabaseAvailable();
   }
 
   /**
-     * Limpia todo el buffer persistente
+     * Clears the entire persistent buffer
      */
   async clear() {
     if (!this.usePersistentBuffer) {
@@ -162,17 +166,17 @@ export class PersistentBufferManager {
 
     try {
       await this.storageManager.clear();
-      console.log('SyntropyFront: Buffer persistente limpiado');
+      console.log('SyntropyFront: Persistent buffer cleared');
     } catch (error) {
-      console.error('SyntropyFront: Error limpiando buffer persistente:', error);
+      console.error('SyntropyFront: Error clearing persistent buffer:', error);
     }
   }
 
   /**
-     * Cierra la conexión con la base de datos
+     * Closes the database connection
      */
   close() {
     this.databaseManager.close();
     this.usePersistentBuffer = false;
   }
-} 
+}

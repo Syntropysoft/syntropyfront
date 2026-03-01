@@ -1,6 +1,6 @@
 /**
- * ConfigurationManager - Maneja la configuración del Agent
- * Responsabilidad única: Gestionar configuración y validación
+ * ConfigurationManager - Handles Agent configuration
+ * Single Responsibility: Manage configuration and validation
  */
 export class ConfigurationManager {
   constructor() {
@@ -17,11 +17,12 @@ export class ConfigurationManager {
     this.maxRetries = 5;
     this.baseDelay = 1000;
     this.maxDelay = 30000;
+    this.samplingRate = 1.0; // 100% by default
   }
 
   /**
-     * Configura el manager
-     * @param {Object} config - Configuración
+     * Configures the manager
+     * @param {Object} config - Configuration
      */
   configure(config) {
     this.endpoint = config.endpoint;
@@ -32,27 +33,28 @@ export class ConfigurationManager {
     this.encrypt = config.encrypt || null;
     this.usePersistentBuffer = config.usePersistentBuffer === true;
     this.maxRetries = config.maxRetries || this.maxRetries;
-        
-    // Lógica simple: si hay batchTimeout = enviar breadcrumbs, sino = solo errores
+    this.samplingRate = typeof config.samplingRate === 'number' ? config.samplingRate : this.samplingRate;
+
+    // Simple logic: if batchTimeout exists = send breadcrumbs, else = errors only
     this.sendBreadcrumbs = !!config.batchTimeout;
   }
 
   /**
-     * Verifica si el agent está habilitado
+     * Checks if the agent is enabled
      */
   isAgentEnabled() {
     return this.isEnabled;
   }
 
   /**
-     * Verifica si debe enviar breadcrumbs
+     * Checks if it should send breadcrumbs
      */
   shouldSendBreadcrumbs() {
     return this.sendBreadcrumbs;
   }
 
   /**
-     * Obtiene la configuración actual
+     * Gets the current configuration
      */
   getConfig() {
     return {
@@ -66,7 +68,8 @@ export class ConfigurationManager {
       usePersistentBuffer: this.usePersistentBuffer,
       maxRetries: this.maxRetries,
       baseDelay: this.baseDelay,
-      maxDelay: this.maxDelay
+      maxDelay: this.maxDelay,
+      samplingRate: this.samplingRate
     };
   }
-} 
+}

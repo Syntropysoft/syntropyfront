@@ -1,6 +1,6 @@
 /**
- * DatabaseConfigManager - Maneja la configuración de IndexedDB
- * Responsabilidad única: Validar y gestionar la configuración de la base de datos
+ * DatabaseConfigManager - Handles IndexedDB configuration
+ * Single responsibility: Validate and manage database configuration
  */
 export class DatabaseConfigManager {
   constructor(dbName, dbVersion, storeName) {
@@ -10,9 +10,9 @@ export class DatabaseConfigManager {
   }
 
   /**
-     * Valida que la configuración sea correcta
-     * @returns {Object} Resultado de validación
-     */
+   * Validates that the configuration is correct
+   * @returns {Object} Validation result
+   */
   validateConfig() {
     const validationResult = {
       isValid: true,
@@ -22,26 +22,26 @@ export class DatabaseConfigManager {
 
     if (!this.dbName || typeof this.dbName !== 'string') {
       validationResult.isValid = false;
-      validationResult.errors.push('dbName debe ser un string no vacío');
+      validationResult.errors.push('dbName must be a non-empty string');
     }
 
     if (!this.dbVersion || typeof this.dbVersion !== 'number' || this.dbVersion < 1) {
       validationResult.isValid = false;
-      validationResult.errors.push('dbVersion debe ser un número mayor a 0');
+      validationResult.errors.push('dbVersion must be a number greater than 0');
     }
 
     if (!this.storeName || typeof this.storeName !== 'string') {
       validationResult.isValid = false;
-      validationResult.errors.push('storeName debe ser un string no vacío');
+      validationResult.errors.push('storeName must be a non-empty string');
     }
 
     return validationResult;
   }
 
   /**
-     * Verifica si IndexedDB está disponible en el entorno
-     * @returns {Object} Resultado de disponibilidad
-     */
+   * Checks if IndexedDB is available in the environment
+   * @returns {Object} Availability result
+   */
   checkIndexedDBAvailability() {
     const availabilityResult = {
       isAvailable: false,
@@ -50,12 +50,12 @@ export class DatabaseConfigManager {
     };
 
     if (typeof window === 'undefined') {
-      availabilityResult.reason = 'No estamos en un entorno de browser';
+      availabilityResult.reason = 'Not in a browser environment';
       return availabilityResult;
     }
 
     if (!window.indexedDB) {
-      availabilityResult.reason = 'IndexedDB no está disponible en este browser';
+      availabilityResult.reason = 'IndexedDB is not available in this browser';
       return availabilityResult;
     }
 
@@ -64,9 +64,9 @@ export class DatabaseConfigManager {
   }
 
   /**
-     * Obtiene la configuración actual
-     * @returns {Object} Configuración
-     */
+   * Returns the current configuration
+   * @returns {Object} Configuration
+   */
   getConfig() {
     return {
       dbName: this.dbName,
@@ -76,9 +76,9 @@ export class DatabaseConfigManager {
   }
 
   /**
-     * Crea la configuración del object store
-     * @returns {Object} Configuración del store
-     */
+   * Returns the object store configuration
+   * @returns {Object} Store configuration
+   */
   getStoreConfig() {
     return {
       keyPath: 'id',

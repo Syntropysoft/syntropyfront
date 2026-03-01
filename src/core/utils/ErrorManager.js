@@ -1,6 +1,6 @@
 /**
- * ErrorManager - Gestiona errores
- * Responsabilidad única: Formatear y gestionar errores
+ * ErrorManager - Manages errors
+ * Single responsibility: Format and manage errors
  */
 export class ErrorManager {
   constructor() {

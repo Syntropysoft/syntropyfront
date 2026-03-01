@@ -23,6 +23,15 @@ describe('SerializationManager', () => {
         it('should initialize with robustSerializer', () => {
             expect(serializationManager.serializer).toBe(robustSerializer);
         });
+
+        it('should use injected serializer and masking when provided (DIP)', () => {
+            const customSerializer = { serialize: jest.fn().mockReturnValue('[]'), deserialize: jest.fn().mockReturnValue([]) };
+            const customMasking = { process: jest.fn().mockImplementation((x) => x) };
+            const manager = new SerializationManager({ serializer: customSerializer, masking: customMasking });
+            manager.serialize([{ a: 1 }]);
+            expect(customMasking.process).toHaveBeenCalledWith([{ a: 1 }]);
+            expect(customSerializer.serialize).toHaveBeenCalled();
+        });
     });
 
     describe('serialize', () => {
@@ -70,7 +79,7 @@ describe('SerializationManager', () => {
 
             expect(result.data).toContain('__serializationError');
             expect(result.data).toContain('Serialization failed');
-            expect(result.data).toContain('Items no serializables - usando fallback');
+            expect(result.data).toContain('Items not serializable - using fallback');
         });
     });
 
@@ -141,7 +150,7 @@ describe('SerializationManager', () => {
             expect(parsed.__serializationError).toBe(true);
             expect(parsed.error).toBe('Test error');
             expect(parsed.timestamp).toBeDefined();
-            expect(parsed.fallbackData).toBe('Items no serializables - usando fallback');
+            expect(parsed.fallbackData).toBe('Items not serializable - using fallback');
         });
     });
 

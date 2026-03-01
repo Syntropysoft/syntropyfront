@@ -149,7 +149,7 @@ describe('DatabaseTransactionManager', () => {
 
             expect(result.success).toBe(false);
             expect(result.data).toBeNull();
-            expect(result.error).toBe('Error en operación de lectura: Operation failed');
+            expect(result.error).toBe('Error in read operation: Operation failed');
             expect(result.timestamp).toBeDefined();
         });
 
@@ -162,7 +162,7 @@ describe('DatabaseTransactionManager', () => {
 
             expect(result.success).toBe(false);
             expect(result.data).toBeNull();
-            expect(result.error).toBe('Error en operación de lectura: Database not available');
+            expect(result.error).toBe('Error in read operation: Database not available');
             expect(result.timestamp).toBeDefined();
             expect(mockOperation).not.toHaveBeenCalled();
         });
@@ -225,7 +225,7 @@ describe('DatabaseTransactionManager', () => {
 
             expect(result.success).toBe(false);
             expect(result.data).toBeNull();
-            expect(result.error).toBe('Error en operación de escritura: Operation failed');
+            expect(result.error).toBe('Error in write operation: Operation failed');
             expect(result.timestamp).toBeDefined();
         });
 
@@ -238,7 +238,7 @@ describe('DatabaseTransactionManager', () => {
 
             expect(result.success).toBe(false);
             expect(result.data).toBeNull();
-            expect(result.error).toBe('Error en operación de escritura: Database not available');
+            expect(result.error).toBe('Error in write operation: Database not available');
             expect(result.timestamp).toBeDefined();
             expect(mockOperation).not.toHaveBeenCalled();
         });

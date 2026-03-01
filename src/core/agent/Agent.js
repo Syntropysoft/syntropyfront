@@ -1,63 +1,61 @@
-/**
- * Copyright 2024 Syntropysoft
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import { ConfigurationManager } from './ConfigurationManager.js';
 import { QueueManager } from './QueueManager.js';
 import { RetryManager } from '../retry/RetryManager.js';
 import { HttpTransport } from './HttpTransport.js';
 import { PersistentBufferManager } from '../persistent/PersistentBufferManager.js';
+import { dataMaskingManager } from '../../utils/DataMaskingManager.js';
 
 /**
- * Agent - Envía datos de trazabilidad al backend
- * Coordinador que usa componentes especializados para cada responsabilidad
+ * Agent - Coordinates sending traceability data to the backend.
+ * DIP: All dependencies (config, queue, retry, transport, buffer, masking) are injectable.
+ *
+ * @contract
+ * - configure(config): updates agent configuration.
+ * - sendError(payload, context?): if enabled and not dropped by sampling, enqueues an item of type 'error'.
+ * - sendBreadcrumbs(breadcrumbs): if enabled, batchTimeout set and non-empty, enqueues type 'breadcrumbs'.
+ * - flush(): drains queue via flushCallback. forceFlush(): flush + processes pending retries.
+ * - getStats(): returns { queueLength, retryQueueLength, isEnabled, usePersistentBuffer, maxRetries }.
  */
 export class Agent {
-  constructor() {
-    // Componentes especializados
-    this.config = new ConfigurationManager();
-    this.queue = new QueueManager(this.config);
-    this.retry = new RetryManager(this.config);
-    this.transport = new HttpTransport(this.config);
-    this.buffer = new PersistentBufferManager(this.config);
-        
-    // Configurar callbacks para coordinación
+  /**
+   * @param {Object} [deps] - Injected dependencies (config, queue, retry, transport, buffer, masking). Defaults created if not provided.
+   */
+  constructor(deps = {}) {
+    // Components (Injected or Defaults)
+    this.config = deps.config || new ConfigurationManager();
+    this.masking = deps.masking || dataMaskingManager;
+
+    // Managers that depend on config
+    this.queue = deps.queue || new QueueManager(this.config);
+    this.retry = deps.retry || new RetryManager(this.config);
+    this.transport = deps.transport || new HttpTransport(this.config);
+    this.buffer = deps.buffer || new PersistentBufferManager(this.config);
+
+    // Setup coordination callbacks
     this.setupCallbacks();
   }
 
   /**
-     * Configura callbacks para coordinación entre componentes
-     */
+   * Configures callbacks for coordination between components
+   */
   setupCallbacks() {
-    // Callback para el QueueManager cuando hace flush
+    // QueueManager flush callback
     this.queue.flushCallback = async (items) => {
       try {
         await this.transport.send(items);
-        console.log('SyntropyFront: Datos enviados exitosamente');
+        console.log('SyntropyFront: Data sent successfully');
       } catch (error) {
-        console.error('SyntropyFront Agent: Error enviando datos:', error);
-                
-        // Agregar a cola de reintentos
+        console.error('SyntropyFront Agent: Error sending data:', error);
+
+        // Add to retry queue
         this.retry.addToRetryQueue(items);
-                
-        // Guardar en buffer persistente
+
+        // Save to persistent buffer
         await this.buffer.save(items);
       }
     };
 
-    // Callback para el RetryManager cuando procesa reintentos
+    // RetryManager send callback
     this.retry.sendCallback = async (items) => {
       return await this.transport.send(items);
     };
@@ -66,90 +64,95 @@ export class Agent {
       await this.buffer.remove(id);
     };
 
-    // Callback para el PersistentBufferManager cuando retry items
+    // PersistentBufferManager retry callback
     this.buffer.sendCallback = (items, retryCount, persistentId) => {
       this.retry.addToRetryQueue(items, retryCount, persistentId);
     };
   }
 
-
-
   /**
-     * Configura el agent
-     * @param {Object} config - Configuración del agent
-     */
+   * Updates configuration (endpoint, headers, batchSize, batchTimeout, samplingRate, etc.).
+   * @param {Object} config - Ver ConfigurationManager.configure
+   * @returns {void}
+   */
   configure(config) {
     this.config.configure(config);
   }
 
   /**
-     * Envía un error al backend
-     * @param {Object} errorPayload - Payload del error
-     * @param {Object} context - Contexto adicional (opcional)
-     */
+   * Enqueues an error for send. Does not send if agent is disabled or sampling discards it.
+   * @param {Object} errorPayload - Payload with type, error, breadcrumbs, timestamp
+   * @param {Object|null} [context=null] - Additional context (merged into payload)
+   * @returns {void}
+   */
   sendError(errorPayload, context = null) {
+    // 🛡️ Guard: Agent enabled
     if (!this.config.isAgentEnabled()) {
-      console.warn('SyntropyFront Agent: No configurado, error no enviado');
+      console.warn('SyntropyFront Agent: Not configured, error not sent');
       return;
     }
 
-    // Agregar contexto si está disponible
-    const payloadWithContext = context ? {
-      ...errorPayload,
-      context
-    } : errorPayload;
+    // 🎲 Guard: Sampling
+    if (Math.random() > this.config.samplingRate) return;
 
-    // Aplicar encriptación si está configurada
+    // Functional Pipeline: Generate payload with context
+    const payloadWithContext = context
+      ? { ...errorPayload, context }
+      : errorPayload;
+
+    // Apply transformations (Encryption and Obfuscation)
     const dataToSend = this.transport.applyEncryption(payloadWithContext);
+    const maskedData = this.masking.process(dataToSend);
 
     this.queue.add({
       type: 'error',
-      data: dataToSend,
+      data: maskedData,
       timestamp: new Date().toISOString()
     });
   }
 
   /**
-     * Envía breadcrumbs al backend
-     * @param {Array} breadcrumbs - Lista de breadcrumbs
-     */
+   * Enqueues breadcrumbs for send. Does not send if disabled, no batchTimeout, or empty array.
+   * @param {Array<Object>} breadcrumbs - List of traces (category, message, data, timestamp)
+   * @returns {void}
+   */
   sendBreadcrumbs(breadcrumbs) {
-    // Solo enviar breadcrumbs si está habilitado (batchTimeout configurado)
+    // 🛡️ Guard: Enabled and with data
     if (!this.config.isAgentEnabled() || !this.config.shouldSendBreadcrumbs() || !breadcrumbs.length) {
       return;
     }
 
-    // Aplicar encriptación si está configurada
+    // 🎲 Guard: Sampling
+    if (Math.random() > this.config.samplingRate) return;
+
+    // Apply transformations
     const dataToSend = this.transport.applyEncryption(breadcrumbs);
+    const maskedData = this.masking.process(dataToSend);
 
     this.queue.add({
       type: 'breadcrumbs',
-      data: dataToSend,
+      data: maskedData,
       timestamp: new Date().toISOString()
     });
   }
 
   /**
-     * Añade un item a la cola de envío (método público para compatibilidad)
-     * @param {Object} item - Item a añadir
-     */
+   * Adds an item to the queue (compatibility)
+   */
   addToQueue(item) {
     this.queue.add(item);
   }
 
   /**
-     * Añade items a la cola de reintentos (método público para compatibilidad)
-     * @param {Array} items - Items a reintentar
-     * @param {number} retryCount - Número de reintento
-     * @param {number} persistentId - ID en buffer persistente (opcional)
-     */
+   * Adds to retry queue (compatibility)
+   */
   addToRetryQueue(items, retryCount = 1, persistentId = null) {
     this.retry.addToRetryQueue(items, retryCount, persistentId);
   }
 
   /**
-     * Procesa la cola de reintentos (método público para compatibilidad)
-     */
+   * Processes retry queue (compatibility)
+   */
   async processRetryQueue() {
     await this.retry.processRetryQueue(
       this.retry.sendCallback,
@@ -158,29 +161,28 @@ export class Agent {
   }
 
   /**
-     * Envía todos los items en cola
-     */
+   * Forces flush of current queue
+   */
   async flush() {
     await this.queue.flush(this.queue.flushCallback);
   }
 
   /**
-     * Fuerza el envío inmediato de todos los datos pendientes
-     */
+   * Forces immediate flush of everything
+   */
   async forceFlush() {
     await this.flush();
-        
-    // También intentar enviar items en cola de reintentos
+
+    // Also attempt pending retries
     if (!this.retry.isEmpty()) {
-      console.log('SyntropyFront: Intentando enviar items en cola de reintentos...');
+      console.log('SyntropyFront: Attempting to send pending retries...');
       await this.processRetryQueue();
     }
   }
 
   /**
-     * Obtiene estadísticas del agent
-     * @returns {Object} Estadísticas
-     */
+   * Gets agent stats
+   */
   getStats() {
     const config = this.config.getConfig();
     return {
@@ -193,21 +195,35 @@ export class Agent {
   }
 
   /**
-     * Intenta enviar items fallidos del buffer persistente
-     */
+   * Attempts to send failed items from persistent buffer
+   */
   async retryFailedItems() {
     await this.buffer.retryFailedItems(this.buffer.sendCallback);
   }
 
   /**
-     * Desactiva el agent
-     */
+   * Returns whether the agent is enabled (for consumers that need to check without depending on config shape).
+   */
+  isEnabled() {
+    return this.config.isAgentEnabled();
+  }
+
+  /**
+   * Returns whether breadcrumbs should be sent (e.g. batch mode with timeout).
+   */
+  shouldSendBreadcrumbs() {
+    return this.config.shouldSendBreadcrumbs();
+  }
+
+  /**
+   * Disables the agent
+   */
   disable() {
-    this.config.configure({ endpoint: null }); // Deshabilitar
+    this.config.configure({ endpoint: null });
     this.queue.clear();
     this.retry.clear();
   }
 }
 
-// Instancia singleton
-export const agent = new Agent(); 
+// Singleton Instance
+export const agent = new Agent();

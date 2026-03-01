@@ -9,7 +9,7 @@ console.log('📊 Has init method:', typeof syntropyFront.init);
 console.log('📊 Has addBreadcrumb method:', typeof syntropyFront.addBreadcrumb);
 console.log('📊 Has sendError method:', typeof syntropyFront.sendError);
 
-// Test de inicialización
+// Initialization test
 async function testInit() {
     try {
         console.log('\n🚀 Testing initialization...');

@@ -15,8 +15,8 @@
  */
 
 /**
- * SyntropyFront - Biblioteca de observabilidad con captura automática
- * Actúa como Facade conectando el Agent y los Interceptors modulares
+ * SyntropyFront - Observability library with automatic capture
+ * Acts as a Facade connecting the Agent and modular Interceptors
  */
 import { breadcrumbStore } from './core/breadcrumbs/BreadcrumbStore.js';
 import { agent } from './core/agent/Agent.js';
@@ -34,109 +34,101 @@ class SyntropyFront {
       captureFetch: true,
       captureErrors: true,
       captureUnhandledRejections: true,
+      samplingRate: 1.0,
       onError: null
     };
 
-    // Auto-inicializar
+    // Auto-initialize
     this.init();
   }
 
   /**
-   * Inicializa la biblioteca y activa los interceptores
+   * Initializes the library and activates interceptors
    */
   init() {
     if (this.isActive) return;
 
-    // Configurar el agent por defecto
+    this._applyConfig();
+    interceptors.init();
+
+    // Retry failed items from previous sessions
+    agent.retryFailedItems().catch(err => {
+      console.warn('SyntropyFront: Error attempting to recover persistent items:', err);
+    });
+
+    this.isActive = true;
+    console.log('🚀 SyntropyFront: Initialized with modular resilient architecture');
+  }
+
+  /**
+   * Private: applies current config to agent and interceptors.
+   */
+  _applyConfig() {
     agent.configure({
       endpoint: this.config.endpoint,
       headers: this.config.headers,
-      usePersistentBuffer: this.config.usePersistentBuffer
+      usePersistentBuffer: this.config.usePersistentBuffer,
+      samplingRate: this.config.samplingRate,
+      batchTimeout: this.config.batchTimeout ?? (this.config.captureClicks || this.config.captureFetch ? 5000 : null)
     });
 
-    // Inicializar interceptores
+    breadcrumbStore.onBreadcrumbAdded = (crumb) => {
+      if (agent.isEnabled() && agent.shouldSendBreadcrumbs()) {
+        agent.sendBreadcrumbs([crumb]);
+      }
+    };
+
     interceptors.configure({
       captureClicks: this.config.captureClicks,
       captureFetch: this.config.captureFetch,
       captureErrors: this.config.captureErrors,
-      captureUnhandledRejections: this.config.captureUnhandledRejections
+      captureUnhandledRejections: this.config.captureUnhandledRejections,
+      onError: this.config.onError
     });
-
-    // Inyectar callback de error si existe
-    if (this.config.onError) {
-      interceptors.onError = this.config.onError;
-    }
-
-    interceptors.init();
-
-    // Intentar reintentar items fallidos de sesiones previas
-    agent.retryFailedItems().catch(err => {
-      console.warn('SyntropyFront: Error al intentar recuperar items persistentes:', err);
-    });
-
-    this.isActive = true;
-    console.log('🚀 SyntropyFront: Inicializado con arquitectura modular resiliente');
   }
 
   /**
-   * Configura SyntropyFront
-   * @param {Object} config - Configuración
+   * Configures SyntropyFront
+   * @param {Object} config - Configuration
    */
   configure(config = {}) {
-    // Actualizar configuración local
     this.config = { ...this.config, ...config };
 
-    // Si se pasa 'fetch', extraer endpoint y headers por compatibilidad
+    // If 'fetch' is passed, extract endpoint and headers for compatibility
     if (config.fetch) {
       this.config.endpoint = config.fetch.url;
       this.config.headers = config.fetch.options?.headers || {};
     }
 
-    // Re-configurar componentes internos
-    agent.configure({
-      endpoint: this.config.endpoint,
-      headers: this.config.headers,
-      usePersistentBuffer: this.config.usePersistentBuffer
-    });
-
-    interceptors.configure({
-      captureClicks: this.config.captureClicks,
-      captureFetch: this.config.captureFetch,
-      captureErrors: this.config.captureErrors,
-      captureUnhandledRejections: this.config.captureUnhandledRejections
-    });
-
-    if (this.config.onError) {
-      interceptors.onError = this.config.onError;
-    }
+    this._applyConfig();
 
     const mode = this.config.endpoint ? `endpoint: ${this.config.endpoint}` : 'console only';
-    console.log(`✅ SyntropyFront: Configurado - ${mode}`);
+    console.log(`✅ SyntropyFront: Configured - ${mode}`);
   }
 
   /**
-   * Añade un breadcrumb manualmente
+   * Adds a breadcrumb manually
    */
   addBreadcrumb(category, message, data = {}) {
     return breadcrumbStore.add({ category, message, data });
   }
 
   /**
-   * Obtiene todos los breadcrumbs
+   * Gets all breadcrumbs
    */
   getBreadcrumbs() {
     return breadcrumbStore.getAll();
   }
 
   /**
-   * Limpia los breadcrumbs
+   * Clears breadcrumbs
    */
   clearBreadcrumbs() {
     breadcrumbStore.clear();
   }
 
   /**
-   * Envía un error manualmente con contexto
+   * Sends an error manually with context
    */
   sendError(error, context = {}) {
     const errorPayload = {
@@ -155,14 +147,14 @@ class SyntropyFront {
   }
 
   /**
-   * Fuerza el envío de datos pendientes
+   * Forces sending pending data
    */
   async flush() {
     await agent.forceFlush();
   }
 
   /**
-   * Obtiene estadísticas de uso
+   * Gets usage statistics
    */
   getStats() {
     return {
@@ -174,18 +166,18 @@ class SyntropyFront {
   }
 
   /**
-   * Desactiva la biblioteca y restaura hooks originales
+   * Deactivates the library and restores original hooks
    */
   destroy() {
     interceptors.destroy();
     agent.disable();
     this.isActive = false;
-    console.log('SyntropyFront: Desactivado');
+    console.log('SyntropyFront: Deactivated');
   }
 }
 
-// Instancia única (Singleton)
+// Singleton instance
 const syntropyFront = new SyntropyFront();
 
-// Exportar la instancia por defecto
+// Export the default instance
 export default syntropyFront;

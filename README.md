@@ -5,7 +5,7 @@
 <h1 align="center">SyntropyFront</h1>
 
 <p align="center">
-  <strong>From Chaos to Clarity</strong>
+  <strong>From Uncertainty to Clarity</strong>
   <br />
   The Observability Library for High-Performance Teams
 </p>
@@ -14,554 +14,265 @@
   <a href="https://www.npmjs.com/package/@syntropysoft/syntropyfront"><img src="https://img.shields.io/npm/v/@syntropysoft/syntropyfront.svg" alt="NPM Version"></a>
   <a href="https://github.com/Syntropysoft/syntropyfront/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/@syntropysoft/syntropyfront.svg" alt="License"></a>
   <a href="#"><img src="https://img.shields.io/badge/status-ready%20for%20production-brightgreen.svg" alt="Ready for Production"></a>
-  <a href="#"><img src="https://github.com/Syntropysoft/syntropyfront/workflows/CodeQL/badge.svg" alt="CodeQL"></a>
-  <a href="#"><img src="https://img.shields.io/badge/dependabot-enabled-brightgreen.svg" alt="Dependabot"></a>
-  <a href="#"><img src="https://img.shields.io/badge/mutation%20score-71.03%25-brightgreen.svg" alt="Mutation Score"></a>
-  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-89.47%25-brightgreen.svg" alt="Test Coverage"></a>
+  <a href="#"><img src="https://img.shields.io/badge/test%20coverage-89.94%25-brightgreen.svg" alt="Test Coverage"></a>
   <a href="#"><img src="https://img.shields.io/badge/bundle%20size-34%20KB-brightgreen.svg" alt="Bundle Size"></a>
   <a href="https://socket.dev/npm/package/@syntropysoft/syntropyfront"><img src="https://socket.dev/api/badge/npm/package/@syntropysoft/syntropyfront" alt="Socket Badge"></a>
 </p>
 
 ---
 
-🚀 **Observability library with automatic capture - Just 1 line of code! No dependencies!**
+🚀 **Automatic observability capture - Just 1 line of code! Zero external dependencies.**
 
-SyntropyFront automatically captures user interactions, errors, HTTP calls, and console logs, providing comprehensive observability for your web applications with minimal setup.
+SyntropyFront automatically captures user interactions, errors, HTTP calls, and console logs, providing a 360° view of the user experience with minimal performance impact.
 
-## ✨ Features
+## 🧠 Our Philosophy: Observability with Purpose
 
-- 🎯 **Automatic click capture** - Tracks all user interactions
-- 🚨 **Error detection** - Catches uncaught exceptions and promise rejections
-- 🌐 **HTTP monitoring** - Intercepts fetch calls automatically
-- 📝 **Console logging** - Records console.log, console.error, console.warn
-- 💾 **Smart storage** - Keeps the last N events (configurable)
-- 📤 **Flexible posting** - Posts errors to your endpoint or logs to console
-- ⚡ **Zero configuration** - Works out of the box with just an import
-- 📦 **Zero Dependencies** - 100% standalone, no runtime dependencies
-- 🛡️ **Highly Resilient** - Automatic retry and persistent queuing
+SyntropyFront is not just a log collector; it is a piece of engineering designed under three fundamental pillars:
+
+1.  **SOLID Principles**: Each component has a single responsibility. From `QueueManager` to `RetryManager`, the system is extensible and predictable.
+2.  **Functional Programming**: We use declarative patterns to transform data, ensuring that error processing and PII obfuscation are pure and without unexpected side effects.
+3.  **Privacy by Design (Privacy-by-Default)**: Security is not optional. The system includes a sensitive data masking engine (PII) that acts before any information leaves the client.
+
+## ✨ Key Features
+
+- 🎯 **Smart Click Capture**: Tracks interactions on interactive elements with built-in throttling logic.
+- 🚨 **Global Error Management**: Captures uncaught exceptions (`window.onerror`) and promise rejections.
+- 🌐 **Network Monitoring**: Intercepts `fetch` calls for full API visibility.
+- 🛡️ **PII Masking & ANSI Cleaning**: Automatically protects sensitive data (emails, cards, tokens).
+- 🎲 **Probabilistic Sampling**: Controls the volume of data sent to optimize costs and traffic.
+- 💾 **Offline Resilience**: Retry queue with *Exponential Backoff* and persistent storage via IndexedDB.
+- 📦 **Native Tree Shaking**: Modular architecture that allows you to include only the interceptors you truly need.
 
 ## 🚀 Quick Start
 
-### Basic Usage (1 line of code!)
-
-```javascript
-import syntropyFront from '@syntropysoft/syntropyfront';
-// That's it! Auto-initializes and captures everything automatically
-```
-
-### With Custom Configuration
-
-```javascript
-import syntropyFront from '@syntropysoft/syntropyfront';
-
-// Option 1: Console only (default)
-syntropyFront.configure({
-  maxEvents: 50
-});
-
-// Option 2: With endpoint (automatic fetch)
-syntropyFront.configure({
-  maxEvents: 50,
-  fetch: {
-    url: 'https://your-api.com/errors',
-    options: {
-      headers: {
-        'Authorization': 'Bearer your-token',
-        'Content-Type': 'application/json'
-      },
-      mode: 'cors'
-    }
-  }
-});
-
-// Option 3: With custom error handler (maximum flexibility)
-syntropyFront.configure({
-  maxEvents: 50,
-  onError: (errorPayload) => {
-    // You can do anything with the error:
-    // - Send to your API
-    // - Save to localStorage
-    // - Send to a repository
-    // - Upload to cloud
-    // - Whatever you want!
-    console.log('Error captured:', errorPayload);
-    
-    // Example: send to multiple places
-    fetch('https://api1.com/errors', {
-      method: 'POST',
-      body: JSON.stringify(errorPayload)
-    });
-    
-    // Also save locally
-    localStorage.setItem('lastError', JSON.stringify(errorPayload));
-  }
-});
-```
-
-## 📦 Installation
+### Installation
 
 ```bash
 pnpm add @syntropysoft/syntropyfront
 ```
 
-## 🚀 **Quality & Performance (v0.4.4)**
+### Basic Usage (Zero Config)
 
-SyntropyFront has been optimized for maximum performance and minimal bundle size:
+Simply import the library in your application's entry point:
 
-### **🎯 Testing Excellence**
-- **Mutation Score**: **71.03%** (Total) / **80.02%** (Covered) verified with Stryker
-- **Test Coverage**: **81.47% Branch Coverage** (90.07% Lines)
-- **430+ Comprehensive Tests**: Covering all edge cases and resilience scenarios
-- **Database Modules**: All modules now have 77-100% mutation score
-- **Core Components**: 92.70% average mutation score across agent modules
+```javascript
+import syntropyFront from '@syntropysoft/syntropyfront';
+// Done! SyntropyFront auto-initializes and starts capturing events.
+```
 
-### **📦 Ultra-Lightweight Bundle**
-- **Zero Runtime Dependencies**: No more external requirements.
-- **Bundle Size**: **34 KB** minified (fully featured with offline support)
-- **ES Module**: 80 KB (unminified)
-- **Zero Runtime Dependencies**: Near-instant installation and minimal noise
+## ⚙️ Advanced Configuration
 
-### **🔧 Smart Dependency Management**
-- **Clean Architecture**: All testing tools properly categorized as devDependencies
-- **Dependabot Optimized**: Smart configuration prevents incompatible updates
-- **Stable CI/CD**: Eliminated dependency conflicts and CI failures
-- **Cross-Node Compatibility**: Full support for Node.js 18, 20, 22
+SyntropyFront is highly configurable to suit your production needs.
 
-### **⚡ Production Ready**
-- **Zero Breaking Changes**: All existing code continues to work
-- **Same API**: Identical usage patterns and configuration
-- **Better Performance**: Optimized for production environments
-- **Maintained Security**: All security benefits preserved
+```javascript
+import syntropyFront from '@syntropysoft/syntropyfront';
 
-## 🎯 How It Works
-
-SyntropyFront automatically:
-
-1. **Captures clicks** - Records element info, coordinates, and timestamps
-2. **Detects errors** - Intercepts `window.onerror` and `window.onunhandledrejection`
-3. **Monitors HTTP** - Wraps `window.fetch` to track requests and responses
-4. **Logs console** - Intercepts console methods to capture debug info
-5. **Maintains context** - Keeps the last N events as breadcrumbs
-6. **Posts errors** - Sends error data with full context to your endpoint
-
-## 📊 What Gets Captured
-
-### Error Payload Structure
-
-```json
-{
-  "type": "uncaught_exception",
-  "error": {
-    "message": "Error message",
-    "source": "file.js",
-    "lineno": 42,
-    "colno": 15,
-    "stack": "Error stack trace..."
+syntropyFront.configure({
+  // Your observability backend URL (optional, defaults to console logging)
+  endpoint: 'https://your-api.com/v1/telemetry',
+  
+  // Custom headers for transmission
+  headers: {
+    'Authorization': 'Bearer your-app-token',
+    'X-Environment': 'production'
   },
-  "breadcrumbs": [
-    {
-      "category": "user",
-      "message": "click",
-      "data": {
-        "element": "BUTTON",
-        "id": "submit-btn",
-        "className": "btn-primary",
-        "x": 100,
-        "y": 200
-      },
-      "timestamp": "2024-01-01T12:00:00.000Z"
-    }
-  ],
-  "timestamp": "2024-01-01T12:00:00.000Z"
-}
-```
 
-### Breadcrumb Categories
+  // 🎲 SAMPLING: Only sends 10% of errors to save resources
+  samplingRate: 0.1,
 
-- **`user`** - Click events, form submissions, etc.
-- **`http`** - Fetch requests, responses, and errors
-- **`console`** - Console.log, console.error, console.warn
-- **`error`** - Manual error reports
+  // 📦 BATCHING: Batch size and timeout before sending
+  batchSize: 10,
+  batchTimeout: 5000,
 
-## ⚙️ Configuration Options
+  // 🛡️ SECURITY: Basic payload encryption (base64/rot13)
+  encrypt: true,
 
-SyntropyFront uses a priority system for error handling:
+  // 💾 PERSISTENCE: Enable disk storage if the user is offline
+  usePersistentBuffer: true,
 
-1. **Custom Error Handler** (`onError`) - Maximum flexibility
-2. **Endpoint** (`fetch`) - Automatic posting
-3. **Console** - Default fallback
-
-### Basic Configuration (Console Only)
-
-```javascript
-syntropyFront.configure({
-  maxEvents: 50 // Number of events to keep in memory
-});
-```
-
-### With Endpoint (Automatic Fetch)
-
-```javascript
-syntropyFront.configure({
-  maxEvents: 50,
-  fetch: {
-    url: 'https://your-api.com/errors',
-    options: {
-      headers: {
-        'Authorization': 'Bearer your-token',
-        'X-API-Key': 'your-api-key',
-        'Content-Type': 'application/json'
-      },
-      mode: 'cors',
-      credentials: 'include'
-    }
+  // Custom callback to handle the error before it is sent
+  onError: (payload) => {
+    console.warn('Error captured:', payload.type);
+    return payload; // You can modify the payload here if necessary
   }
 });
 ```
 
-### With Custom Error Handler (Maximum Flexibility)
+## 🕹️ Event Capture & Custom Events
 
-```javascript
-syntropyFront.configure({
-  maxEvents: 50,
-  onError: (errorPayload) => {
-    // You have complete control over what to do with the error
-    
-    // Send to your API
-    fetch('https://your-api.com/errors', {
-      method: 'POST',
-      body: JSON.stringify(errorPayload)
-    });
-    
-    // Save to localStorage
-    localStorage.setItem('lastError', JSON.stringify(errorPayload));
-    
-    // Send to multiple services
-    Promise.all([
-      fetch('https://service1.com/errors', { method: 'POST', body: JSON.stringify(errorPayload) }),
-      fetch('https://service2.com/errors', { method: 'POST', body: JSON.stringify(errorPayload) })
-    ]);
-    
-    // Upload to cloud storage
-    // Send to repository
-    // Log to file
-    // Whatever you want!
-  }
-});
-```
+SyntropyFront provides both automatic tracking and manual tools to enrich your observability data.
 
-## 🔧 API Reference
+### 🤖 Automatic Capture
+By default, the following interceptors are initialized:
+- **UI Clicks**: Captures clicks on interactive elements (buttons, links, etc.) with smart selection logic.
+- **Network**: Intercepts `fetch` calls, logging requests and responses (without sensitive headers).
+- **Errors**: Catch-all for uncaught exceptions and unhandled promise rejections.
 
-### Core Methods
-
-```javascript
-// Add custom breadcrumb
-syntropyFront.addBreadcrumb('user', 'Custom action', { data: 'value' });
-
-// Send manual error
-syntropyFront.sendError(new Error('Custom error'));
-
-// Get current breadcrumbs
-const breadcrumbs = syntropyFront.getBreadcrumbs();
-
-// Clear breadcrumbs
-syntropyFront.clearBreadcrumbs();
-
-// Get statistics
-const stats = syntropyFront.getStats();
-// Returns: { breadcrumbs: 5, errors: 2, isActive: true, maxEvents: 50, endpoint: 'console' }
-```
-
-## 🎯 Extending SyntropyFront
-
-SyntropyFront captures the essentials by default, but you can extend it to capture any DOM events you want:
-
-### Adding Custom Event Capture
+### 🛠️ Custom Breadcrumbs
+Breadcrumbs are a timeline of events that help you understand what happened before an error occurred. You can add your own milestones:
 
 ```javascript
 import syntropyFront from '@syntropysoft/syntropyfront';
 
-// Add scroll tracking
-window.addEventListener('scroll', () => {
-  syntropyFront.addBreadcrumb('user', 'scroll', {
-    scrollY: window.scrollY,
-    scrollX: window.scrollX
-  });
-});
+// Simple breadcrumb
+syntropyFront.addBreadcrumb('auth', 'User logged in successfully');
 
-// Add form submissions
-document.addEventListener('submit', (event) => {
-  syntropyFront.addBreadcrumb('user', 'form_submit', {
-    formId: event.target.id,
-    formAction: event.target.action
-  });
+// Breadcrumb with data
+syntropyFront.addBreadcrumb('commerce', 'Item added to cart', {
+  productId: 'abc-123',
+  price: 49.99,
+  currency: 'USD'
 });
-
-// Add window resize
-window.addEventListener('resize', () => {
-  syntropyFront.addBreadcrumb('system', 'window_resize', {
-    width: window.innerWidth,
-    height: window.innerHeight
-  });
-});
-
-// Add custom business events
-function trackPurchase(productId, amount) {
-  syntropyFront.addBreadcrumb('business', 'purchase', {
-    productId,
-    amount,
-    timestamp: new Date().toISOString()
-  });
-}
 ```
 
-### Common Events You Can Track
-
-- **User interactions**: `click`, `scroll`, `keydown`, `focus`, `blur`
-- **Form events**: `submit`, `input`, `change`, `reset`
-- **System events**: `resize`, `online`, `offline`, `visibilitychange`
-- **Custom events**: Any business logic or user actions
-- **Performance**: `load`, `DOMContentLoaded`, timing events
-
-## 🌐 CORS Configuration
-
-To use with your API, ensure your server allows CORS:
+### 🚨 Manual Error Reporting
+You can manually send errors that you catch in your own `try/catch` blocks:
 
 ```javascript
-// Express.js example
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
-
-// Or in headers
-res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-res.setHeader('Access-Control-Allow-Methods', 'POST');
-res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-```
-
-## 📱 Framework Support
-
-SyntropyFront works with any JavaScript framework:
-
-- ✅ **React** - Works out of the box
-- ✅ **Vue** - Works out of the box  
-- ✅ **Angular** - Works out of the box
-- ✅ **Svelte** - Works out of the box
-- ✅ **Vanilla JS** - Works out of the box
-
-## 🎯 Examples
-
-### React Example
-
-```jsx
-import React from 'react';
-import syntropyFront from '@syntropysoft/syntropyfront';
-
-function App() {
-  // SyntropyFront auto-initializes on import
-  return (
-    <div>
-      <button onClick={() => console.log('Button clicked')}>
-        Click me!
-      </button>
-    </div>
-  );
-}
-```
-
-### Vue Example
-
-```vue
-<template>
-  <button @click="handleClick">Click me!</button>
-</template>
-
-<script>
-import syntropyFront from '@syntropysoft/syntropyfront';
-
-export default {
-  methods: {
-    handleClick() {
-      console.log('Button clicked');
-    }
-  }
-}
-</script>
-```
-
-### Manual Error Reporting
-
-```javascript
-import syntropyFront from '@syntropysoft/syntropyfront';
-
 try {
-  // Your code here
+  performRiskyOperation();
 } catch (error) {
-  // SyntropyFront will automatically capture this
-  throw error;
-}
-
-// Or manually report
-syntropyFront.sendError(new Error('Something went wrong'));
-```
-
-### Extending with Custom Events
-
-```javascript
-import syntropyFront from '@syntropysoft/syntropyfront';
-
-// Add your custom event listeners
-window.addEventListener('scroll', () => {
-  syntropyFront.addBreadcrumb('user', 'scroll', {
-    scrollY: window.scrollY,
-    scrollX: window.scrollX
-  });
-});
-
-// Track business events
-function userCompletedCheckout(orderId, total) {
-  syntropyFront.addBreadcrumb('business', 'checkout_completed', {
-    orderId,
-    total,
-    timestamp: new Date().toISOString()
+  syntropyFront.sendError(error, {
+    severity: 'critical',
+    userId: 'user_99'
   });
 }
-
-// Track performance
-window.addEventListener('load', () => {
-  syntropyFront.addBreadcrumb('performance', 'page_loaded', {
-    loadTime: performance.now()
-  });
-});
 ```
-
-## 🏗️ Architecture & Code Quality
-
-SyntropyFront follows SOLID principles and maintains high code quality through:
-
-### Modular Architecture
-
-The codebase is organized into focused modules with single responsibilities:
-
-```
-src/core/
-├── agent/           # Core Agent components
-│   ├── Agent.js              # Main coordinator
-│   ├── ConfigurationManager.js # Configuration handling
-│   ├── QueueManager.js        # Batching and queuing
-│   └── HttpTransport.js       # HTTP communication
-├── database/        # IndexedDB management
-│   ├── DatabaseManager.js     # Database coordinator
-│   ├── DatabaseConfigManager.js # Configuration
-│   ├── DatabaseConnectionManager.js # Connection handling
-│   ├── DatabaseTransactionManager.js # Transaction management
-│   ├── StorageManager.js      # CRUD operations
-│   └── SerializationManager.js # Data serialization
-├── retry/           # Retry system
-│   ├── RetryManager.js        # Retry coordination
-│   └── RetryLogicManager.js   # Retry logic
-├── persistent/      # Persistent buffer
-│   └── PersistentBufferManager.js # Buffer management
-├── breadcrumbs/     # Event tracking
-│   ├── BreadcrumbManager.js   # Breadcrumb coordination
-│   └── BreadcrumbStore.js     # Breadcrumb storage
-├── context/         # Context collection
-│   └── ContextCollector.js    # Context gathering
-└── utils/           # Utilities
-    ├── Logger.js              # Logging utilities
-    └── ErrorManager.js        # Error handling
-```
-
-### Design Principles
-
-- **Single Responsibility Principle (SRP)**: Each class has one clear purpose
-- **Dependency Injection**: Components receive dependencies through constructors
-- **Declarative Error Handling**: Structured error responses with fallbacks
-- **Comprehensive Testing**: 430+ tests with 71.03% mutation score
-- **Optimized Performance**: Timeouts optimized for faster execution
-
-## 🧪 Testing & Quality
-
-SyntropyFront maintains high code quality through comprehensive testing:
-
-### Test Coverage & Mutation Testing
-
-- **Mutation Score**: 71.03% - Our tests effectively detect code changes
-- **Test Coverage**: 89.47% (Statements) / 81.47% (Branches)
-- **Key Components Performance**:
-  - `Agent.js`: 87.23% mutation score
-  - `ConfigurationManager.js`: 100% mutation score
-  - `QueueManager.js`: 97.37% mutation score
-  - `HttpTransport.js`: 86.96% mutation score
-  - `BreadcrumbManager.js`: 100% mutation score
-  - `BreadcrumbStore.js`: 95.00% mutation score
-  - `SerializationManager.js`: 100% mutation score
-  - `DatabaseTransactionManager.js`: 100% mutation score
-  - `DatabaseConfigManager.js`: 86.89% mutation score
-  - `DatabaseConnectionManager.js`: 85.96% mutation score
-  - `PersistentBufferManager.js`: 77.63% mutation score
-  - `RobustSerializer.js`: 73.36% mutation score
-
-### Testing Stack
-
-- **Jest**: Unit testing framework
-- **Stryker**: Mutation testing for test quality validation
-- **IndexedDB Mocking**: Browser storage testing
-- **Fetch Mocking**: HTTP request testing
-
-### Running Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run with coverage
-npm run test:coverage
-
-# Run mutation testing
-npm run test:mutation
-```
-
-
-## 🛡️ Security & Privacy
-
-SyntropyFront is designed with security and transparency in mind:
-
-- **Network Access**: Telemetry is sent **only** to the endpoint you configure via `configure({ fetch: { url: '...' } })`. By default, it only logs to the browser console.
-- **No Third-Party Tracking**: We don't include any tracking or analytics scripts. Your data is yours.
-- **PII Protection**: Breadcrumbs focus on technical context. We recommend using a custom `onError` handler to scrub sensitive data if necessary.
-- **Zero Runtime Dependencies**: Minimizes the attack surface by not relying on external code at runtime.
-
-## 🔍 Debugging
-
-SyntropyFront logs helpful information to the console:
-
-```
-🚀 SyntropyFront: Initialized with automatic capture
-✅ SyntropyFront: Configured - maxEvents: 50, endpoint: https://your-api.com/errors
-❌ Error: { type: "uncaught_exception", error: {...}, breadcrumbs: [...] }
-```
-
-## 📄 License
-
-This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details.
-
-**Apache License 2.0** - A permissive license that allows for:
-- ✅ Commercial use
-- ✅ Modification
-- ✅ Distribution
-- ✅ Patent use
-- ✅ Private use
-
-The only requirement is that you include the original copyright notice and license text in any substantial portions of the software you distribute.
-
-For more information, visit: https://www.apache.org/licenses/LICENSE-2.0
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-**Made with ❤️ for better web observability** 
+## 🛡️ Sensitive Data Protection (PII Masking)
+
+SyntropyFront automatically protects your users' privacy. The `DataMaskingManager` detects and obfuscates:
+- Email addresses (`j***@example.com`)
+- Authentication tokens and passwords
+- Credit card numbers (keeps only the last 4 digits)
+- SSN and phone numbers
+
+### Custom Rules Configuration
+```javascript
+syntropyFront.configure({
+  maskingRules: [
+    {
+      pattern: /custom_id_\d+/i,
+      mask: 'HIDDEN_ID'
+    }
+  ]
+});
+```
+
+## 🏗️ Modular Architecture and Tree Shaking
+
+In version 0.5.0, we have moved interceptors to independent modules. To minimize your bundle size, you can import only what you need:
+
+```javascript
+// Instead of global import, use specific interceptors directly
+// (Coming soon in the granular export API)
+```
+
+### Core Structure
+The system is divided into managers with unique responsibilities:
+- **QueueManager**: Manages batching and output flow.
+- **RetryManager**: Handles smart retries with incremental waits.
+- **SerializationManager**: Ensures data is safe for transmission over the network.
+- **ContextCollector**: Collects device information and user environment context.
+
+## 📊 Quality Metrics
+
+We take stability seriously. SyntropyFront maintains:
+- **Test Coverage**: **>91%** (Lines), **>81%** (Branches).
+- **Stryker Mutation Score**: **>71%** (Our tests truly verify logic, they don't just "pass through" it).
+- **Zero Dependencies**: We don't add third-party vulnerabilities to your project.
+
+## 📖 API Reference
+
+### `syntropyFront.configure(config)`
+Updates the global configuration of the agent.
+
+### `syntropyFront.addBreadcrumb(category, message, data)`
+Adds a manual milestone to the timeline.
+- `category`: String (e.g., 'auth', 'ui', 'action')
+- `message`: Description of the event.
+- `data`: (Optional) Object with additional metadata.
+
+### `syntropyFront.sendError(error, context)`
+Manually reports an error.
+- `error`: Error object or string.
+- `context`: (Optional) Additional data to send with this specific error.
+
+### `syntropyFront.flush()`
+Forces the immediate sending of all pending events in the queue.
+
+### `syntropyFront.getBreadcrumbs()`
+Returns the list of current breadcrumbs in memory.
+
+### `syntropyFront.clearBreadcrumbs()`
+Clears the temporary breadcrumb history.
+
+### `syntropyFront.getStats()`
+Returns an object with library performance statistics (queue length, retry status, etc.).
+
+### `syntropyFront.destroy()`
+Deactivates all interceptors and stops the agent.
+
+---
+
+## 🔍 Advanced Context Collection
+
+You can precisely control what environment data is collected when an error occurs.
+
+```javascript
+syntropyFront.configure({
+  context: {
+    // Collect all default fields for these types
+    device: true,
+    network: true,
+    
+    // Collect ONLY specific fields
+    window: ['url', 'title', 'viewport'],
+    performance: ['memory'],
+    
+    // Explicitly disable a type
+    storage: false
+  }
+});
+```
+
+### Available Context Fields
+- **`device`**: `userAgent`, `language`, `screen`, `timezone`, `cookieEnabled`.
+- **`window`**: `url`, `pathname`, `referrer`, `title`, `viewport`.
+- **`storage`**: `localStorage`, `sessionStorage` (size and keys only, no values).
+- **`network`**: `online`, `connection` (type, downlink).
+- **`ui`**: `focused`, `visibility`, `activeElement`.
+- **`performance`**: `memory` (heap usage), `timing`.
+- **`session`**: `sessionId`, `startTime`, `pageLoadTime`.
+
+## 🛠️ Local Development
+
+If you want to contribute or test the library locally:
+
+1.  **Clone and Install**:
+    ```bash
+    git clone https://github.com/Syntropysoft/syntropyfront.git
+    cd syntropyfront
+    pnpm install
+    ```
+
+2.  **Run Tests**:
+    ```bash
+    npm test          # Run all tests
+    npm run test:watch # Watch mode
+    ```
+
+3.  **Build**:
+    ```bash
+    npm run build
+    ```
+
+## 📄 License
+
+This project is licensed under the **Apache License 2.0**. You can freely use, modify, and distribute it in commercial projects.
+
+---
+
+**Developed with ❤️ for a clearer and more stable web.**

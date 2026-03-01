@@ -1,51 +1,51 @@
 /**
- * QueueManager - Maneja la cola de envío y batching
- * Responsabilidad única: Gestionar cola de items y batching
+ * QueueManager - Send queue and batching.
+ * Contract: add(item) enqueues or triggers flush; flush(cb) passes items to cb and clears queue; getSize/isEmpty/getAll are read-only.
  */
 export class QueueManager {
+  /** @param {{ batchSize: number, batchTimeout: number|null }} configManager */
   constructor(configManager) {
     this.config = configManager;
     this.queue = [];
     this.batchTimer = null;
-    this.flushCallback = null; // Callback interno para flush automático
+    this.flushCallback = null;
   }
 
   /**
-     * Añade un item a la cola
-     * @param {Object} item - Item a añadir
-     */
+   * Adds an item; may trigger immediate or scheduled flush.
+   * @param {Object} item - Item to enqueue (non-null)
+   */
   add(item) {
+    // Guard: Avoid null items
+    if (!item) return;
+
     this.queue.push(item);
 
-    // Enviar inmediatamente si alcanza el tamaño del batch
+    // Guard: Immediate flush if batchSize is reached
     if (this.queue.length >= this.config.batchSize) {
-      this.flush(this.flushCallback);
-    } else if (this.config.batchSize && this.config.batchTimeout && !this.batchTimer) {
-      // Solo programar timeout si batchTimeout está configurado
-      this.batchTimer = setTimeout(() => {
-        this.flush(this.flushCallback);
-      }, this.config.batchTimeout);
+      return this.flush(this.flushCallback);
     }
+
+    // Guard: Only set Timer if one doesn't exist and we have a timeout configured
+    if (!this.config.batchTimeout || this.batchTimer) return;
+
+    this.batchTimer = setTimeout(() => {
+      this.flush(this.flushCallback);
+    }, this.config.batchTimeout);
   }
 
-  /**
-     * Obtiene todos los items de la cola
-     */
+  /** @returns {Array<Object>} Copy of the queue */
   getAll() {
     return [...this.queue];
   }
 
-  /**
-     * Limpia la cola
-     */
+  /** Clears the queue and cancels the timer. */
   clear() {
     this.queue = [];
     this.clearTimer();
   }
 
-  /**
-     * Limpia el timer
-     */
+  /** Cancels the scheduled flush timer. */
   clearTimer() {
     if (this.batchTimer) {
       clearTimeout(this.batchTimer);
@@ -53,24 +53,21 @@ export class QueueManager {
     }
   }
 
-  /**
-     * Obtiene el tamaño de la cola
-     */
+  /** @returns {number} Queue length */
   getSize() {
     return this.queue.length;
   }
 
-  /**
-     * Verifica si la cola está vacía
-     */
+  /** @returns {boolean} */
   isEmpty() {
     return this.queue.length === 0;
   }
 
   /**
-     * Flush de la cola (método que será llamado por el Agent)
-     * @param {Function} flushCallback - Callback para procesar los items
-     */
+   * Sends current items to the callback and clears the queue.
+   * @param {(items: Array<Object>) => Promise<void>|void} flushCallback
+   * @returns {Promise<void>}
+   */
   async flush(flushCallback) {
     if (this.queue.length === 0) return;
 
@@ -82,4 +79,4 @@ export class QueueManager {
       await flushCallback(itemsToSend);
     }
   }
-} 
+}

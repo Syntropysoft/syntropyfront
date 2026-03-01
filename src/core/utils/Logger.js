@@ -1,6 +1,6 @@
 /**
  * Logger - Hace logging solo en errores
- * Responsabilidad única: Mostrar mensajes solo cuando hay errores
+ * Single responsibility: Show messages only when there are errors
  */
 export class Logger {
   constructor() {
@@ -36,12 +36,12 @@ export class Logger {
     }
   }
 
-  // Método para activar logging (solo para debug)
+  // Enable logging (debug only)
   enableLogging() {
     this.isSilent = false;
   }
 
-  // Método para desactivar logging
+  // Disable logging
   disableLogging() {
     this.isSilent = true;
   }

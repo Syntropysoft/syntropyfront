@@ -1,6 +1,6 @@
 /**
- * DatabaseConnectionManager - Maneja la conexión con IndexedDB
- * Responsabilidad única: Gestionar la apertura y cierre de conexiones
+ * DatabaseConnectionManager - Handles IndexedDB connection.
+ * Single responsibility: Manage opening and closing of connections. Uses guard clauses (return early).
  */
 export class DatabaseConnectionManager {
   constructor(configManager) {
@@ -10,53 +10,55 @@ export class DatabaseConnectionManager {
   }
 
   /**
-     * Inicializa la conexión con IndexedDB
-     * @returns {Promise<Object>} Resultado de la inicialización
-     */
+   * Initializes the connection to IndexedDB
+   * @returns {Promise<Object>} Init result
+   */
   async init() {
-    const initResult = {
-      success: false,
-      error: null,
-      timestamp: new Date().toISOString()
-    };
+    // Guard: validate configuration
+    const configValidation = this.configManager.validateConfig();
+    if (!configValidation.isValid) {
+      return {
+        success: false,
+        error: `Invalid configuration: ${configValidation.errors.join(', ')}`,
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    const availabilityCheck = this.configManager.checkIndexedDBAvailability();
+    if (!availabilityCheck.isAvailable) {
+      return {
+        success: false,
+        error: availabilityCheck.reason,
+        timestamp: new Date().toISOString()
+      };
+    }
 
     try {
-      // Validar configuración
-      const configValidation = this.configManager.validateConfig();
-      if (!configValidation.isValid) {
-        initResult.error = `Configuración inválida: ${configValidation.errors.join(', ')}`;
-        return initResult;
-      }
-
-      // Verificar disponibilidad de IndexedDB
-      const availabilityCheck = this.configManager.checkIndexedDBAvailability();
-      if (!availabilityCheck.isAvailable) {
-        initResult.error = availabilityCheck.reason;
-        return initResult;
-      }
-
-      // Abrir conexión
       const connectionResult = await this.openConnection();
       if (!connectionResult.success) {
-        initResult.error = connectionResult.error;
-        return initResult;
+        return {
+          success: false,
+          error: connectionResult.error,
+          timestamp: new Date().toISOString()
+        };
       }
 
       this.db = connectionResult.db;
       this.isAvailable = true;
-      initResult.success = true;
 
-      return initResult;
+      return { success: true, error: null, timestamp: new Date().toISOString() };
     } catch (error) {
-      initResult.error = `Error inesperado: ${error.message}`;
-      return initResult;
+      return {
+        success: false,
+        error: `Unexpected error: ${error.message}`,
+        timestamp: new Date().toISOString()
+      };
     }
   }
 
   /**
-     * Abre la conexión con IndexedDB
-     * @returns {Promise<Object>} Resultado de la conexión
-     */
+   * Opens the connection to IndexedDB
+   */
   openConnection() {
     return new Promise((resolve) => {
       const config = this.configManager.getConfig();
@@ -65,7 +67,7 @@ export class DatabaseConnectionManager {
       request.onerror = () => {
         resolve({
           success: false,
-          error: 'Error abriendo IndexedDB',
+          error: 'Error opening IndexedDB',
           db: null
         });
       };
@@ -73,7 +75,7 @@ export class DatabaseConnectionManager {
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
         const storeConfig = this.configManager.getStoreConfig();
-                
+
         if (!db.objectStoreNames.contains(config.storeName)) {
           db.createObjectStore(config.storeName, storeConfig);
         }
@@ -90,45 +92,35 @@ export class DatabaseConnectionManager {
   }
 
   /**
-     * Cierra la conexión con la base de datos
-     * @returns {Object} Resultado del cierre
-     */
+   * Closes the database connection
+   */
   close() {
-    const closeResult = {
-      success: false,
-      error: null,
-      timestamp: new Date().toISOString()
-    };
-
-    try {
-      if (this.db) {
-        this.db.close();
-        this.db = null;
-        this.isAvailable = false;
-        closeResult.success = true;
-      } else {
-        closeResult.error = 'No hay conexión activa para cerrar';
-      }
-    } catch (error) {
-      closeResult.error = `Error cerrando conexión: ${error.message}`;
+    // Guard: no active connection
+    if (!this.db) {
+      return { success: false, error: 'No active connection to close', timestamp: new Date().toISOString() };
     }
 
-    return closeResult;
+    try {
+      this.db.close();
+      this.db = null;
+      this.isAvailable = false;
+      return { success: true, error: null, timestamp: new Date().toISOString() };
+    } catch (error) {
+      return { success: false, error: `Error closing connection: ${error.message}`, timestamp: new Date().toISOString() };
+    }
   }
 
   /**
-     * Verifica si la base de datos está disponible
-     * @returns {boolean} True si está disponible
-     */
+   * Returns whether the database is available
+   */
   isDatabaseAvailable() {
     return this.isAvailable && this.db !== null;
   }
 
   /**
-     * Obtiene la instancia de la base de datos
-     * @returns {IDBDatabase|null} Instancia de la base de datos
-     */
+   * Returns the database instance
+   */
   getDatabase() {
     return this.isDatabaseAvailable() ? this.db : null;
   }
-} 
+}

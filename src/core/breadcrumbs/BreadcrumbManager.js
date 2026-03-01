@@ -1,6 +1,6 @@
 /**
- * BreadcrumbManager - Gestiona breadcrumbs
- * Responsabilidad única: Almacenar y gestionar breadcrumbs
+ * BreadcrumbManager - Manages breadcrumbs
+ * Single responsibility: Store and manage breadcrumbs
  */
 export class BreadcrumbManager {
   constructor() {

@@ -23,6 +23,7 @@ export interface SyntropyFrontConfig {
     captureFetch?: boolean;
     captureErrors?: boolean;
     captureUnhandledRejections?: boolean;
+    samplingRate?: number;
     onError?: (error: Error, context?: any) => void;
     fetch?: {
         url: string;
@@ -33,10 +34,11 @@ export interface SyntropyFrontConfig {
 }
 
 export interface AgentStats {
-    isBufferActive: boolean;
-    pendingItems: number;
-    totalTransmitted: number;
-    failedTransmissions: number;
+    queueLength: number;
+    retryQueueLength: number;
+    isEnabled: boolean;
+    usePersistentBuffer: boolean;
+    maxRetries: number;
 }
 
 export interface SyntropyFrontStats {

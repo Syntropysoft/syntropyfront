@@ -1,8 +1,8 @@
 import { robustSerializer } from '../../utils/RobustSerializer.js';
 
 /**
- * RetryLogicManager - Maneja la lógica de reintentos y limpieza
- * Responsabilidad única: Gestionar reintentos y limpieza de items fallidos
+ * RetryLogicManager - Handles retry logic and cleanup
+ * Single responsibility: Manage retries and cleanup of failed items
  */
 export class RetryLogicManager {
   constructor(storageManager, configManager) {
@@ -11,13 +11,13 @@ export class RetryLogicManager {
   }
 
   /**
-     * Intenta enviar items fallidos del buffer persistente
-     * @param {Function} sendCallback - Callback para enviar items
-     * @param {Function} removeCallback - Callback para remover items exitosos
+     * Attempts to send failed items from the persistent buffer
+     * @param {Function} sendCallback - Callback to send items
+     * @param {Function} removeCallback - Callback to remove successful items
      */
   async retryFailedItems(sendCallback, removeCallback) {
     if (!this.storageManager) {
-      console.warn('SyntropyFront: Storage manager no disponible');
+      console.warn('SyntropyFront: Storage manager not available');
       return;
     }
 
@@ -26,7 +26,7 @@ export class RetryLogicManager {
             
       for (const item of failedItems) {
         if (item.retryCount < this.config.maxRetries) {
-          // Deserializar items del buffer
+          // Deserialize items from buffer
           let deserializedItems;
           try {
             if (typeof item.items === 'string') {
@@ -35,7 +35,7 @@ export class RetryLogicManager {
               deserializedItems = item.items;
             }
           } catch (error) {
-            console.error('SyntropyFront: Error deserializando items del buffer:', error);
+            console.error('SyntropyFront: Error deserializing buffer items:', error);
             await this.removeFailedItem(item.id);
             continue;
           }
@@ -44,35 +44,35 @@ export class RetryLogicManager {
             try {
               await sendCallback(deserializedItems, item.retryCount + 1, item.id);
                             
-              // Si el envío fue exitoso, remover del buffer
+              // On successful send, remove from buffer
               if (removeCallback) {
                 await removeCallback(item.id);
               } else {
                 await this.removeFailedItem(item.id);
               }
                             
-              console.log(`SyntropyFront: Reintento exitoso para item ${item.id}`);
+              console.log(`SyntropyFront: Retry successful for item ${item.id}`);
             } catch (error) {
-              console.warn(`SyntropyFront: Reintento falló para item ${item.id}:`, error);
+              console.warn(`SyntropyFront: Retry failed for item ${item.id}:`, error);
                             
-              // Incrementar contador de reintentos
+              // Increment retry count
               await this.incrementRetryCount(item.id);
             }
           }
         } else {
-          console.warn(`SyntropyFront: Item ${item.id} excedió máximo de reintentos, removiendo del buffer`);
+          console.warn(`SyntropyFront: Item ${item.id} exceeded maximum retries, removing from buffer`);
           await this.removeFailedItem(item.id);
         }
       }
     } catch (error) {
-      console.error('SyntropyFront: Error procesando reintentos:', error);
+      console.error('SyntropyFront: Error processing retries:', error);
     }
   }
 
   /**
-     * Incrementa el contador de reintentos de un item
-     * @param {number} id - ID del item
-     */
+   * Increments the retry count for an item
+   * @param {number} id - Item ID
+   */
   async incrementRetryCount(id) {
     try {
       const currentItem = await this.storageManager.retrieveById(id);
@@ -82,25 +82,25 @@ export class RetryLogicManager {
         });
       }
     } catch (error) {
-      console.error('SyntropyFront: Error incrementando contador de reintentos:', error);
+      console.error('SyntropyFront: Error incrementing retry count:', error);
     }
   }
 
   /**
-     * Remueve un item fallido del buffer
-     * @param {number} id - ID del item
-     */
+   * Removes a failed item from the buffer
+   * @param {number} id - Item ID
+   */
   async removeFailedItem(id) {
     try {
       await this.storageManager.remove(id);
     } catch (error) {
-      console.error('SyntropyFront: Error removiendo item fallido:', error);
+      console.error('SyntropyFront: Error removing failed item:', error);
     }
   }
 
   /**
-     * Limpia items que han excedido el máximo de reintentos
-     */
+   * Cleans items that have exceeded the maximum retry count
+   */
   async cleanupExpiredItems() {
     try {
       const allItems = await this.storageManager.retrieve();
@@ -108,20 +108,20 @@ export class RetryLogicManager {
             
       for (const item of expiredItems) {
         await this.removeFailedItem(item.id);
-        console.warn(`SyntropyFront: Item ${item.id} removido por exceder máximo de reintentos`);
+        console.warn(`SyntropyFront: Item ${item.id} removed for exceeding maximum retries`);
       }
             
       if (expiredItems.length > 0) {
-        console.log(`SyntropyFront: Limpieza completada, ${expiredItems.length} items removidos`);
+        console.log(`SyntropyFront: Cleanup completed, ${expiredItems.length} items removed`);
       }
     } catch (error) {
-      console.error('SyntropyFront: Error en limpieza de items expirados:', error);
+      console.error('SyntropyFront: Error cleaning up expired items:', error);
     }
   }
 
   /**
-     * Obtiene estadísticas de reintentos
-     */
+   * Returns retry statistics
+   */
   async getRetryStats() {
     try {
       const allItems = await this.storageManager.retrieve();
@@ -144,7 +144,7 @@ export class RetryLogicManager {
 
       return stats;
     } catch (error) {
-      console.error('SyntropyFront: Error obteniendo estadísticas de reintentos:', error);
+      console.error('SyntropyFront: Error getting retry statistics:', error);
       return {
         totalItems: 0,
         itemsByRetryCount: {},

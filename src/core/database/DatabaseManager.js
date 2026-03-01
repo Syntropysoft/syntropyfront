@@ -3,8 +3,8 @@ import { DatabaseConnectionManager } from './DatabaseConnectionManager.js';
 import { DatabaseTransactionManager } from './DatabaseTransactionManager.js';
 
 /**
- * DatabaseManager - Coordinador de la gestión de IndexedDB
- * Responsabilidad única: Coordinar los managers especializados
+ * DatabaseManager - Coordinates IndexedDB access.
+ * Single responsibility: Coordinate specialized managers. Uses guard clauses.
  */
 export class DatabaseManager {
   constructor(dbName, dbVersion, storeName) {
@@ -14,56 +14,57 @@ export class DatabaseManager {
   }
 
   /**
-     * Inicializa la conexión con IndexedDB
-     */
+   * Initializes the connection to IndexedDB
+   */
   async init() {
     const initResult = await this.connectionManager.init();
-        
-    if (initResult.success) {
-      console.log('SyntropyFront: Base de datos inicializada');
-    } else {
-      console.warn('SyntropyFront: Error inicializando base de datos:', initResult.error);
+
+    if (!initResult.success) {
+      console.warn('SyntropyFront: Error initializing database:', initResult.error);
+      return false;
     }
-        
-    return initResult.success;
+
+    console.log('SyntropyFront: Database initialized');
+    return true;
   }
 
   /**
-     * Obtiene una transacción de lectura
-     */
+   * Returns a read transaction
+   */
   getReadTransaction() {
     return this.transactionManager.getReadTransaction();
   }
 
   /**
-     * Obtiene una transacción de escritura
-     */
+   * Returns a write transaction
+   */
   getWriteTransaction() {
     return this.transactionManager.getWriteTransaction();
   }
 
   /**
-     * Cierra la conexión con la base de datos
-     */
+   * Closes the database connection
+   */
   close() {
     const closeResult = this.connectionManager.close();
-        
+
     if (!closeResult.success) {
-      console.warn('SyntropyFront: Error cerrando base de datos:', closeResult.error);
+      console.warn('SyntropyFront: Error closing database:', closeResult.error);
+      return false;
     }
-        
-    return closeResult.success;
+
+    return true;
   }
 
   /**
-     * Verifica si la base de datos está disponible
-     */
+   * Returns whether the database is available
+   */
   isDatabaseAvailable() {
     return this.connectionManager.isDatabaseAvailable();
   }
 
-  // ===== Propiedades de compatibilidad =====
-    
+  // ===== Compatibility properties =====
+
   /**
      * @deprecated Usar configManager.getConfig().dbName
      */

@@ -1,6 +1,6 @@
 /**
- * StorageManager - Maneja las operaciones CRUD de IndexedDB
- * Responsabilidad única: Gestionar operaciones de almacenamiento y recuperación
+ * StorageManager - Handles IndexedDB CRUD operations
+ * Single responsibility: Manage storage and retrieval operations
  */
 export class StorageManager {
   constructor(databaseManager, serializationManager) {
@@ -9,10 +9,10 @@ export class StorageManager {
   }
 
   /**
-     * Guarda items en el almacenamiento
-     * @param {Array} items - Items a guardar
-     * @returns {Promise<number>} ID del item guardado
-     */
+   * Saves items to storage
+   * @param {Array} items - Items to save
+   * @returns {Promise<number>} Saved item ID
+   */
   async save(items) {
     this.ensureDatabaseAvailable();
 
@@ -30,9 +30,9 @@ export class StorageManager {
   }
 
   /**
-     * Obtiene todos los items del almacenamiento
-     * @returns {Promise<Array>} Items deserializados
-     */
+   * Retrieves all items from storage
+   * @returns {Promise<Array>} Deserialized items
+   */
   async retrieve() {
     if (!this.databaseManager.isDatabaseAvailable()) {
       return [];
@@ -43,10 +43,10 @@ export class StorageManager {
   }
 
   /**
-     * Obtiene un item específico por ID
-     * @param {number} id - ID del item
-     * @returns {Promise<Object|null>} Item deserializado o null
-     */
+   * Retrieves a single item by ID
+   * @param {number} id - Item ID
+   * @returns {Promise<Object|null>} Deserialized item or null
+   */
   async retrieveById(id) {
     if (!this.databaseManager.isDatabaseAvailable()) {
       return null;
@@ -57,21 +57,21 @@ export class StorageManager {
   }
 
   /**
-     * Remueve un item del almacenamiento
-     * @param {number} id - ID del item a remover
-     * @returns {Promise<void>}
-     */
+   * Removes an item from storage
+   * @param {number} id - ID of the item to remove
+   * @returns {Promise<void>}
+   */
   async remove(id) {
     this.ensureDatabaseAvailable();
     return this.executeWriteOperation(store => store.delete(id));
   }
 
   /**
-     * Actualiza un item en el almacenamiento
-     * @param {number} id - ID del item
-     * @param {Object} updates - Campos a actualizar
-     * @returns {Promise<number>} ID del item actualizado
-     */
+   * Updates an item in storage
+   * @param {number} id - Item ID
+   * @param {Object} updates - Fields to update
+   * @returns {Promise<number>} Updated item ID
+   */
   async update(id, updates) {
     this.ensureDatabaseAvailable();
 
@@ -85,20 +85,20 @@ export class StorageManager {
   }
 
   /**
-     * Limpia todo el almacenamiento
-     * @returns {Promise<void>}
-     */
+   * Clears all storage
+   * @returns {Promise<void>}
+   */
   async clear() {
     this.ensureDatabaseAvailable();
     return this.executeWriteOperation(store => store.clear());
   }
 
-  // ===== Métodos privados declarativos =====
+  // ===== Private declarative methods =====
 
   /**
-     * Verifica que la base de datos esté disponible
-     * @throws {Error} Si la base de datos no está disponible
-     */
+   * Ensures the database is available
+   * @throws {Error} If the database is not available
+   */
   ensureDatabaseAvailable() {
     if (!this.databaseManager.isDatabaseAvailable()) {
       throw new Error('Database not available');
@@ -106,10 +106,10 @@ export class StorageManager {
   }
 
   /**
-     * Ejecuta una operación de lectura de manera declarativa
-     * @param {Function} operation - Operación a ejecutar en el store
-     * @returns {Promise<*>} Resultado de la operación
-     */
+   * Executes a read operation in a declarative way
+   * @param {Function} operation - Operation to run on the store
+   * @returns {Promise<*>} Operation result
+   */
   executeReadOperation(operation) {
     return new Promise((resolve, reject) => {
       try {
@@ -126,10 +126,10 @@ export class StorageManager {
   }
 
   /**
-     * Ejecuta una operación de escritura de manera declarativa
-     * @param {Function} operation - Operación a ejecutar en el store
-     * @returns {Promise<*>} Resultado de la operación
-     */
+   * Executes a write operation in a declarative way
+   * @param {Function} operation - Operation to run on the store
+   * @returns {Promise<*>} Operation result
+   */
   executeWriteOperation(operation) {
     return new Promise((resolve, reject) => {
       try {
@@ -146,19 +146,19 @@ export class StorageManager {
   }
 
   /**
-     * Deserializa un array de items
-     * @param {Array} rawItems - Items crudos de la base de datos
-     * @returns {Array} Items deserializados
-     */
+   * Deserializes an array of items
+   * @param {Array} rawItems - Raw items from the database
+   * @returns {Array} Deserialized items
+   */
   deserializeItems(rawItems) {
     return rawItems.map(item => this.deserializeItem(item));
   }
 
   /**
-     * Deserializa un item individual
-     * @param {Object} rawItem - Item crudo de la base de datos
-     * @returns {Object} Item deserializado
-     */
+   * Deserializes a single item
+   * @param {Object} rawItem - Raw item from the database
+   * @returns {Object} Deserialized item
+   */
   deserializeItem(rawItem) {
     const deserializationResult = this.serializationManager.deserialize(rawItem.items);
     const deserializedItems = this.serializationManager.getData(deserializationResult, []);

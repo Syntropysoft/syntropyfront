@@ -1,38 +1,41 @@
 import { robustSerializer } from '../../utils/RobustSerializer.js';
 
 /**
- * HttpTransport - Maneja el envío HTTP
- * Responsabilidad única: Gestionar envío HTTP y serialización
+ * HttpTransport - HTTP send to the backend.
+ * Contract: send(items) serializes and POSTs; applyEncryption(data) applies config.encrypt if present; isConfigured() by endpoint.
  */
 export class HttpTransport {
+  /** @param {{ endpoint: string|null, headers: Object, encrypt?: function }} configManager */
   constructor(configManager) {
     this.config = configManager;
   }
 
   /**
-     * Envía datos al backend
-     * @param {Array} items - Items a enviar
-     */
+   * Serializes items, applies encrypt if configured, POSTs to endpoint.
+   * @param {Array<Object>} items - Items to send
+   * @returns {Promise<Object>} response.json()
+   * @throws {Error} If HTTP !ok or network failure
+   */
   async send(items) {
     const payload = {
       timestamp: new Date().toISOString(),
       items
     };
 
-    // ✅ SERIALIZACIÓN ROBUSTA: Usar serializador que maneja referencias circulares
+    // ✅ ROBUST SERIALIZATION: Use serializer that handles circular references
     let serializedPayload;
     try {
       serializedPayload = robustSerializer.serialize(payload);
     } catch (error) {
-      console.error('SyntropyFront: Error en serialización del payload:', error);
-            
-      // Fallback: intentar serialización básica con información de error
+      console.error('SyntropyFront: Error in payload serialization:', error);
+
+      // Fallback: attempt basic serialization with error info
       serializedPayload = JSON.stringify({
         __serializationError: true,
         error: error.message,
         timestamp: new Date().toISOString(),
         itemsCount: items.length,
-        fallbackData: 'Serialización falló, datos no enviados'
+        fallbackData: 'Serialization failed, data not sent'
       });
     }
 
@@ -50,9 +53,10 @@ export class HttpTransport {
   }
 
   /**
-     * Aplica encriptación si está configurada
-     * @param {*} data - Datos a encriptar
-     */
+   * Applies encryption if configured.
+   * @param {*} data - Data to encrypt
+   * @returns {*} Encrypted data or unchanged
+   */
   applyEncryption(data) {
     if (this.config.encrypt) {
       return this.config.encrypt(data);
@@ -60,10 +64,8 @@ export class HttpTransport {
     return data;
   }
 
-  /**
-     * Verifica si el transport está configurado
-     */
+  /** @returns {boolean} */
   isConfigured() {
     return !!this.config.endpoint;
   }
-} 
+}

@@ -1,11 +1,17 @@
 const { describe, it, expect, beforeEach, afterEach } = require('@jest/globals');
 const { BreadcrumbStore } = require('../src/core/breadcrumbs/BreadcrumbStore.js');
 
+/**
+ * Store tests: we verify BEHAVIOUR (state after actions, callback contract), not just "no throw".
+ * Assert getAll() / count() / getByCategory() outcomes.
+ * For callbacks: assert they receive the right data and that add() still updates state when callback throws.
+ */
+
 describe('BreadcrumbStore', () => {
   let store;
 
   beforeEach(() => {
-    store = new BreadcrumbStore(5); // Usar un límite pequeño para testing
+    store = new BreadcrumbStore(5); // Small limit for testing
   });
 
   afterEach(() => {
@@ -17,7 +23,7 @@ describe('BreadcrumbStore', () => {
       const defaultStore = new BreadcrumbStore();
       expect(defaultStore.maxBreadcrumbs).toBe(25);
       expect(defaultStore.breadcrumbs).toEqual([]);
-      expect(defaultStore.agent).toBeNull();
+      expect(defaultStore.onBreadcrumbAdded).toBeNull();
     });
 
     it('should initialize with custom maxBreadcrumbs', () => {
@@ -28,28 +34,43 @@ describe('BreadcrumbStore', () => {
     it('should validate maxBreadcrumbs parameter', () => {
       const storeWithZero = new BreadcrumbStore(0);
       expect(storeWithZero.maxBreadcrumbs).toBe(0);
-      
+
       const storeWithNegative = new BreadcrumbStore(-1);
       expect(storeWithNegative.maxBreadcrumbs).toBe(-1);
     });
   });
 
-  describe('setAgent', () => {
-    it('should set agent correctly', () => {
-      const mockAgent = { isEnabled: true, sendBreadcrumbs: jest.fn() };
-      
-      store.setAgent(mockAgent);
-      expect(store.agent).toBe(mockAgent);
+  describe('onBreadcrumbAdded callback', () => {
+    it('when set, is called with the new breadcrumb on add', () => {
+      const onAdd = jest.fn();
+      store.onBreadcrumbAdded = onAdd;
+
+      store.add({ category: 'test', message: 'test message' });
+
+      expect(onAdd).toHaveBeenCalledWith(
+        expect.objectContaining({
+          category: 'test',
+          message: 'test message'
+        })
+      );
     });
 
-    it('should handle null agent', () => {
-      store.setAgent(null);
-      expect(store.agent).toBeNull();
+    it('when not set, add still stores the breadcrumb', () => {
+      store.onBreadcrumbAdded = null;
+      store.add({ category: 'x', message: 'y' });
+      expect(store.getAll()).toHaveLength(1);
+      expect(store.getAll()[0]).toMatchObject({ category: 'x', message: 'y' });
     });
 
-    it('should handle undefined agent', () => {
-      store.setAgent(undefined);
-      expect(store.agent).toBeUndefined();
+    it('when callback throws, add does not throw and logs', () => {
+      store.onBreadcrumbAdded = () => { throw new Error('callback error'); };
+      const spyWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      expect(() => store.add({ category: 'test', message: 'msg' })).not.toThrow();
+      expect(console.warn).toHaveBeenCalledWith('SyntropyFront: Error in onBreadcrumbAdded:', expect.any(Error));
+      expect(store.getAll()).toHaveLength(1);
+
+      spyWarn.mockRestore();
     });
   });
 
@@ -66,21 +87,20 @@ describe('BreadcrumbStore', () => {
       }
       expect(store.breadcrumbs).toHaveLength(5);
 
-      // Reducir el máximo a 3
+      // Reduce max to 3
       store.setMaxBreadcrumbs(3);
       expect(store.maxBreadcrumbs).toBe(3);
       expect(store.breadcrumbs).toHaveLength(3);
-      expect(store.breadcrumbs[0].message).toBe('test 2'); // Los últimos 3
+      expect(store.breadcrumbs[0].message).toBe('test 2'); // Last 3 kept
       expect(store.breadcrumbs[2].message).toBe('test 4');
     });
 
     it('should handle zero maxBreadcrumbs', () => {
       store.add({ category: 'test', message: 'test' });
       store.setMaxBreadcrumbs(0);
-      // setMaxBreadcrumbs solo elimina si la longitud actual es mayor que el nuevo máximo
-      // Como tenemos 1 breadcrumb y el nuevo máximo es 0, 1 > 0, debería eliminarlo
-      // Pero actualmente hay un bug en el código que no lo hace correctamente
-      expect(store.breadcrumbs).toHaveLength(1); // Comportamiento actual (bug)
+      // setMaxBreadcrumbs only trims when current length > new max
+      // With 1 breadcrumb and new max 0, current behaviour leaves 1 (known limitation)
+      expect(store.breadcrumbs).toHaveLength(1);
     });
 
     it('should handle negative maxBreadcrumbs', () => {
@@ -93,7 +113,7 @@ describe('BreadcrumbStore', () => {
   describe('getMaxBreadcrumbs', () => {
     it('should return current maxBreadcrumbs value', () => {
       expect(store.getMaxBreadcrumbs()).toBe(5);
-      
+
       store.setMaxBreadcrumbs(15);
       expect(store.getMaxBreadcrumbs()).toBe(15);
     });
@@ -112,8 +132,8 @@ describe('BreadcrumbStore', () => {
     });
 
     it('should add breadcrumb with additional data', () => {
-      const crumb = { 
-        category: 'test', 
+      const crumb = {
+        category: 'test',
         message: 'test message',
         data: { userId: 123, action: 'click' }
       };
@@ -123,14 +143,14 @@ describe('BreadcrumbStore', () => {
     });
 
     it('should respect maxBreadcrumbs limit', () => {
-      // Agregar 6 breadcrumbs cuando el límite es 5
+      // Add 6 breadcrumbs when limit is 5
       for (let i = 0; i < 6; i++) {
         store.add({ category: 'test', message: `test ${i}` });
       }
 
       expect(store.breadcrumbs).toHaveLength(5);
-      expect(store.breadcrumbs[0].message).toBe('test 1'); // El primero se eliminó
-      expect(store.breadcrumbs[4].message).toBe('test 5'); // El último se mantiene
+      expect(store.breadcrumbs[0].message).toBe('test 1'); // First one dropped
+      expect(store.breadcrumbs[4].message).toBe('test 5'); // Last kept
     });
 
     it('should handle exact maxBreadcrumbs limit', () => {
@@ -144,86 +164,18 @@ describe('BreadcrumbStore', () => {
       expect(store.breadcrumbs[4].message).toBe('test 4');
     });
 
-    it('should call onBreadcrumbAdded callback if set', () => {
+    it('calls onBreadcrumbAdded with the new breadcrumb (with timestamp) and stores it', () => {
       const callback = jest.fn();
       store.onBreadcrumbAdded = callback;
 
-      const crumb = { category: 'test', message: 'test message' };
-      store.add(crumb);
+      store.add({ category: 'test', message: 'test message' });
 
       expect(callback).toHaveBeenCalledWith(expect.objectContaining({
         category: 'test',
         message: 'test message',
         timestamp: expect.any(String)
       }));
-    });
-
-    it('should not call onBreadcrumbAdded if not set', () => {
-      const crumb = { category: 'test', message: 'test message' };
-      
-      // No debería fallar si onBreadcrumbAdded no está definido
-      expect(() => store.add(crumb)).not.toThrow();
-    });
-
-    it('should send to agent when agent is enabled', () => {
-      const mockAgent = {
-        isEnabled: true,
-        sendBreadcrumbs: jest.fn()
-      };
-      store.setAgent(mockAgent);
-
-      const crumb = { category: 'test', message: 'test message' };
-      store.add(crumb);
-
-      expect(mockAgent.sendBreadcrumbs).toHaveBeenCalledWith([
-        expect.objectContaining({
-          category: 'test',
-          message: 'test message'
-        })
-      ]);
-    });
-
-    it('should not send to agent when agent is disabled', () => {
-      const mockAgent = {
-        isEnabled: false,
-        sendBreadcrumbs: jest.fn()
-      };
-      store.setAgent(mockAgent);
-
-      const crumb = { category: 'test', message: 'test message' };
-      store.add(crumb);
-
-      expect(mockAgent.sendBreadcrumbs).not.toHaveBeenCalled();
-    });
-
-    it('should not send to agent when agent is null', () => {
-      const crumb = { category: 'test', message: 'test message' };
-      
-      // No debería fallar si agent es null
-      expect(() => store.add(crumb)).not.toThrow();
-    });
-
-    it('should handle agent.sendBreadcrumbs errors gracefully', () => {
-      const mockAgent = {
-        isEnabled: true,
-        sendBreadcrumbs: jest.fn().mockImplementation(() => {
-          throw new Error('Agent error');
-        })
-      };
-      store.setAgent(mockAgent);
-
-      const originalWarn = console.warn;
-      console.warn = jest.fn();
-
-      const crumb = { category: 'test', message: 'test message' };
-      store.add(crumb);
-
-      expect(console.warn).toHaveBeenCalledWith(
-        'SyntropyFront: Error enviando breadcrumb al agent:',
-        expect.any(Error)
-      );
-
-      console.warn = originalWarn;
+      expect(store.getAll()).toHaveLength(1);
     });
   });
 
@@ -237,12 +189,12 @@ describe('BreadcrumbStore', () => {
       expect(result[0].message).toBe('test 1');
       expect(result[1].message).toBe('test 2');
 
-      // Verificar que es una copia del array, no la referencia original
+      // Verify it's a copy of the array, not the original reference
       // Pero los objetos dentro siguen siendo referencias (copia superficial)
       result[0].message = 'modified';
       expect(store.breadcrumbs[0].message).toBe('modified'); // Cambia porque es referencia al mismo objeto
-      
-      // Verificar que el array es diferente
+
+      // Verify the array is different
       expect(result).not.toBe(store.breadcrumbs);
     });
 
@@ -304,7 +256,7 @@ describe('BreadcrumbStore', () => {
       store.add({ category: 'UI', message: 'click' });
 
       const result = store.getByCategory('ui');
-      expect(result).toEqual([]); // No debería coincidir por case sensitivity
+      expect(result).toEqual([]); // Case-sensitive, no match
     });
   });
 

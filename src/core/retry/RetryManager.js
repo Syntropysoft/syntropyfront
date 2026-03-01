@@ -1,8 +1,9 @@
 /**
- * RetryManager - Maneja el sistema de reintentos
- * Responsabilidad única: Gestionar reintentos con backoff exponencial
+ * RetryManager - Retries with exponential backoff.
+ * Contract: addToRetryQueue enqueues and schedules; processRetryQueue(sendCb, removeCb) processes ready items.
  */
 export class RetryManager {
+  /** @param {{ baseDelay: number, maxDelay: number, maxRetries: number }} configManager */
   constructor(configManager) {
     this.config = configManager;
     this.retryQueue = [];
@@ -10,14 +11,17 @@ export class RetryManager {
   }
 
   /**
-     * Añade items a la cola de reintentos
-     * @param {Array} items - Items a reintentar
-     * @param {number} retryCount - Número de reintento
-     * @param {number} persistentId - ID en buffer persistente (opcional)
-     */
+   * Enqueues items for retry (delay = min(baseDelay*2^(retryCount-1), maxDelay)).
+   * @param {Array<Object>} items
+   * @param {number} [retryCount=1]
+   * @param {number|null} [persistentId=null]
+   */
   addToRetryQueue(items, retryCount = 1, persistentId = null) {
+    // Guard: Avoid empty items
+    if (!items || items.length === 0) return;
+
     const delay = Math.min(this.config.baseDelay * Math.pow(2, retryCount - 1), this.config.maxDelay);
-        
+
     this.retryQueue.push({
       items,
       retryCount,
@@ -29,71 +33,89 @@ export class RetryManager {
   }
 
   /**
-     * Programa el próximo reintento
-     */
-  scheduleRetry() {
-    if (this.retryTimer) return;
-
-    const nextItem = this.retryQueue.find(item => item.nextRetry <= Date.now());
-    if (!nextItem) return;
-
-    this.retryTimer = setTimeout(() => {
-      this.processRetryQueue();
-    }, Math.max(0, nextItem.nextRetry - Date.now()));
-  }
-
-  /**
-     * Procesa la cola de reintentos
-     * @param {Function} sendCallback - Callback para enviar items
-     * @param {Function} removePersistentCallback - Callback para remover del buffer persistente
-     */
+   * Processes items with nextRetry <= now; calls sendCallback and removePersistentCallback on success.
+   * @param {(items: Array<Object>) => Promise<void>} sendCallback
+   * @param {(id: number) => Promise<void>} removePersistentCallback
+   * @returns {Promise<void>}
+   */
   async processRetryQueue(sendCallback, removePersistentCallback) {
     this.retryTimer = null;
+    if (this.retryQueue.length === 0) return;
 
     const now = Date.now();
     const itemsToRetry = this.retryQueue.filter(item => item.nextRetry <= now);
-        
+
     for (const item of itemsToRetry) {
-      try {
-        if (sendCallback) {
-          await sendCallback(item.items);
-        }
-                
-        // ✅ Éxito: remover de cola de reintentos
-        this.retryQueue = this.retryQueue.filter(q => q !== item);
-                
-        // Remover del buffer persistente si existe
-        if (item.persistentId && removePersistentCallback) {
-          await removePersistentCallback(item.persistentId);
-        }
-                
-        console.log(`SyntropyFront: Reintento exitoso después de ${item.retryCount} intentos`);
-      } catch (error) {
-        console.warn(`SyntropyFront: Reintento ${item.retryCount} falló:`, error);
-                
-        if (item.retryCount >= this.config.maxRetries) {
-          // ❌ Máximo de reintentos alcanzado
-          this.retryQueue = this.retryQueue.filter(q => q !== item);
-          console.error('SyntropyFront: Item excedió máximo de reintentos, datos perdidos');
-        } else {
-          // Programar próximo reintento
-          item.retryCount++;
-          item.nextRetry = Date.now() + Math.min(
-            this.config.baseDelay * Math.pow(2, item.retryCount - 1), 
-            this.config.maxDelay
-          );
-        }
-      }
+      await this.handleRetryItem(item, sendCallback, removePersistentCallback);
     }
 
-    // Programar próximo reintento si quedan items
+    // Schedule next retry if items remain (Functional)
     if (this.retryQueue.length > 0) {
       this.scheduleRetry();
     }
   }
 
   /**
-     * Limpia la cola de reintentos
+   * Schedules the next retry (Guard Clause style)
+   */
+  scheduleRetry() {
+    // Guard: Avoid multiple simultaneous timers
+    if (this.retryTimer) return;
+
+    // Functional: Find the first item that needs a retry
+    const nextItem = this.retryQueue.find(item => item.nextRetry <= Date.now());
+    if (!nextItem) return;
+
+    // Guard: Calculate delay and schedule
+    const delay = Math.max(0, nextItem.nextRetry - Date.now());
+    this.retryTimer = setTimeout(() => {
+      this.processRetryQueue(this.sendCallback, this.removePersistentCallback);
+    }, delay);
+  }
+
+  /**
+   * Handles an individual retry item (SOLID: Single Responsibility)
+   * @private
+   */
+  async handleRetryItem(item, sendCallback, removePersistentCallback) {
+    try {
+      if (sendCallback) await sendCallback(item.items);
+
+      // Success: Clear state
+      this.retryQueue = this.retryQueue.filter(q => q !== item);
+      if (item.persistentId && removePersistentCallback) {
+        await removePersistentCallback(item.persistentId);
+      }
+      console.log(`SyntropyFront: Successful retry (${item.retryCount})`);
+    } catch (error) {
+      this.handleRetryFailure(item, error);
+    }
+  }
+
+  /**
+   * Manages a retry failure
+   * @private
+   */
+  handleRetryFailure(item, error) {
+    console.warn(`SyntropyFront: Retry ${item.retryCount} failed:`, error);
+
+    // Guard: Maximum retries reached
+    if (item.retryCount >= this.config.maxRetries) {
+      this.retryQueue = this.retryQueue.filter(q => q !== item);
+      console.error('SyntropyFront: Item exceeded maximum retries, data lost');
+      return;
+    }
+
+    // Increment and reschedule
+    item.retryCount++;
+    item.nextRetry = Date.now() + Math.min(
+      this.config.baseDelay * Math.pow(2, item.retryCount - 1),
+      this.config.maxDelay
+    );
+  }
+
+  /**
+     * Clears the retry queue
      */
   clear() {
     this.retryQueue = [];
@@ -101,7 +123,7 @@ export class RetryManager {
   }
 
   /**
-     * Limpia el timer
+     * Clears the timer
      */
   clearTimer() {
     if (this.retryTimer) {
@@ -111,16 +133,16 @@ export class RetryManager {
   }
 
   /**
-     * Obtiene el tamaño de la cola de reintentos
+     * Gets the retry queue size
      */
   getSize() {
     return this.retryQueue.length;
   }
 
   /**
-     * Verifica si la cola de reintentos está vacía
+     * Checks if the retry queue is empty
      */
   isEmpty() {
     return this.retryQueue.length === 0;
   }
-} 
+}

@@ -65,41 +65,41 @@ describe('ConfigurationManager', () => {
         });
 
         it('should enable breadcrumbs when batchTimeout is provided', () => {
-            configManager.configure({ 
+            configManager.configure({
                 endpoint: 'https://api.example.com',
-                batchTimeout: 100 
+                batchTimeout: 100
             });
             expect(configManager.sendBreadcrumbs).toBe(true);
         });
 
         it('should disable breadcrumbs when batchTimeout is not provided', () => {
-            configManager.configure({ 
+            configManager.configure({
                 endpoint: 'https://api.example.com',
-                batchTimeout: null 
+                batchTimeout: null
             });
             expect(configManager.sendBreadcrumbs).toBe(false);
         });
 
         it('should use default values when not provided', () => {
             configManager.configure({ endpoint: 'https://api.example.com' });
-            
+
             expect(configManager.batchSize).toBe(10);
             expect(configManager.maxRetries).toBe(5);
             expect(configManager.usePersistentBuffer).toBe(false);
         });
 
         it('should disable persistent buffer by default', () => {
-            configManager.configure({ 
+            configManager.configure({
                 endpoint: 'https://api.example.com',
-                usePersistentBuffer: undefined 
+                usePersistentBuffer: undefined
             });
             expect(configManager.usePersistentBuffer).toBe(false);
         });
 
         it('should disable persistent buffer when explicitly set to false', () => {
-            configManager.configure({ 
+            configManager.configure({
                 endpoint: 'https://api.example.com',
-                usePersistentBuffer: false 
+                usePersistentBuffer: false
             });
             expect(configManager.usePersistentBuffer).toBe(false);
         });
@@ -118,9 +118,9 @@ describe('ConfigurationManager', () => {
 
     describe('shouldSendBreadcrumbs', () => {
         it('should return true when breadcrumbs are enabled', () => {
-            configManager.configure({ 
+            configManager.configure({
                 endpoint: 'https://api.example.com',
-                batchTimeout: 100 
+                batchTimeout: 100
             });
             expect(configManager.shouldSendBreadcrumbs()).toBe(true);
         });
@@ -160,8 +160,9 @@ describe('ConfigurationManager', () => {
                 usePersistentBuffer: true,
                 maxRetries: 3,
                 baseDelay: 1000,
-                maxDelay: 30000
+                maxDelay: 30000,
+                samplingRate: 1
             });
         });
     });
-}); 
+});

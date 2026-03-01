@@ -1,296 +1,239 @@
+import { Environment } from '../../utils/Environment.js';
+
 /**
- * ContextCollector - Recolector dinámico de contexto
- * Sistema elegante para recolectar datos según lo que pida el usuario
- * Por defecto: Sets curados y seguros
- * Configuración específica: El usuario elige exactamente qué quiere
+ * Pure function: Generates a secure ID using an injected crypto provider.
+ * Accepts a cryptoApi object so all fallback branches are independently testable.
+ * @param {Object|null} cryptoApi - Crypto implementation (e.g. window.crypto or null)
+ * @returns {string} Secure random ID
+ */
+export const createSecureId = (cryptoApi = (typeof crypto !== 'undefined' ? crypto : null)) => {
+  if (typeof cryptoApi?.randomUUID === 'function') {
+    return cryptoApi.randomUUID();
+  }
+  if (typeof cryptoApi?.getRandomValues === 'function') {
+    const array = new Uint8Array(16);
+    cryptoApi.getRandomValues(array);
+    return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+  }
+  return `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+};
+
+/**
+ * Functional fragments: pure context providers.
+ * Uses Environment.runIf for safe access.
+ */
+export const CONTEXT_PROVIDERS = {
+  device: {
+    userAgent: () => Environment.runIf('navigator.userAgent', () => navigator.userAgent),
+    language: () => Environment.runIf('navigator.language', () => navigator.language),
+    languages: () => Environment.runIf('navigator.languages', () => navigator.languages),
+    screen: () => Environment.runIf('window.screen', () => ({
+      width: window.screen.width,
+      height: window.screen.height,
+      availWidth: window.screen.availWidth,
+      availHeight: window.screen.availHeight,
+      colorDepth: window.screen.colorDepth,
+      pixelDepth: window.screen.pixelDepth
+    })),
+    timezone: () => Environment.runIf('Intl.DateTimeFormat', () => {
+      try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+      } catch (e) { return null; }
+    }),
+    cookieEnabled: () => Environment.runIf('navigator.cookieEnabled', () => navigator.cookieEnabled),
+    doNotTrack: () => Environment.runIf('navigator.doNotTrack', () => navigator.doNotTrack)
+  },
+  window: {
+    url: () => Environment.runIf('window.location.href', () => window.location.href),
+    pathname: () => Environment.runIf('window.location.pathname', () => window.location.pathname),
+    search: () => Environment.runIf('window.location.search', () => window.location.search),
+    hash: () => Environment.runIf('window.location.hash', () => window.location.hash),
+    referrer: () => Environment.runIf('document.referrer', () => document.referrer),
+    title: () => Environment.runIf('document.title', () => document.title),
+    viewport: () => Environment.runIf('window.innerWidth', () => ({
+      width: window.innerWidth,
+      height: window.innerHeight
+    }))
+  },
+  storage: {
+    localStorage: () => Environment.runIf('localStorage', () => {
+      try {
+        const storage = window.localStorage;
+        return {
+          keys: Object.keys(storage).length,
+          size: JSON.stringify(storage).length,
+          keyNames: Object.keys(storage)
+        };
+      } catch (e) { return null; }
+    }),
+    sessionStorage: () => Environment.runIf('sessionStorage', () => {
+      try {
+        const storage = window.sessionStorage;
+        return {
+          keys: Object.keys(storage).length,
+          size: JSON.stringify(storage).length,
+          keyNames: Object.keys(storage)
+        };
+      } catch (e) { return null; }
+    })
+  },
+  network: {
+    online: () => Environment.runIf('navigator.onLine', () => navigator.onLine),
+    connection: () => Environment.runIf(() => !!(typeof navigator !== 'undefined' && (navigator.connection || navigator.mozConnection || navigator.webkitConnection)), () => {
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      return {
+        effectiveType: conn.effectiveType,
+        downlink: conn.downlink,
+        rtt: conn.rtt
+      };
+    })
+  },
+  ui: {
+    focused: () => Environment.runIf('document.hasFocus', () => document.hasFocus()),
+    visibility: () => Environment.runIf('document.visibilityState', () => document.visibilityState),
+    activeElement: () => Environment.runIf('document.activeElement', () => ({
+      tagName: document.activeElement.tagName,
+      id: document.activeElement.id,
+      className: document.activeElement.className
+    }))
+  },
+  performance: {
+    memory: () => Environment.runIf('performance.memory', () => ({
+      used: Math.round(performance.memory.usedJSHeapSize / 1048576),
+      total: Math.round(performance.memory.totalJSHeapSize / 1048576),
+      limit: Math.round(performance.memory.jsHeapSizeLimit / 1048576)
+    })),
+    timing: () => Environment.runIf('performance.timing', () => ({
+      navigationStart: performance.timing.navigationStart,
+      loadEventEnd: performance.timing.loadEventEnd
+    }))
+  },
+  session: {
+    sessionId: (collector) => collector.generateSessionId(),
+    startTime: () => new Date().toISOString(),
+    pageLoadTime: () => Environment.runIf('performance.now', () => performance.now())
+  }
+};
+
+/**
+ * Default fields for context collection.
+ */
+const DEFAULT_CONTEXT_FIELDS = {
+  device: ['userAgent', 'language', 'screen', 'timezone'],
+  window: ['url', 'viewport', 'title'],
+  session: ['sessionId', 'pageLoadTime'],
+  ui: ['visibility', 'activeElement'],
+  network: ['online', 'connection']
+};
+
+/**
+ * ContextCollector - Minimal coordinator with no imperative state.
  */
 export class ContextCollector {
   constructor() {
-    // Sets curados por defecto (seguros y útiles)
-    this.defaultContexts = {
-      device: {
-        userAgent: () => navigator.userAgent,
-        language: () => navigator.language,
-        screen: () => ({
-          width: window.screen.width,
-          height: window.screen.height
-        }),
-        timezone: () => Intl.DateTimeFormat().resolvedOptions().timeZone
-      },
-      window: {
-        url: () => window.location.href,
-        viewport: () => ({
-          width: window.innerWidth,
-          height: window.innerHeight
-        }),
-        title: () => document.title
-      },
-      session: {
-        sessionId: () => this.generateSessionId(),
-        pageLoadTime: () => performance.now()
-      },
-      ui: {
-        visibility: () => document.visibilityState,
-        activeElement: () => document.activeElement ? {
-          tagName: document.activeElement.tagName
-        } : null
-      },
-      network: {
-        online: () => navigator.onLine,
-        connection: () => navigator.connection ? {
-          effectiveType: navigator.connection.effectiveType
-        } : null
-      }
-    };
-
-    // Mapeo completo de todos los campos disponibles
-    this.allFields = {
-      device: {
-        userAgent: () => navigator.userAgent,
-        language: () => navigator.language,
-        languages: () => navigator.languages,
-        screen: () => ({
-          width: window.screen.width,
-          height: window.screen.height,
-          availWidth: window.screen.availWidth,
-          availHeight: window.screen.availHeight,
-          colorDepth: window.screen.colorDepth,
-          pixelDepth: window.screen.pixelDepth
-        }),
-        timezone: () => Intl.DateTimeFormat().resolvedOptions().timeZone,
-        cookieEnabled: () => navigator.cookieEnabled,
-        doNotTrack: () => navigator.doNotTrack
-      },
-      window: {
-        url: () => window.location.href,
-        pathname: () => window.location.pathname,
-        search: () => window.location.search,
-        hash: () => window.location.hash,
-        referrer: () => document.referrer,
-        title: () => document.title,
-        viewport: () => ({
-          width: window.innerWidth,
-          height: window.innerHeight
-        })
-      },
-      storage: {
-        localStorage: () => {
-          const keys = Object.keys(localStorage);
-          return {
-            keys: keys.length,
-            size: JSON.stringify(localStorage).length,
-            keyNames: keys // Solo nombres, no valores
-          };
-        },
-        sessionStorage: () => {
-          const keys = Object.keys(sessionStorage);
-          return {
-            keys: keys.length,
-            size: JSON.stringify(sessionStorage).length,
-            keyNames: keys // Solo nombres, no valores
-          };
-        }
-      },
-      network: {
-        online: () => navigator.onLine,
-        connection: () => navigator.connection ? {
-          effectiveType: navigator.connection.effectiveType,
-          downlink: navigator.connection.downlink,
-          rtt: navigator.connection.rtt
-        } : null
-      },
-      ui: {
-        focused: () => document.hasFocus(),
-        visibility: () => document.visibilityState,
-        activeElement: () => document.activeElement ? {
-          tagName: document.activeElement.tagName,
-          id: document.activeElement.id,
-          className: document.activeElement.className
-        } : null
-      },
-      performance: {
-        memory: () => window.performance && window.performance.memory ? {
-          used: Math.round(window.performance.memory.usedJSHeapSize / 1048576),
-          total: Math.round(window.performance.memory.totalJSHeapSize / 1048576),
-          limit: Math.round(window.performance.memory.jsHeapSizeLimit / 1048576)
-        } : null,
-        timing: () => window.performance ? {
-          navigationStart: window.performance.timing.navigationStart,
-          loadEventEnd: window.performance.timing.loadEventEnd
-        } : null
-      },
-      session: {
-        sessionId: () => this.generateSessionId(),
-        startTime: () => new Date().toISOString(),
-        pageLoadTime: () => performance.now()
-      }
-    };
+    this.sessionId = null;
+    this.providers = new Map(Object.entries(CONTEXT_PROVIDERS));
   }
 
   /**
-     * Recolecta contexto según la configuración
-     * @param {Object} contextConfig - Configuración de contexto
-     * @returns {Object} Contexto recolectado
-     */
+   * Collects context based on a declarative configuration.
+   */
   collect(contextConfig = {}) {
-    const context = {};
+    const config = this.normalizeConfig(contextConfig);
 
-    Object.entries(contextConfig).forEach(([contextType, config]) => {
+    return Object.entries(config).reduce((ctx, [type, options]) => {
       try {
-        if (config === true) {
-          // Usar set curado por defecto
-          context[contextType] = this.collectDefaultContext(contextType);
-        } else if (Array.isArray(config)) {
-          // Configuración específica: array de campos
-          context[contextType] = this.collectSpecificFields(contextType, config);
-        } else if (config === false) {
-          // Explícitamente deshabilitado
-          // No hacer nada
-        } else {
-          console.warn(`SyntropyFront: Configuración de contexto inválida para ${contextType}:`, config);
+        const provider = this.providers.get(type);
+        if (options !== false && !provider) throw new Error(`Provider for '${type}' not found`);
+
+        const fields = this.resolveFields(type, provider, options);
+        if (fields) {
+          ctx[type] = this.extractFields(provider, fields);
         }
       } catch (error) {
-        console.warn(`SyntropyFront: Error recolectando contexto ${contextType}:`, error);
-        context[contextType] = { error: 'Failed to collect' };
+        console.warn(`SyntropyFront: Error collecting context for ${type}:`, error);
+        ctx[type] = { error: 'Collection failed' };
       }
-    });
-
-    return context;
+      return ctx;
+    }, {});
   }
 
   /**
-     * Recolecta el set curado por defecto
-     * @param {string} contextType - Tipo de contexto
-     * @returns {Object} Contexto por defecto
-     */
-  collectDefaultContext(contextType) {
-    const defaultContext = this.defaultContexts[contextType];
-    if (!defaultContext) {
-      console.warn(`SyntropyFront: No hay set por defecto para ${contextType}`);
-      return {};
-    }
+   * Field resolution — declarative strategy map by type.
+   * Contracts:
+   *   boolean true  → default fields for type, or all provider keys
+   *   boolean false → null (skip)
+   *   array         → explicit field list
+   *   plain object  → all provider keys (treated as unstructured custom config)
+   *   other         → null (skip)
+   */
+  resolveFields(type, provider, options) {
+    const allProviderKeys = () => Object.keys(provider || {});
+    const strategies = {
+      boolean: (val) => val ? (DEFAULT_CONTEXT_FIELDS[type] || allProviderKeys()) : null,
+      object: (val) => Array.isArray(val) ? val : allProviderKeys(),
+    };
 
-    const result = {};
-    Object.entries(defaultContext).forEach(([field, getter]) => {
+    const strategy = strategies[typeof options];
+    return strategy ? strategy(options) : null;
+  }
+
+  /**
+   * Functional normalization of configuration.
+   */
+  normalizeConfig(config) {
+    if (Array.isArray(config)) {
+      return config.reduce((acc, type) => ({ ...acc, [type]: true }), {});
+    }
+    return config || {};
+  }
+
+  /**
+   * Pure field extraction.
+   */
+  extractFields(provider, fieldNames) {
+    return fieldNames.reduce((result, fieldName) => {
+      const getter = provider[fieldName];
+      if (typeof getter !== 'function') return result;
+
       try {
-        result[field] = getter();
-      } catch (error) {
-        console.warn(`SyntropyFront: Error recolectando campo ${field} de ${contextType}:`, error);
-        result[field] = null;
+        result[fieldName] = getter(this);
+      } catch (e) {
+        console.warn(`SyntropyFront: Error collecting field ${fieldName}:`, e);
+        result[fieldName] = null;
       }
-    });
-
-    return result;
+      return result;
+    }, {});
   }
 
-  /**
-     * Recolecta campos específicos
-     * @param {string} contextType - Tipo de contexto
-     * @param {Array} fields - Campos específicos a recolectar
-     * @returns {Object} Contexto específico
-     */
-  collectSpecificFields(contextType, fields) {
-    const allFields = this.allFields[contextType];
-    if (!allFields) {
-      console.warn(`SyntropyFront: Tipo de contexto desconocido: ${contextType}`);
-      return {};
-    }
-
-    const result = {};
-    fields.forEach(field => {
-      try {
-        if (allFields[field]) {
-          result[field] = allFields[field]();
-        } else {
-          console.warn(`SyntropyFront: Campo ${field} no disponible en ${contextType}`);
-        }
-      } catch (error) {
-        console.warn(`SyntropyFront: Error recolectando campo ${field} de ${contextType}:`, error);
-        result[field] = null;
-      }
-    });
-
-    return result;
+  registerProvider(name, fields) {
+    this.providers.set(name, fields);
   }
 
-  /**
-     * Genera un ID de sesión seguro usando crypto.randomUUID() cuando esté disponible
-     * @returns {string} ID de sesión seguro
-     */
-  generateSecureId() {
-    try {
-      // Intentar usar crypto.randomUUID() si está disponible (Node.js 14.17+, browsers modernos)
-      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-        return crypto.randomUUID();
-      }
-      
-      // Fallback para navegadores más antiguos: usar crypto.getRandomValues()
-      if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-        const array = new Uint8Array(16);
-        crypto.getRandomValues(array);
-        
-        // Convertir a formato UUID v4
-        const hex = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
-        return [
-          hex.slice(0, 8),
-          hex.slice(8, 12),
-          hex.slice(12, 16),
-          hex.slice(16, 20),
-          hex.slice(20, 32)
-        ].join('-');
-      }
-      
-      // Fallback final: timestamp + random (menos seguro pero funcional)
-      const timestamp = Date.now().toString(36);
-      const random = Math.random().toString(36).substring(2, 15);
-      return `${timestamp}-${random}`;
-    } catch (error) {
-      console.warn('SyntropyFront: Error generando ID seguro, usando fallback:', error);
-      // Fallback de emergencia
-      return `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    }
-  }
-
-  /**
-     * Genera un ID de sesión simple
-     */
   generateSessionId() {
-    if (!this._sessionId) {
-      this._sessionId = `session_${this.generateSecureId()}`;
-    }
-    return this._sessionId;
+    this.sessionId = this.sessionId || `session_${this.generateSecureId()}`;
+    return this.sessionId;
   }
 
-  /**
-     * Obtiene la lista de tipos de contexto disponibles
-     * @returns {Array} Tipos disponibles
-     */
+  // Delegates to the pure top-level createSecureId (injectable for testing)
+  generateSecureId(cryptoApi = (typeof crypto !== 'undefined' ? crypto : null)) {
+    return createSecureId(cryptoApi);
+  }
+
   getAvailableTypes() {
-    return Object.keys(this.allFields);
+    return Array.from(this.providers.keys());
   }
 
-  /**
-     * Obtiene la lista de campos disponibles para un tipo de contexto
-     * @param {string} contextType - Tipo de contexto
-     * @returns {Array} Campos disponibles
-     */
-  getAvailableFields(contextType) {
-    const fields = this.allFields[contextType];
-    return fields ? Object.keys(fields) : [];
+  get allFields() {
+    return Array.from(this.providers.entries()).reduce((res, [name, fields]) => {
+      res[name] = fields;
+      return res;
+    }, {});
   }
 
-  /**
-     * Obtiene información sobre los sets por defecto
-     * @returns {Object} Información de sets por defecto
-     */
-  getDefaultContextsInfo() {
-    const info = {};
-    Object.entries(this.defaultContexts).forEach(([type, fields]) => {
-      info[type] = Object.keys(fields);
-    });
-    return info;
+  get defaultContexts() {
+    return this.allFields;
   }
 }
 
-// Instancia singleton
-export const contextCollector = new ContextCollector(); 
+export const contextCollector = new ContextCollector();

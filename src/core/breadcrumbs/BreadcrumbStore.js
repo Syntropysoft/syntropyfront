@@ -1,49 +1,43 @@
 /**
- * BreadcrumbStore - Almacén de huellas del usuario
- * Mantiene un historial de las últimas acciones del usuario
+ * BreadcrumbStore - User action timeline storage
+ * Maintains a history of the last user actions.
+ * Does not know about Agent or sending; the orchestrator wires onBreadcrumbAdded to decide what to do.
  */
 export class BreadcrumbStore {
   constructor(maxBreadcrumbs = 25) {
     this.maxBreadcrumbs = maxBreadcrumbs;
     this.breadcrumbs = [];
-    this.agent = null;
+    /** @type {((crumb: object) => void)|null} Optional callback when a breadcrumb is added (set by orchestrator). */
+    this.onBreadcrumbAdded = null;
   }
 
   /**
-     * Configura el agent para envío automático
-     * @param {Object} agent - Instancia del agent
-     */
-  setAgent(agent) {
-    this.agent = agent;
-  }
-
-  /**
-     * Configura el tamaño máximo de breadcrumbs
-     * @param {number} maxBreadcrumbs - Nuevo tamaño máximo
+     * Configures the maximum breadcrumb size
+     * @param {number} maxBreadcrumbs - New maximum size
      */
   setMaxBreadcrumbs(maxBreadcrumbs) {
     this.maxBreadcrumbs = maxBreadcrumbs;
-        
-    // Si el nuevo tamaño es menor, eliminar breadcrumbs excedentes
+
+    // If new size is smaller, remove excess breadcrumbs
     if (this.breadcrumbs.length > this.maxBreadcrumbs) {
       this.breadcrumbs = this.breadcrumbs.slice(-this.maxBreadcrumbs);
     }
   }
 
   /**
-     * Obtiene el tamaño máximo actual
-     * @returns {number} Tamaño máximo de breadcrumbs
+     * Gets current maximum size
+     * @returns {number} Maximum breadcrumb size
      */
   getMaxBreadcrumbs() {
     return this.maxBreadcrumbs;
   }
 
   /**
-     * Añade un breadcrumb a la lista
-     * @param {Object} crumb - El breadcrumb a añadir
-     * @param {string} crumb.category - Categoría del evento (ui, network, error, etc.)
-     * @param {string} crumb.message - Mensaje descriptivo
-     * @param {Object} [crumb.data] - Datos adicionales opcionales
+     * Adds a breadcrumb to the list
+     * @param {Object} crumb - The breadcrumb to add
+     * @param {string} crumb.category - Event category (ui, network, error, etc.)
+     * @param {string} crumb.message - Descriptive message
+     * @param {Object} [crumb.data] - Optional additional data
      */
   add(crumb) {
     const breadcrumb = {
@@ -51,51 +45,50 @@ export class BreadcrumbStore {
       timestamp: new Date().toISOString(),
     };
 
-    if (this.breadcrumbs.length >= this.maxBreadcrumbs) {
-      this.breadcrumbs.shift(); // Elimina el más antiguo
-    }
-        
-    this.breadcrumbs.push(breadcrumb);
-        
-    // Callback opcional para logging
+    // Functional limit management
+    this.breadcrumbs = [...this.breadcrumbs, breadcrumb].slice(-this.maxBreadcrumbs);
+
     if (this.onBreadcrumbAdded) {
-      this.onBreadcrumbAdded(breadcrumb);
-    }
-        
-    // Enviar al agent si está configurado y habilitado
-    if (this.agent && this.agent.isEnabled) {
       try {
-        this.agent.sendBreadcrumbs([breadcrumb]);
+        this.onBreadcrumbAdded(breadcrumb);
       } catch (error) {
-        console.warn('SyntropyFront: Error enviando breadcrumb al agent:', error);
+        console.warn('SyntropyFront: Error in onBreadcrumbAdded:', error);
       }
     }
   }
 
   /**
-     * Devuelve todos los breadcrumbs
-     * @returns {Array} Copia de todos los breadcrumbs
+     * Returns all breadcrumbs
+     * @returns {Array} List of all breadcrumbs
      */
   getAll() {
     return [...this.breadcrumbs];
   }
 
   /**
-     * Limpia todos los breadcrumbs
+     * Clears all breadcrumbs
      */
   clear() {
     this.breadcrumbs = [];
   }
 
   /**
-     * Obtiene breadcrumbs por categoría
-     * @param {string} category - Categoría a filtrar
-     * @returns {Array} Breadcrumbs de la categoría especificada
+     * Gets current breadcrumb count
+     * @returns {number} Breadcrumb count
+     */
+  count() {
+    return this.breadcrumbs.length;
+  }
+
+  /**
+     * Gets breadcrumbs by category
+     * @param {string} category - Category to filter
+     * @returns {Array} Breadcrumbs of the specified category
      */
   getByCategory(category) {
     return this.breadcrumbs.filter(b => b.category === category);
   }
 }
 
-// Instancia singleton
-export const breadcrumbStore = new BreadcrumbStore(); 
+// Singleton instance
+export const breadcrumbStore = new BreadcrumbStore();

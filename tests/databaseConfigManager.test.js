@@ -30,7 +30,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManager.validateConfig();
             
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('dbName debe ser un string no vacío');
+            expect(result.errors).toContain('dbName must be a non-empty string');
         });
 
         it('should return invalid result for null dbName', () => {
@@ -38,7 +38,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManager.validateConfig();
             
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('dbName debe ser un string no vacío');
+            expect(result.errors).toContain('dbName must be a non-empty string');
         });
 
         it('should return invalid result for non-string dbName', () => {
@@ -46,7 +46,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManager.validateConfig();
             
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('dbName debe ser un string no vacío');
+            expect(result.errors).toContain('dbName must be a non-empty string');
         });
 
         it('should return invalid result for zero dbVersion', () => {
@@ -54,7 +54,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManager.validateConfig();
             
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('dbVersion debe ser un número mayor a 0');
+            expect(result.errors).toContain('dbVersion must be a number greater than 0');
         });
 
         it('should return invalid result for negative dbVersion', () => {
@@ -62,7 +62,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManager.validateConfig();
             
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('dbVersion debe ser un número mayor a 0');
+            expect(result.errors).toContain('dbVersion must be a number greater than 0');
         });
 
         it('should return invalid result for non-number dbVersion', () => {
@@ -70,7 +70,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManager.validateConfig();
             
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('dbVersion debe ser un número mayor a 0');
+            expect(result.errors).toContain('dbVersion must be a number greater than 0');
         });
 
         it('should return invalid result for empty storeName', () => {
@@ -78,7 +78,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManager.validateConfig();
             
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('storeName debe ser un string no vacío');
+            expect(result.errors).toContain('storeName must be a non-empty string');
         });
 
         it('should return invalid result for null storeName', () => {
@@ -86,7 +86,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManager.validateConfig();
             
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('storeName debe ser un string no vacío');
+            expect(result.errors).toContain('storeName must be a non-empty string');
         });
 
         it('should return invalid result for non-string storeName', () => {
@@ -94,7 +94,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManager.validateConfig();
             
             expect(result.isValid).toBe(false);
-            expect(result.errors).toContain('storeName debe ser un string no vacío');
+            expect(result.errors).toContain('storeName must be a non-empty string');
         });
 
         it('should return multiple errors for multiple invalid fields', () => {
@@ -106,9 +106,9 @@ describe('DatabaseConfigManager', () => {
             
             expect(result.isValid).toBe(false);
             expect(result.errors).toHaveLength(3);
-            expect(result.errors).toContain('dbName debe ser un string no vacío');
-            expect(result.errors).toContain('dbVersion debe ser un número mayor a 0');
-            expect(result.errors).toContain('storeName debe ser un string no vacío');
+            expect(result.errors).toContain('dbName must be a non-empty string');
+            expect(result.errors).toContain('dbVersion must be a number greater than 0');
+            expect(result.errors).toContain('storeName must be a non-empty string');
         });
     });
 
@@ -136,7 +136,7 @@ describe('DatabaseConfigManager', () => {
             configManagerWithoutWindow.checkIndexedDBAvailability = function() {
                 return {
                     isAvailable: false,
-                    reason: 'No estamos en un entorno de browser',
+                    reason: 'Not in a browser environment',
                     timestamp: new Date().toISOString()
                 };
             };
@@ -144,7 +144,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManagerWithoutWindow.checkIndexedDBAvailability();
             
             expect(result.isAvailable).toBe(false);
-            expect(result.reason).toBe('No estamos en un entorno de browser');
+            expect(result.reason).toBe('Not in a browser environment');
             expect(result.timestamp).toBeDefined();
         });
 
@@ -156,7 +156,7 @@ describe('DatabaseConfigManager', () => {
             configManagerWithoutIndexedDB.checkIndexedDBAvailability = function() {
                 return {
                     isAvailable: false,
-                    reason: 'IndexedDB no está disponible en este browser',
+                    reason: 'IndexedDB is not available in this browser',
                     timestamp: new Date().toISOString()
                 };
             };
@@ -164,7 +164,7 @@ describe('DatabaseConfigManager', () => {
             const result = configManagerWithoutIndexedDB.checkIndexedDBAvailability();
             
             expect(result.isAvailable).toBe(false);
-            expect(result.reason).toBe('IndexedDB no está disponible en este browser');
+            expect(result.reason).toBe('IndexedDB is not available in this browser');
             expect(result.timestamp).toBeDefined();
         });
     });

@@ -40,7 +40,7 @@ describe('Agent', () => {
       indexedDB: mockIndexedDB
     };
     
-    // Crear nueva instancia del Agent
+    // Create new Agent instance
     agent = new Agent();
   });
 
@@ -94,13 +94,13 @@ describe('Agent', () => {
       
       mockIndexedDB.open.mockReturnValue(mockRequest);
       
-      // Crear nueva instancia para probar la inicialización
+      // Create new instance to test initialization
       const newAgent = new Agent();
       
-      // Simular éxito en la apertura de IndexedDB
+      // Simulate successful IndexedDB open
       mockRequest.onsuccess();
       
-      // Esperar a que se complete la inicialización
+      // Wait for initialization to complete
       await new Promise(resolve => setTimeout(resolve, 0));
       
       expect(mockConsoleLog).toHaveBeenCalledWith('SyntropyFront: Buffer persistente inicializado');
@@ -116,16 +116,16 @@ describe('Agent', () => {
       
       mockIndexedDB.open.mockReturnValue(mockRequest);
       
-      // Crear nueva instancia
+      // Create new instance
       const newAgent = new Agent();
       
-      // Simular error en la apertura de IndexedDB
+      // Simulate IndexedDB open error
       mockRequest.onerror();
       
-      // Esperar a que se complete la inicialización
+      // Wait for initialization to complete
       await new Promise(resolve => setTimeout(resolve, 0));
       
-      expect(mockConsoleWarn).toHaveBeenCalledWith('SyntropyFront: Error abriendo IndexedDB, usando solo memoria');
+      expect(mockConsoleWarn).toHaveBeenCalledWith('SyntropyFront: Error initializing database:', expect.anything());
     });
   });
 
@@ -246,7 +246,7 @@ describe('Agent', () => {
     it('should send breadcrumbs when enabled', () => {
       agent.configure({ 
         endpoint: 'https://api.com/errors',
-        batchTimeout: 100 // Habilita envío de breadcrumbs
+        batchTimeout: 100 // Enables breadcrumb sending
       });
       
       const breadcrumbs = [
@@ -271,7 +271,7 @@ describe('Agent', () => {
       
       const breadcrumbs = [{ category: 'user', message: 'click' }];
       
-      // Simular que sendBreadcrumbs no agrega nada cuando está deshabilitado
+      // Simulate sendBreadcrumbs adding nothing when disabled
       expect(agent.sendBreadcrumbs).toBe(false);
     });
 
@@ -281,7 +281,7 @@ describe('Agent', () => {
         batchTimeout: 100
       });
       
-      // Simular que sendBreadcrumbs no agrega nada con breadcrumbs vacíos
+      // Simulate sendBreadcrumbs adding nothing with empty breadcrumbs
       expect(agent.queue).toHaveLength(0);
     });
 
@@ -295,7 +295,7 @@ describe('Agent', () => {
       
       const breadcrumbs = [{ category: 'user', message: 'click' }];
       
-      // Simular sendBreadcrumbs con encriptación
+      // Simulate sendBreadcrumbs with encryption
       const dataToSend = encryptFn(breadcrumbs);
       agent.addToQueue({
         type: 'breadcrumbs',
@@ -314,7 +314,7 @@ describe('Agent', () => {
       });
       agent.isEnabled = false;
       
-      // Simular que sendBreadcrumbs no funciona cuando está deshabilitado
+      // Simulate sendBreadcrumbs not working when disabled
       expect(agent.isEnabled).toBe(false);
     });
   });
@@ -341,7 +341,7 @@ describe('Agent', () => {
       agent.addToQueue({ type: 'error', data: { message: 'test1' } });
       agent.addToQueue({ type: 'error', data: { message: 'test2' } });
       
-      // Esperar a que se complete el flush
+      // Wait for flush to complete
       await new Promise(resolve => setTimeout(resolve, 0));
       
       expect(mockFetch).toHaveBeenCalled();
@@ -519,14 +519,14 @@ describe('Agent', () => {
       const items = [{ type: 'error', data: { message: 'test' } }];
       agent.addToRetryQueue(items, 1);
       
-      // Simular que el item está listo para procesar
+      // Simulate item ready to process
       agent.retryQueue[0].nextRetry = Date.now() - 1000;
       
       await agent.processRetryQueue();
       
       expect(mockFetch).toHaveBeenCalled();
       expect(agent.retryQueue).toHaveLength(0);
-      expect(mockConsoleLog).toHaveBeenCalledWith('SyntropyFront: Reintento exitoso después de 1 intentos');
+      expect(mockConsoleLog).toHaveBeenCalledWith('SyntropyFront: Successful retry (1)');
     });
 
     it('should handle retry failure and schedule next retry', async () => {
@@ -536,14 +536,14 @@ describe('Agent', () => {
       const items = [{ type: 'error', data: { message: 'test' } }];
       agent.addToRetryQueue(items, 1);
       
-      // Simular que el item está listo para procesar
+      // Simulate item ready to process
       agent.retryQueue[0].nextRetry = Date.now() - 1000;
       
       await agent.processRetryQueue();
       
       expect(agent.retryQueue).toHaveLength(1);
       expect(agent.retryQueue[0].retryCount).toBe(2);
-      expect(mockConsoleWarn).toHaveBeenCalledWith('SyntropyFront: Reintento 1 falló:', expect.any(Error));
+      expect(mockConsoleWarn).toHaveBeenCalledWith('SyntropyFront: Retry 1 failed:', expect.any(Error));
     });
 
     it('should remove items after max retries', async () => {
@@ -551,15 +551,15 @@ describe('Agent', () => {
       mockFetch.mockRejectedValue(new Error('Network error'));
       
       const items = [{ type: 'error', data: { message: 'test' } }];
-      agent.addToRetryQueue(items, 2); // Ya en el máximo
+      agent.addToRetryQueue(items, 2); // Already at max
       
-      // Simular que el item está listo para procesar
+      // Simulate item ready to process
       agent.retryQueue[0].nextRetry = Date.now() - 1000;
       
       await agent.processRetryQueue();
       
       expect(agent.retryQueue).toHaveLength(0);
-      expect(mockConsoleError).toHaveBeenCalledWith('SyntropyFront: Item excedió máximo de reintentos, datos perdidos');
+      expect(mockConsoleError).toHaveBeenCalledWith('SyntropyFront: Item exceeded maximum retries, data lost');
     });
 
     it('should handle retry with persistent buffer ID', async () => {
@@ -569,7 +569,7 @@ describe('Agent', () => {
       const items = [{ type: 'error', data: { message: 'test' } }];
       agent.addToRetryQueue(items, 1, 123); // Con persistentId
       
-      // Simular que el item está listo para procesar
+      // Simulate item ready to process
       agent.retryQueue[0].nextRetry = Date.now() - 1000;
       
       await agent.processRetryQueue();
@@ -597,7 +597,7 @@ describe('Agent', () => {
       const items = [{ type: 'error', data: { message: 'test' } }];
       agent.addToRetryQueue(items, 1);
       
-      // Los items tienen nextRetry en el futuro, no deberían procesarse
+      // Items have nextRetry in the future, should not be processed
       agent.scheduleRetry();
       
       expect(agent.retryTimer).toBeNull();
@@ -674,7 +674,7 @@ describe('Agent', () => {
       agent.addToQueue({ type: 'error', data: { message: 'test1' } });
       agent.addToRetryQueue([{ type: 'error', data: { message: 'test2' } }], 1);
       
-      // Simular que el item de retry está listo para procesar
+      // Simulate retry item ready to process
       agent.retryQueue[0].nextRetry = Date.now() - 1000;
       
       await agent.forceFlush();

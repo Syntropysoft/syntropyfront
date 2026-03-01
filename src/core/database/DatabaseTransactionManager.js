@@ -1,6 +1,6 @@
 /**
- * DatabaseTransactionManager - Maneja las transacciones de IndexedDB
- * Responsabilidad única: Gestionar transacciones de lectura y escritura
+ * DatabaseTransactionManager - Handles IndexedDB transactions
+ * Single responsibility: Manage read and write transactions
  */
 export class DatabaseTransactionManager {
   constructor(connectionManager, configManager) {
@@ -9,10 +9,10 @@ export class DatabaseTransactionManager {
   }
 
   /**
-     * Obtiene una transacción de lectura
-     * @returns {IDBTransaction} Transacción de lectura
-     * @throws {Error} Si la base de datos no está disponible
-     */
+   * Returns a read transaction
+   * @returns {IDBTransaction} Read transaction
+   * @throws {Error} If the database is not available
+   */
   getReadTransaction() {
     this.ensureDatabaseAvailable();
         
@@ -23,10 +23,10 @@ export class DatabaseTransactionManager {
   }
 
   /**
-     * Obtiene una transacción de escritura
-     * @returns {IDBTransaction} Transacción de escritura
-     * @throws {Error} Si la base de datos no está disponible
-     */
+   * Returns a write transaction
+   * @returns {IDBTransaction} Write transaction
+   * @throws {Error} If the database is not available
+   */
   getWriteTransaction() {
     this.ensureDatabaseAvailable();
         
@@ -37,20 +37,20 @@ export class DatabaseTransactionManager {
   }
 
   /**
-     * Obtiene el object store para una transacción
-     * @param {IDBTransaction} transaction - Transacción activa
-     * @returns {IDBObjectStore} Object store
-     */
+   * Returns the object store for a transaction
+   * @param {IDBTransaction} transaction - Active transaction
+   * @returns {IDBObjectStore} Object store
+   */
   getObjectStore(transaction) {
     const config = this.configManager.getConfig();
     return transaction.objectStore(config.storeName);
   }
 
   /**
-     * Ejecuta una operación de lectura de manera segura
-     * @param {Function} operation - Operación a ejecutar
-     * @returns {Promise<Object>} Resultado de la operación
-     */
+   * Executes a read operation safely
+   * @param {Function} operation - Operation to execute
+   * @returns {Promise<Object>} Operation result
+   */
   async executeReadOperation(operation) {
     const operationResult = {
       success: false,
@@ -70,16 +70,16 @@ export class DatabaseTransactionManager {
             
       return operationResult;
     } catch (error) {
-      operationResult.error = `Error en operación de lectura: ${error.message}`;
+      operationResult.error = `Error in read operation: ${error.message}`;
       return operationResult;
     }
   }
 
   /**
-     * Ejecuta una operación de escritura de manera segura
-     * @param {Function} operation - Operación a ejecutar
-     * @returns {Promise<Object>} Resultado de la operación
-     */
+   * Executes a write operation safely
+   * @param {Function} operation - Operation to execute
+   * @returns {Promise<Object>} Operation result
+   */
   async executeWriteOperation(operation) {
     const operationResult = {
       success: false,
@@ -99,15 +99,15 @@ export class DatabaseTransactionManager {
             
       return operationResult;
     } catch (error) {
-      operationResult.error = `Error en operación de escritura: ${error.message}`;
+      operationResult.error = `Error in write operation: ${error.message}`;
       return operationResult;
     }
   }
 
   /**
-     * Verifica que la base de datos esté disponible
-     * @throws {Error} Si la base de datos no está disponible
-     */
+   * Ensures the database is available
+   * @throws {Error} If the database is not available
+   */
   ensureDatabaseAvailable() {
     if (!this.connectionManager.isDatabaseAvailable()) {
       throw new Error('Database not available');
@@ -115,9 +115,9 @@ export class DatabaseTransactionManager {
   }
 
   /**
-     * Obtiene información sobre el estado de las transacciones
-     * @returns {Object} Estado de las transacciones
-     */
+   * Returns transaction status information
+   * @returns {Object} Transaction status
+   */
   getTransactionStatus() {
     return {
       isDatabaseAvailable: this.connectionManager.isDatabaseAvailable(),

@@ -1,6 +1,54 @@
 /**
- * RobustSerializer - Serializador robusto que maneja referencias circulares
- * Implementa una solución similar a flatted pero sin dependencias externas
+ * Pure type-specific fragments: serialization/deserialization without state.
+ * Testable in isolation; state (circularRefs) is handled by RobustSerializer.
+ */
+
+export const serializedShapeOfDate = (date) => ({
+  __type: 'Date',
+  value: date.toISOString()
+});
+
+export const serializedShapeOfError = (err, recurse) => ({
+  __type: 'Error',
+  name: err.name,
+  message: err.message,
+  stack: err.stack,
+  cause: err.cause ? recurse(err.cause) : undefined
+});
+
+export const serializedShapeOfRegExp = (re) => ({
+  __type: 'RegExp',
+  source: re.source,
+  flags: re.flags
+});
+
+export const serializedShapeOfFunction = (fn) => ({
+  __type: 'Function',
+  name: fn.name || 'anonymous',
+  length: fn.length,
+  toString: `${fn.toString().substring(0, 200)}...`
+});
+
+export const serializedShapeOfUnknown = (obj) => ({
+  __type: 'Unknown',
+  constructor: obj.constructor ? obj.constructor.name : 'Unknown',
+  toString: `${String(obj).substring(0, 200)}...`
+});
+
+export const restoreDate = (obj) => new Date(obj.value);
+export const restoreError = (obj, recurse) => {
+  const err = new Error(obj.message);
+  err.name = obj.name;
+  err.stack = obj.stack;
+  if (obj.cause) err.cause = recurse(obj.cause);
+  return err;
+};
+export const restoreRegExp = (obj) => new RegExp(obj.source, obj.flags);
+export const restoreFunction = (obj) => `[Function: ${obj.name}]`;
+
+/**
+ * RobustSerializer - Robust serialization with circular references.
+ * Composes pure type-specific fragments; state (seen, circularRefs) only in arrays/objects.
  */
 export class RobustSerializer {
   constructor() {
@@ -9,27 +57,14 @@ export class RobustSerializer {
     this.refCounter = 0;
   }
 
-  /**
-     * Serializa un objeto de forma segura, manejando referencias circulares
-     * @param {any} obj - Objeto a serializar
-     * @returns {string} JSON string seguro
-     */
   serialize(obj) {
     try {
-      // Reset state
       this.seen = new WeakSet();
       this.circularRefs = new Map();
       this.refCounter = 0;
-
-      // Serializar con manejo de referencias circulares
-      const safeObj = this.makeSerializable(obj);
-            
-      // Convertir a JSON
-      return JSON.stringify(safeObj);
+      return JSON.stringify(this.makeSerializable(obj));
     } catch (error) {
-      console.error('SyntropyFront: Error en serialización robusta:', error);
-            
-      // Fallback: intentar serialización básica con información de error
+      console.error('SyntropyFront: Error in robust serialization:', error);
       return JSON.stringify({
         __serializationError: true,
         error: error.message,
@@ -40,253 +75,115 @@ export class RobustSerializer {
     }
   }
 
-  /**
-     * Hace un objeto serializable, manejando referencias circulares
-     * @param {any} obj - Objeto a procesar
-     * @param {string} path - Ruta actual en el objeto
-     * @returns {any} Objeto serializable
-     */
   makeSerializable(obj, path = '') {
-    // Casos primitivos
-    if (obj === null || obj === undefined) {
-      return obj;
-    }
+    if (obj === null || obj === undefined) return obj;
+    if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') return obj;
 
-    if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
-      return obj;
-    }
+    if (obj instanceof Date) return serializedShapeOfDate(obj);
+    if (obj instanceof Error) return serializedShapeOfError(obj, (x) => this.makeSerializable(x, `${path}.cause`));
+    if (obj instanceof RegExp) return serializedShapeOfRegExp(obj);
+    if (typeof obj === 'function') return serializedShapeOfFunction(obj);
 
-    // Casos especiales
-    if (obj instanceof Date) {
-      return {
-        __type: 'Date',
-        value: obj.toISOString()
-      };
-    }
+    if (Array.isArray(obj)) return this._serializeArray(obj, path);
+    if (typeof obj === 'object') return this._serializeObject(obj, path);
 
-    if (obj instanceof Error) {
-      return {
-        __type: 'Error',
-        name: obj.name,
-        message: obj.message,
-        stack: obj.stack,
-        cause: obj.cause ? this.makeSerializable(obj.cause, `${path}.cause`) : undefined
-      };
-    }
+    return serializedShapeOfUnknown(obj);
+  }
 
-    if (obj instanceof RegExp) {
-      return {
-        __type: 'RegExp',
-        source: obj.source,
-        flags: obj.flags
-      };
-    }
+  _serializeArray(obj, path) {
+    if (this.seen.has(obj)) return { __circular: true, refId: this.circularRefs.get(obj) };
+    this.seen.add(obj);
+    this.circularRefs.set(obj, `ref_${++this.refCounter}`);
+    return obj.map((item, i) => this.makeSerializable(item, `${path}[${i}]`));
+  }
 
-    // Arrays
-    if (Array.isArray(obj)) {
-      // Verificar referencia circular
-      if (this.seen.has(obj)) {
-        const refId = this.circularRefs.get(obj);
-        return {
-          __circular: true,
-          refId
-        };
+  _serializeObject(obj, path) {
+    if (this.seen.has(obj)) return { __circular: true, refId: this.circularRefs.get(obj) };
+    this.seen.add(obj);
+    this.circularRefs.set(obj, `ref_${++this.refCounter}`);
+    const result = {};
+    for (const key in obj) {
+      if (!Object.prototype.hasOwnProperty.call(obj, key)) continue;
+      try {
+        result[key] = this.makeSerializable(obj[key], `${path}.${key}`);
+      } catch (error) {
+        result[key] = { __serializationError: true, error: error.message, propertyName: key };
       }
-
-      this.seen.add(obj);
-      const refId = `ref_${++this.refCounter}`;
-      this.circularRefs.set(obj, refId);
-
-      return obj.map((item, index) => 
-        this.makeSerializable(item, `${path}[${index}]`)
-      );
     }
-
-    // Objetos
-    if (typeof obj === 'object') {
-      // Verificar referencia circular
-      if (this.seen.has(obj)) {
-        const refId = this.circularRefs.get(obj);
-        return {
-          __circular: true,
-          refId
-        };
-      }
-
-      this.seen.add(obj);
-      const refId = `ref_${++this.refCounter}`;
-      this.circularRefs.set(obj, refId);
-
-      const result = {};
-
-      // Procesar propiedades del objeto
-      for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          try {
-            const value = obj[key];
-            const safeValue = this.makeSerializable(value, `${path}.${key}`);
-            result[key] = safeValue;
-          } catch (error) {
-            // Si falla la serialización de una propiedad, la omitimos
-            result[key] = {
-              __serializationError: true,
-              error: error.message,
-              propertyName: key
-            };
-          }
+    if (Object.getOwnPropertySymbols) {
+      for (const symbol of Object.getOwnPropertySymbols(obj)) {
+        try {
+          result[`__symbol_${symbol.description || 'anonymous'}`] = this.makeSerializable(obj[symbol], `${path}[Symbol]`);
+        } catch (error) {
+          result[`__symbol_${symbol.description || 'anonymous'}`] = { __serializationError: true, error: error.message, symbolName: symbol.description || 'anonymous' };
         }
       }
-
-      // Procesar símbolos si están disponibles
-      if (Object.getOwnPropertySymbols) {
-        const symbols = Object.getOwnPropertySymbols(obj);
-        for (const symbol of symbols) {
-          try {
-            const value = obj[symbol];
-            const safeValue = this.makeSerializable(value, `${path}[Symbol(${symbol.description})]`);
-            result[`__symbol_${symbol.description || 'anonymous'}`] = safeValue;
-          } catch (error) {
-            result[`__symbol_${symbol.description || 'anonymous'}`] = {
-              __serializationError: true,
-              error: error.message,
-              symbolName: symbol.description || 'anonymous'
-            };
-          }
-        }
-      }
-
-      return result;
     }
-
-    // Funciones y otros tipos
-    if (typeof obj === 'function') {
-      return {
-        __type: 'Function',
-        name: obj.name || 'anonymous',
-        length: obj.length,
-        toString: `${obj.toString().substring(0, 200)  }...`
-      };
-    }
-
-    // Fallback para otros tipos
-    return {
-      __type: 'Unknown',
-      constructor: obj.constructor ? obj.constructor.name : 'Unknown',
-      toString: `${String(obj).substring(0, 200)  }...`
-    };
+    return result;
   }
 
   /**
-     * Deserializa un objeto serializado con referencias circulares
-     * @param {string} jsonString - JSON string a deserializar
-     * @returns {any} Objeto deserializado
+     * Deserializes a serialized object with circular references
+     * @param {string} jsonString - JSON string to deserialize
+     * @returns {any} Deserialized object
      */
   deserialize(jsonString) {
     try {
       const parsed = JSON.parse(jsonString);
       return this.restoreCircularRefs(parsed);
     } catch (error) {
-      console.error('SyntropyFront: Error en deserialización:', error);
+      console.error('SyntropyFront: Error in deserialization:', error);
       return null;
     }
   }
 
-  /**
-     * Restaura referencias circulares en un objeto deserializado
-     * @param {any} obj - Objeto a restaurar
-     * @param {Map} refs - Mapa de referencias
-     * @returns {any} Objeto con referencias restauradas
-     */
   restoreCircularRefs(obj, refs = new Map()) {
-    if (obj === null || obj === undefined) {
-      return obj;
-    }
+    if (obj === null || obj === undefined) return obj;
+    if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') return obj;
 
-    if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean') {
-      return obj;
-    }
+    if (obj.__type === 'Date') return restoreDate(obj);
+    if (obj.__type === 'Error') return restoreError(obj, (x) => this.restoreCircularRefs(x, refs));
+    if (obj.__type === 'RegExp') return restoreRegExp(obj);
+    if (obj.__type === 'Function') return restoreFunction(obj);
 
-    // Restaurar tipos especiales
-    if (obj.__type === 'Date') {
-      return new Date(obj.value);
-    }
-
-    if (obj.__type === 'Error') {
-      const error = new Error(obj.message);
-      error.name = obj.name;
-      error.stack = obj.stack;
-      if (obj.cause) {
-        error.cause = this.restoreCircularRefs(obj.cause, refs);
-      }
-      return error;
-    }
-
-    if (obj.__type === 'RegExp') {
-      return new RegExp(obj.source, obj.flags);
-    }
-
-    if (obj.__type === 'Function') {
-      // No podemos restaurar funciones completamente, devolvemos info
-      return `[Function: ${obj.name}]`;
-    }
-
-    // Arrays
-    if (Array.isArray(obj)) {
-      const result = [];
-      refs.set(obj, result);
-
-      for (let i = 0; i < obj.length; i++) {
-        if (obj[i] && obj[i].__circular) {
-          const refId = obj[i].refId;
-          if (refs.has(refId)) {
-            result[i] = refs.get(refId);
-          } else {
-            result[i] = null; // Referencia no encontrada
-          }
-        } else {
-          result[i] = this.restoreCircularRefs(obj[i], refs);
-        }
-      }
-
-      return result;
-    }
-
-    // Objetos
-    if (typeof obj === 'object') {
-      const result = {};
-      refs.set(obj, result);
-
-      for (const key in obj) {
-        if (Object.prototype.hasOwnProperty.call(obj, key)) {
-          if (key.startsWith('__')) {
-            // Propiedades especiales
-            continue;
-          }
-
-          const value = obj[key];
-          if (value && value.__circular) {
-            const refId = value.refId;
-            if (refs.has(refId)) {
-              result[key] = refs.get(refId);
-            } else {
-              result[key] = null; // Referencia no encontrada
-            }
-          } else {
-            result[key] = this.restoreCircularRefs(value, refs);
-          }
-        }
-      }
-
-      return result;
-    }
+    if (Array.isArray(obj)) return this._restoreArray(obj, refs);
+    if (typeof obj === 'object') return this._restoreObject(obj, refs);
 
     return obj;
   }
 
+  _restoreArray(obj, refs) {
+    const result = [];
+    refs.set(obj, result);
+    for (let i = 0; i < obj.length; i++) {
+      if (obj[i]?.__circular) {
+        result[i] = refs.has(obj[i].refId) ? refs.get(obj[i].refId) : null;
+      } else {
+        result[i] = this.restoreCircularRefs(obj[i], refs);
+      }
+    }
+    return result;
+  }
+
+  _restoreObject(obj, refs) {
+    const result = {};
+    refs.set(obj, result);
+    for (const key in obj) {
+      if (!Object.prototype.hasOwnProperty.call(obj, key) || key.startsWith('__')) continue;
+      const value = obj[key];
+      if (value?.__circular) {
+        result[key] = refs.has(value.refId) ? refs.get(value.refId) : null;
+      } else {
+        result[key] = this.restoreCircularRefs(value, refs);
+      }
+    }
+    return result;
+  }
+
   /**
-     * Serializa de forma segura para logging (versión simplificada)
-     * @param {any} obj - Objeto a serializar
-     * @returns {string} JSON string seguro para logs
+     * Safely serializes for logging (simplified version)
+     * @param {any} obj - Object to serialize
+     * @returns {string} Safe JSON string for logs
      */
   serializeForLogging(obj) {
     try {
@@ -294,7 +191,7 @@ export class RobustSerializer {
     } catch (error) {
       return JSON.stringify({
         __logError: true,
-        message: 'Error serializando para logging',
+        message: 'Error serializing for logging',
         originalError: error.message,
         timestamp: new Date().toISOString()
       });
@@ -302,5 +199,5 @@ export class RobustSerializer {
   }
 }
 
-// Instancia singleton
-export const robustSerializer = new RobustSerializer(); 
+// Singleton instance
+export const robustSerializer = new RobustSerializer();

@@ -1,98 +1,98 @@
 # React + SyntropyFront Boilerplate
 
-Un boilerplate limpio y moderno para React con integración de SyntropyFront, siguiendo principios SOLID y Clean Code.
+A clean, modern React boilerplate with SyntropyFront integration, following SOLID and Clean Code principles.
 
-## 🚀 Características
+## 🚀 Features
 
-- **⚛️ React 18** - Con hooks modernos
-- **🎯 SOLID Principles** - Single Responsibility Principle aplicado
-- **🧹 Clean Code** - Componentización y separación de responsabilidades
-- **📊 SyntropyFront** - Integración simple y automática
-- **🎨 CSS Moderno** - Styling hermoso y responsive
-- **🔧 Configuración completa** - ESLint, Prettier, etc.
+- **⚛️ React 18** - With modern hooks
+- **🎯 SOLID Principles** - Single Responsibility Principle applied
+- **🧹 Clean Code** - Componentization and separation of concerns
+- **📊 SyntropyFront** - Simple, automatic integration
+- **🎨 Modern CSS** - Beautiful, responsive styling
+- **🔧 Full configuration** - ESLint, Prettier, etc.
 
-## 📦 Instalación
+## 📦 Installation
 
 ```bash
-# Clonar el boilerplate
+# Clone the boilerplate
 git clone <repository-url>
 cd react-syntropyfront-boilerplate
 
-# Instalar dependencias
+# Install dependencies
 npm install
 
-# Iniciar desarrollo
+# Start development
 npm start
 ```
 
-## 🏗️ Arquitectura
+## 🏗️ Architecture
 
-### **Estructura de Carpetas**
+### **Folder structure**
 ```
 src/
-├── components/          # Componentes React
-│   ├── Header.js       # Header de la app
-│   ├── Actions.js      # Botones de acción
-│   ├── Breadcrumbs.js  # Lista de breadcrumbs
-│   ├── Errors.js       # Lista de errores
-│   └── index.js        # Exportaciones
+├── components/          # React components
+│   ├── Header.js       # App header
+│   ├── Actions.js      # Action buttons
+│   ├── Breadcrumbs.js  # Breadcrumb list
+│   ├── Errors.js       # Error list
+│   └── index.js        # Exports
 ├── hooks/              # Custom hooks
-│   ├── useAppReady.js  # Detección de app ready
-│   ├── useSyntropyFront.js # Integración con librería
-│   └── index.js        # Exportaciones
-├── config/             # Configuraciones
-├── utils/              # Utilidades
-└── App.js              # Componente principal
+│   ├── useAppReady.js  # App ready detection
+│   ├── useSyntropyFront.js # Library integration
+│   └── index.js        # Exports
+├── config/             # Configuration
+├── utils/              # Utilities
+└── App.js              # Main component
 ```
 
-### **Principios SOLID Aplicados**
+### **SOLID principles applied**
 
 #### **Single Responsibility Principle (SRP)**
-- Cada componente tiene una sola responsabilidad
-- Cada hook maneja una sola funcionalidad
-- Separación clara entre UI y lógica
+- Each component has a single responsibility
+- Each hook handles a single concern
+- Clear separation between UI and logic
 
-#### **Componentes**
-- `Header` - Solo muestra el header
-- `Actions` - Solo maneja botones
-- `Breadcrumbs` - Solo muestra breadcrumbs
-- `Errors` - Solo muestra errores
+#### **Components**
+- `Header` - Renders the header only
+- `Actions` - Handles buttons only
+- `Breadcrumbs` - Renders breadcrumbs only
+- `Errors` - Renders errors only
 
 #### **Hooks**
-- `useAppReady` - Solo detecta cuando la app está lista
-- `useSyntropyFront` - Solo integra con la librería
+- `useAppReady` - Detects when the app is ready
+- `useSyntropyFront` - Integrates with the library
 
-## 🎯 Uso
+## 🎯 Usage
 
-### **Integración Simple**
+### **Simple integration**
 ```javascript
 import { useSyntropyFront } from './hooks';
 
 function App() {
   const { isReady, syntropyFront } = useSyntropyFront();
   
-  // Usar la librería
+  // Use the library
   const handleClick = () => {
     syntropyFront.addBreadcrumb('user', 'Button clicked');
   };
 }
 ```
 
-### **Agregar Nuevos Componentes**
+### **Adding New Components**
 ```javascript
-// 1. Crear componente con responsabilidad única
+// 1. Create component with single responsibility
 export const NewComponent = ({ data }) => {
-  return <div>Componente con responsabilidad única</div>;
+  return <div>Component with single responsibility</div>;
 };
 
-// 2. Agregar al index
+// 2. Add to index
 export { NewComponent } from './NewComponent';
 
-// 3. Usar en App.js
+// 3. Use in App.js
 import { NewComponent } from './components';
 ```
 
-## 🔧 Configuración
+## 🔧 Configuration
 
 ### **ESLint**
 ```json
@@ -119,38 +119,38 @@ import { NewComponent } from './components';
 
 ## 📊 SyntropyFront Integration
 
-### **Auto-inicialización**
-La librería se inicializa automáticamente cuando se importa:
+### **Auto-initialization**
+The library initializes automatically when imported:
 
 ```javascript
 import syntropyFront from './syntropyfront.js';
-// ¡Listo! Ya está inicializada
+// Ready! It's already initialized
 ```
 
-### **Métodos Disponibles**
+### **Available Methods**
 ```javascript
-// Agregar breadcrumb
+// Add breadcrumb
 syntropyFront.addBreadcrumb('category', 'message', data);
 
-// Obtener breadcrumbs
+// Get breadcrumbs
 const breadcrumbs = syntropyFront.getBreadcrumbs();
 
-// Limpiar breadcrumbs
+// Clear breadcrumbs
 syntropyFront.clearBreadcrumbs();
 
-// Enviar error
+// Send error
 syntropyFront.sendError(error, context);
 ```
 
 ## 🎨 Styling
 
 ### **CSS Moderno**
-- **Grid Layout** - Para layouts complejos
-- **Flexbox** - Para alineaciones
-- **CSS Variables** - Para temas
+- **Grid Layout** - For complex layouts
+- **Flexbox** - For alignment
+- **CSS Variables** - For theming
 - **Responsive Design** - Mobile-first
 
-### **Clases Principales**
+### **Main classes**
 ```css
 .App-header          /* Header con gradiente */
 .demo-section        /* Secciones con cards */
@@ -169,74 +169,74 @@ __tests__/
 └── utils/           # Tests de utilidades
 ```
 
-### **Ejemplo de Test**
+### **Test example**
 ```javascript
 import { render, screen } from '@testing-library/react';
 import { Header } from '../components/Header';
 
-test('Header muestra el título correcto', () => {
+test('Header shows the correct title', () => {
   render(<Header isReady={true} />);
   expect(screen.getByText(/React App/)).toBeInTheDocument();
 });
 ```
 
-## 🚀 Scripts Disponibles
+## 🚀 Available scripts
 
 ```bash
-npm start          # Desarrollo
+npm start          # Development
 npm test           # Tests
-npm run build      # Build de producción
+npm run build      # Production build
 npm run eject      # Eject (irreversible)
 ```
 
-## 📝 Convenciones
+## 📝 Conventions
 
 ### **Naming**
-- **Componentes**: PascalCase (`Header.js`)
+- **Components**: PascalCase (`Header.js`)
 - **Hooks**: camelCase (`useAppReady.js`)
-- **Archivos**: kebab-case para utilidades (`date-utils.js`)
+- **Files**: kebab-case for utilities (`date-utils.js`)
 
 ### **Imports**
 ```javascript
-// Componentes
+// Components
 import { Header, Actions } from './components';
 
 // Hooks
 import { useSyntropyFront } from './hooks';
 
-// Utilidades
+// Utilities
 import { formatDate } from './utils/date-utils';
 ```
 
-### **Comentarios**
+### **Comments**
 ```javascript
 /**
- * Componente con responsabilidad única
- * @param {Object} props - Props del componente
- * @returns {JSX.Element} Componente renderizado
+ * Component with single responsibility
+ * @param {Object} props - Component props
+ * @returns {JSX.Element} Rendered component
  */
 ```
 
-## 🤝 Contribución
+## 🤝 Contributing
 
-1. Fork el proyecto
-2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit los cambios (`git commit -am 'Agregar nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
+1. Fork the project
+2. Create a branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -am 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto está bajo la Licencia Apache 2.0 - ver el archivo [LICENSE](LICENSE) para detalles.
+This project is under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Soporte
+## 🆘 Support
 
-Si tienes problemas o preguntas:
+If you have issues or questions:
 
-1. Revisa la [documentación](docs/)
-2. Busca en [issues](../../issues)
-3. Crea un nuevo issue con detalles del problema
+1. Check the [documentation](docs/)
+2. Search [issues](../../issues)
+3. Open a new issue with details about the problem
 
 ---
 
-**¡Disfruta del boilerplate! 🎉** 
+**Enjoy the boilerplate! 🎉** 

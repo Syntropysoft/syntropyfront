@@ -1,77 +1,87 @@
 import { robustSerializer } from '../../utils/RobustSerializer.js';
+import { dataMaskingManager } from '../../utils/DataMaskingManager.js';
 
 /**
- * SerializationManager - Maneja la serialización y deserialización de datos
- * Responsabilidad única: Gestionar la transformación de datos para almacenamiento
+ * SerializationManager - Handles serialization and deserialization of data.
+ * Single responsibility: Manage data transformation for storage.
+ * DIP: Accepts serializer and masking via constructor for testability and substitution.
+ * @param {Object} [deps] - Injected dependencies
+ * @param {{ serialize: function(*): string, deserialize: function(string): * }} [deps.serializer] - Serializer (circular ref handling)
+ * @param {{ process: function(*): * }} [deps.masking] - Object with process(data) for PII obfuscation
  */
 export class SerializationManager {
-  constructor() {
-    this.serializer = robustSerializer;
+  constructor(deps = {}) {
+    this.serializer = deps.serializer ?? robustSerializer;
+    this.masking = deps.masking ?? dataMaskingManager;
   }
 
   /**
-     * Serializa items con manejo declarativo de errores
-     * @param {Array} items - Items a serializar
-     * @returns {Object} Resultado de serialización
+     * Serializes items with declarative error handling
+     * @param {Array} items - Items to serialize
+     * @returns {Object} Serialization result
      */
   serialize(items) {
-    const serializationResult = {
-      success: false,
-      data: null,
-      error: null,
-      timestamp: new Date().toISOString()
-    };
-
     try {
-      const serializedData = this.serializer.serialize(items);
+      // Guard: Validate basic input
+      if (items === null || items === undefined) {
+        return { success: true, data: this.serializer.serialize([]), error: null, timestamp: new Date().toISOString() };
+      }
+
+      // Apply masking before store/send
+      const maskedItems = this.masking.process(items);
+      const serializedData = this.serializer.serialize(maskedItems);
+
       return {
-        ...serializationResult,
         success: true,
-        data: serializedData
+        data: serializedData,
+        error: null,
+        timestamp: new Date().toISOString()
       };
     } catch (error) {
       return {
-        ...serializationResult,
+        success: false,
+        data: this.createFallbackData(error),
         error: this.createSerializationError(error),
-        data: this.createFallbackData(error)
+        timestamp: new Date().toISOString()
       };
     }
   }
 
   /**
-     * Deserializa datos con manejo declarativo de errores
+     * Deserializes data with declarative error handling
      * @param {string} serializedData - Datos serializados
-     * @returns {Object} Resultado de deserialización
+     * @returns {Object} Deserialization result
      */
   deserialize(serializedData) {
-    const deserializationResult = {
-      success: false,
-      data: null,
-      error: null,
-      timestamp: new Date().toISOString()
-    };
-
     try {
+      // Guard: Empty or null data
+      if (!serializedData) {
+        return { success: true, data: [], error: null, timestamp: new Date().toISOString() };
+      }
+
       const deserializedData = this.serializer.deserialize(serializedData);
+
       return {
-        ...deserializationResult,
         success: true,
-        data: deserializedData
+        data: deserializedData,
+        error: null,
+        timestamp: new Date().toISOString()
       };
     } catch (error) {
       return {
-        ...deserializationResult,
+        success: false,
+        data: [],
         error: this.createDeserializationError(error),
-        data: []
+        timestamp: new Date().toISOString()
       };
     }
   }
 
   /**
-     * Crea un error de serialización estructurado
-     * @param {Error} error - Error original
-     * @returns {Object} Error estructurado
-     */
+   * Creates a structured serialization error
+   * @param {Error} error - Original error
+   * @returns {Object} Structured error
+   */
   createSerializationError(error) {
     return {
       type: 'serialization_error',
@@ -82,10 +92,10 @@ export class SerializationManager {
   }
 
   /**
-     * Crea un error de deserialización estructurado
-     * @param {Error} error - Error original
-     * @returns {Object} Error estructurado
-     */
+   * Creates a structured deserialization error
+   * @param {Error} error - Original error
+   * @returns {Object} Structured error
+   */
   createDeserializationError(error) {
     return {
       type: 'deserialization_error',
@@ -96,35 +106,35 @@ export class SerializationManager {
   }
 
   /**
-     * Crea datos de fallback cuando falla la serialización
-     * @param {Error} error - Error que causó el fallback
-     * @returns {string} Datos de fallback serializados
+     * Creates fallback data when serialization fails
+     * @param {Error} error - Error that caused the fallback
+     * @returns {string} Serialized fallback data
      */
   createFallbackData(error) {
     const fallbackPayload = {
       __serializationError: true,
       error: error.message,
       timestamp: new Date().toISOString(),
-      fallbackData: 'Items no serializables - usando fallback'
+      fallbackData: 'Items not serializable - using fallback'
     };
 
     return JSON.stringify(fallbackPayload);
   }
 
   /**
-     * Verifica si un resultado de serialización fue exitoso
-     * @param {Object} result - Resultado de serialización/deserialización
-     * @returns {boolean} True si fue exitoso
-     */
+   * Checks if a serialization result was successful
+   * @param {Object} result - Serialization/deserialization result
+   * @returns {boolean} True if successful
+   */
   isSuccessful(result) {
     return Boolean(result && result.success === true);
   }
 
   /**
-     * Obtiene los datos de un resultado, con fallback
-     * @param {Object} result - Resultado de serialización/deserialización
-     * @param {*} fallback - Valor por defecto si falla
-     * @returns {*} Datos o fallback
+     * Gets data from a result, with fallback
+     * @param {Object} result - Serialization/deserialization result
+     * @param {*} fallback - Default value if failed
+     * @returns {*} Data or fallback
      */
   getData(result, fallback = null) {
     return this.isSuccessful(result) ? result.data : fallback;

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Demo del Sistema de Trazabilidad</title>
-    <!-- Tailwind CSS para un diseño limpio y rápido -->
+    <!-- Tailwind CSS for a clean, fast layout -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,13 +26,13 @@
     <div class="w-full max-w-4xl bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8">
         <div class="text-center mb-8">
             <h1 class="text-3xl md:text-4xl font-bold text-white">Sistema de Trazabilidad Frontend</h1>
-            <p class="text-gray-400 mt-2">Interactuá con la página y luego provocá un error para ver el reporte en la consola.</p>
+            <p class="text-gray-400 mt-2">Interact with the page and then trigger an error to see the report in the console.</p>
         </div>
 
         <!-- Controles para generar eventos -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <button id="btn-click" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
-                Botón de Prueba (Click)
+                Test Button (Click)
             </button>
             <button id="btn-fetch" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-transform transform hover:scale-105">
                 Llamada a API (Fetch)
@@ -52,22 +52,22 @@
     <!-- ======================= CÓDIGO DEL TRACER ========================== -->
     <!-- ====================================================================== -->
     <script type="module">
-        // --- Módulo 1: La "Caja Negra" (Almacén de Breadcrumbs) ---
+        // --- Module 1: The "Black Box" (Breadcrumb store) ---
         const breadcrumbStore = (() => {
             const MAX_BREADCRUMBS = 25;
             const breadcrumbs = [];
 
-            // Añade un "breadcrumb" a la lista.
+            // Adds a "breadcrumb" to the list.
             function add(crumb) {
                 const breadcrumb = {
                     ...crumb,
                     timestamp: new Date().toISOString(),
                 };
                 if (breadcrumbs.length >= MAX_BREADCRUMBS) {
-                    breadcrumbs.shift(); // Elimina el más antiguo si se alcanza el límite.
+                    breadcrumbs.shift(); // Remove the oldest if limit is reached.
                 }
                 breadcrumbs.push(breadcrumb);
-                logToScreen(`Breadcrumb añadido: [${breadcrumb.category}] ${breadcrumb.message}`);
+                logToScreen(`Breadcrumb added: [${breadcrumb.category}] ${breadcrumb.message}`);
             }
 
             // Devuelve la lista completa de breadcrumbs.
@@ -79,7 +79,7 @@
         })();
 
 
-        // --- Módulo 2: Los "Observadores" (Interceptores) ---
+        // --- Module 2: The "Observers" (Interceptors) ---
         const interceptors = (() => {
             // Intercepta errores globales no capturados.
             function setupErrorInterceptor() {
@@ -88,7 +88,7 @@
                     logToScreen("Enviando el siguiente reporte al servidor:", 'error');
                     logToScreen(JSON.stringify(errorPayload, null, 2), 'error');
                     
-                    // Aquí iría la lógica real de envío al backend.
+                    // Real send-to-backend logic would go here.
                     // fetch('/api/log-error', {
                     //   method: 'POST',
                     //   headers: { 'Content-Type': 'application/json' },
@@ -102,7 +102,7 @@
                         type: 'uncaught_exception',
                         error: { message, source, lineno, colno, stack: error?.stack },
                         breadcrumbs: breadcrumbStore.getAll(),
-                        // Aquí podrías añadir un correlationId si lo tuvieras.
+                        // You could add a correlationId here if you had one.
                     };
                     sendReportToServer(errorPayload);
                     return true; // Previene que el error se muestre en la consola del navegador.
@@ -122,7 +122,7 @@
                 };
             }
 
-            // Intercepta llamadas de red (fetch).
+            // Intercepts network calls (fetch).
             function setupFetchInterceptor() {
                 const originalFetch = window.fetch;
                 window.fetch = function(...args) {
@@ -163,7 +163,7 @@
         })();
 
 
-        // --- Módulo 3: El Inicializador ---
+        // --- Module 3: The initializer ---
         function initTracer() {
             logToScreen("Tracer inicializado. Modo observador activado.");
             interceptors.setupClickInterceptor();
@@ -172,7 +172,7 @@
             interceptors.setupErrorInterceptor();
         }
 
-        // --- Lógica de la Demo ---
+        // --- Demo logic ---
         const logOutput = document.getElementById('log-output');
         
         function logToScreen(message, type = 'info') {
@@ -191,7 +191,7 @@
         }
 
         document.getElementById('btn-click').addEventListener('click', () => {
-             logToScreen("Botón de prueba clickeado.");
+             logToScreen("Test button clicked.");
         });
 
         document.getElementById('btn-fetch').addEventListener('click', () => {
@@ -204,7 +204,7 @@
 
         document.getElementById('btn-error').addEventListener('click', () => {
             logToScreen("Provocando un error intencional...", 'error');
-            // Esta función no existe, por lo que causará un ReferenceError.
+            // This function does not exist, so it will cause a ReferenceError.
             funcionQueNoExiste(); 
         });
 
